@@ -1,0 +1,6 @@
+{
+  "name": "travel-planner",
+  "version": "1.0.0",
+  "description": "Multilingual AI-powered travel planner using Gemini API",
+  "private": true
+}

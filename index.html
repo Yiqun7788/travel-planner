@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Travel Planner</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<style>
+body { font-family: 'Inter', sans-serif; background:#f7f9fb; }
+.checkbox-label {
+  display:flex; align-items:center; padding:10px 14px; background:white;
+  border:2px solid #e2e8f0; border-radius:8px; cursor:pointer; transition:.2s;
+}
+.checkbox-label:hover { border-color:#93c5fd; box-shadow:0 4px 6px -1px rgba(0,0,0,0.05); }
+#loading-overlay {
+  position: fixed; inset: 0; background: rgba(255,255,255,0.8);
+  display: none; justify-content: center; align-items: center; z-index: 1000;
+}
+.spinner {
+  width: 60px; height: 60px; border: 6px solid #ccc;
+  border-top-color: #3b82f6; border-radius: 50%;
+  animation: spin .8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body class="p-4 sm:p-8">
+
+<div id="loading-overlay"><div class="spinner"></div></div>
+
+<div class="max-w-4xl mx-auto py-4">
+
+<div id="error-message" class="hidden fixed top-0 left-0 right-0 z-50 bg-red-600 text-white px-4 py-3 text-center shadow-xl"></div>
+
+<!-- PLANNING VIEW -->
+<div id="planning-view" class="bg-white p-6 rounded-xl shadow-xl">
+<h1 class="text-3xl font-extrabold mb-6 border-b pb-3" data-i18n="title">Create Your Own Travel Planner (Enhanced)</h1>
+
+<div class="mb-4">
+<label class="block text-sm font-semibold" data-i18n="language">Language / 语言</label>
+<select id="language-select" class="mt-1 w-full border rounded-lg px-3 py-2">
+  <option value="en">English</option>
+  <option value="zh">简体中文</option>
+  <option value="ja">日本語</option>
+  <option value="de">Deutsch</option>
+  <option value="es">Español</option>
+  <option value="fr">Français</option>
+</select>
+</div>
+
+<form id="itinerary-form" class="space-y-6">
+
+<div>
+<label class="block text-sm font-semibold" data-i18n="destination">Where are you going?</label>
+<input id="destination" class="mt-1 w-full border rounded-lg px-3 py-2">
+</div>
+
+<div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+  <div>
+    <label class="block text-sm font-semibold" data-i18n="budget">Budget (Total)</label>
+    <input type="number" class="mt-1 w-full border rounded-lg px-3 py-2">
+  </div>
+  <div>
+    <label class="block text-sm font-semibold" data-i18n="currency">Currency</label>
+    <select class="mt-1 w-full border rounded-lg px-3 py-2">
+      <option>USD (US Dollar)</option><option>EUR (Euro)</option><option>GBP (British Pound)</option>
+      <option>JPY (Japanese Yen)</option><option>CNY (Chinese Yuan)</option><option>CAD (Canadian Dollar)</option>
+    </select>
+  </div>
+  <div>
+    <label class="block text-sm font-semibold" data-i18n="travelers">Travelers</label>
+    <input type="number" min="1" class="mt-1 w-full border rounded-lg px-3 py-2">
+  </div>
+</div>
+
+<div class="grid grid-cols-2 gap-4">
+  <div>
+    <label class="block text-sm font-semibold" data-i18n="startDate">Start Date</label>
+    <input type="date" id="start-date" class="mt-1 w-full border rounded-lg px-3 py-2">
+  </div>
+  <div>
+    <label class="block text-sm font-semibold" data-i18n="endDate">End Date</label>
+    <input type="date" id="end-date" class="mt-1 w-full border rounded-lg px-3 py-2">
+  </div>
+</div>
+
+<div>
+<label class="block text-sm font-semibold" data-i18n="transportation">Transportation Type</label>
+<div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+  <label class="checkbox-label"><input type="checkbox" value="Air"> <span class="ml-2" data-i18n="air">Air</span></label>
+  <label class="checkbox-label"><input type="checkbox" value="Train"> <span class="ml-2" data-i18n="train">Train</span></label>
+  <label class="checkbox-label"><input type="checkbox" value="Car"> <span class="ml-2" data-i18n="car">Car</span></label>
+  <label class="checkbox-label"><input type="checkbox" value="Public Transportation"> <span class="ml-2" data-i18n="publicTransit">Public Transportation</span></label>
+  <label class="checkbox-label"><input type="checkbox" value="Boat"> <span class="ml-2" data-i18n="boat">Boat</span></label>
+  <label class="checkbox-label"><input type="checkbox" value="Bike"> <span class="ml-2" data-i18n="bike">Bike</span></label>
+</div>
+<label class="checkbox-label mt-3"><input type="checkbox" id="cheap-tickets-checkbox"> <span class="ml-2" data-i18n="cheapTickets">Tips to Buy Cheap Tickets</span></label>
+</div>
+
+<div>
+<label class="block text-sm font-semibold" data-i18n="pace">Trip Pace</label>
+<div class="grid grid-cols-3 gap-3">
+  <label class="checkbox-label"><input type="radio" name="pace" value="Slow"> <span class="ml-2" data-i18n="slow">Slow</span></label>
+  <label class="checkbox-label"><input type="radio" name="pace" value="Medium" checked> <span class="ml-2" data-i18n="medium">Medium</span></label>
+  <label class="checkbox-label"><input type="radio" name="pace" value="Fast"> <span class="ml-2" data-i18n="fast">Fast</span></label>
+</div>
+</div>
+
+<div>
+<label class="block text-sm font-semibold" data-i18n="interests">Interests / Theme</label>
+<div id="checkbox-group" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+  <label class="checkbox-label"><input type="checkbox" value="History"> <span class="ml-2" data-i18n="history">History</span></label>
+  <label class="checkbox-label"><input type="checkbox" value="Hidden Gems"> <span class="ml-2" data-i18n="hiddenGems">Hidden Gems</span></label>
+  <label class="checkbox-label"><input type="checkbox" value="Major Landmarks"> <span class="ml-2" data-i18n="landmarks">Major Landmarks</span></label>
+  <label class="checkbox-label"><input type="checkbox" value="UNESCO Sites"> <span class="ml-2" data-i18n="unesco">UNESCO Sites</span></label>
+  <label class="checkbox-label"><input type="checkbox" value="Foodie/Gourmet"> <span class="ml-2" data-i18n="foodie">Foodie/Gourmet</span></label>
+  <label class="checkbox-label"><input type="checkbox" value="Adventure/Outdoors"> <span class="ml-2" data-i18n="adventure">Adventure/Outdoors</span></label>
+  <label class="checkbox-label"><input type="checkbox" value="Culture/Museums"> <span class="ml-2" data-i18n="culture">Culture/Museums</span></label>
+  <label class="checkbox-label"><input type="checkbox" value="Relaxation/Beaches"> <span class="ml-2" data-i18n="relaxation">Relaxation/Beaches</span></label>
+</div>
+<input id="other-interests" class="mt-3 w-full border rounded-lg px-3 py-2" data-i18n-placeholder="otherInterests" placeholder="Other interests...">
+</div>
+
+<div>
+<label class="block text-sm font-semibold" data-i18n="additionalInstructions">Additional Instructions for the Selections Above:</label>
+<textarea id="additional-instructions" class="mt-1 w-full border rounded-lg px-3 py-2 resize-none" rows="3" data-i18n-placeholder="additionalInstructionsPlaceholder" placeholder="Enter specific instructions or details to guide your selections (e.g., 'Food: hidden restaurants popular with locals, not tourists. Please recommend some street food.')"></textarea>
+</div>
+
+<button type="button" id="generate-button" class="w-full bg-blue-600 text-white py-3 rounded-xl font-bold hover:bg-blue-700" data-i18n="generate">Generate Itinerary</button>
+
+</form>
+</div>
+
+<!-- RESULTS VIEW -->
+<div id="results-view" class="hidden bg-white p-6 rounded-xl shadow-xl">
+<div class="flex justify-between items-center border-b pb-3">
+  <h2 id="results-title" class="text-2xl font-extrabold"></h2>
+  <div class="flex gap-3">
+    <button id="download-button" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-semibold">Download Itinerary ▼</button>
+    <button id="back-button" class="text-blue-600 font-semibold" data-i18n="back">← Back</button>
+  </div>
+</div>
+
+<!-- Download Menu (hidden by default) -->
+<div id="download-menu" class="hidden absolute bg-white shadow-lg rounded-lg border mt-2 right-6 z-10">
+  <button id="download-word" class="block w-full text-left px-4 py-2 hover:bg-gray-100">Download as Word (.docx)</button>
+  <button id="download-pdf" class="block w-full text-left px-4 py-2 hover:bg-gray-100">Download as PDF</button>
+</div>
+
+<div id="content-display" class="prose max-w-none mt-6"></div>
+
+<!-- Extra Tools Section -->
+<div class="mt-8 p-6 bg-gray-50 rounded-xl">
+  <h3 class="text-2xl font-bold mb-3">Extra Tools</h3>
+  <p class="text-gray-600 mb-4">Enter a specific instruction to change your itinerary (e.g., "Change day 2 to focus on food tours", "make the pace more relaxed").</p>
+  
+  <textarea id="update-instruction" class="w-full border rounded-lg px-4 py-3 mb-4 resize-none" rows="3" placeholder="Your specific instruction to update the itinerary..."></textarea>
+  
+  <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+    <button id="update-itinerary-btn" class="bg-yellow-500 hover:bg-yellow-600 text-white py-3 px-6 rounded-xl font-bold transition">Update Itinerary</button>
+    <button id="packing-list-btn" class="bg-green-500 hover:bg-green-600 text-white py-3 px-6 rounded-xl font-bold transition">Generate Packing List</button>
+    <button id="fun-fact-btn" class="bg-purple-500 hover:bg-purple-600 text-white py-3 px-6 rounded-xl font-bold transition">Get a Fun Fact</button>
+  </div>
+</div>
+
+</div>
+
+</div>
+
+<script>
+const translations = {
+  en: { title: "Create Your Own Travel Planner (Enhanced)", language: "Language / 语言", budget: "Budget (Total)", currency: "Currency", travelers: "Travelers", destination: "Where are you going?", startDate: "Start Date", endDate: "End Date", transportation: "Transportation Type", air: "Air", train: "Train", car: "Car", publicTransit: "Public Transportation", boat: "Boat", bike: "Bike", cheapTickets: "Tips to Buy Cheap Tickets", pace: "Trip Pace", slow: "Slow", medium: "Medium", fast: "Fast", interests: "Interests / Theme", history: "History", hiddenGems: "Hidden Gems", landmarks: "Major Landmarks", unesco: "UNESCO Sites", foodie: "Foodie/Gourmet", adventure: "Adventure/Outdoors", culture: "Culture/Museums", relaxation: "Relaxation/Beaches", otherInterests: "Other interests...", additionalInstructions: "Additional Instructions for the Selections Above:", additionalInstructionsPlaceholder: "Enter specific instructions or details to guide your selections (e.g., 'Food: hidden restaurants popular with locals, not tourists. Please recommend some street food.')", generate: "Generate Itinerary", back: "← Back", errorDestination: "Please enter a destination.", errorDates: "Please select both dates.", errorDateOrder: "End date must be after start date." },
+  zh: { title: "创建您的旅行计划（增强版）", language: "语言 / Language", budget: "预算（总额）", currency: "货币", travelers: "旅行者人数", destination: "您要去哪里？", startDate: "开始日期", endDate: "结束日期", transportation: "交通方式", air: "飞机", train: "火车", car: "汽车", publicTransit: "公共交通", boat: "船", bike: "自行车", cheapTickets: "买便宜票的技巧", pace: "旅行节奏", slow: "慢", medium: "中等", fast: "快", interests: "兴趣 / 主题", history: "历史", hiddenGems: "隐藏宝石", landmarks: "主要地标", unesco: "联合国教科文组织遗址", foodie: "美食/美食家", adventure: "冒险/户外", culture: "文化/博物馆", relaxation: "放松/海滩", otherInterests: "其他兴趣...", additionalInstructions: "以上选择的附加说明：", additionalInstructionsPlaceholder: "输入具体说明或详细信息来指导您的选择（例如，'美食：当地人常去的隐藏餐厅，而非游客区。请推荐一些街头小吃。'）", generate: "生成行程", back: "← 返回", errorDestination: "请输入目的地。", errorDates: "请选择两个日期。", errorDateOrder: "结束日期必须晚于开始日期。" },
+  ja: { title: "旅行プランナーを作成（拡張版）", language: "言語 / Language", budget: "予算（合計）", currency: "通貨", travelers: "旅行者数", destination: "どこに行きますか？", startDate: "開始日", endDate: "終了日", transportation: "交通手段", air: "飛行機", train: "電車", car: "車", publicTransit: "公共交通機関", boat: "船", bike: "自転車", cheapTickets: "安いチケットの購入方法", pace: "旅行ペース", slow: "ゆっくり", medium: "中程度", fast: "速い", interests: "興味 / テーマ", history: "歴史", hiddenGems: "隠れた名所", landmarks: "主要ランドマーク", unesco: "ユネスコ遺産", foodie: "グルメ/美食家", adventure: "冒険/アウトドア", culture: "文化/博物館", relaxation: "リラックス/ビーチ", otherInterests: "その他の興味...", additionalInstructions: "上記選択の追加指示：", additionalInstructionsPlaceholder: "選択をガイドするための具体的な指示や詳細を入力してください（例：'食事：観光客向けではなく、地元の人に人気の隠れた店舗。屋台料理もおすすめしてください。'）", generate: "旅程を生成", back: "← 戻る", errorDestination: "目的地を入力してください。", errorDates: "両方の日付を選択してください。", errorDateOrder: "終了日は開始日より後でなければなりません。" },
+  de: { title: "Erstellen Sie Ihren eigenen Reiseplaner (Erweitert)", language: "Sprache / Language", budget: "Budget (Gesamt)", currency: "Währung", travelers: "Reisende", destination: "Wohin reisen Sie?", startDate: "Startdatum", endDate: "Enddatum", transportation: "Transportart", air: "Flugzeug", train: "Zug", car: "Auto", publicTransit: "Öffentliche Verkehrsmittel", boat: "Boot", bike: "Fahrrad", cheapTickets: "Tipps für günstige Tickets", pace: "Reisetempo", slow: "Langsam", medium: "Mittel", fast: "Schnell", interests: "Interessen / Thema", history: "Geschichte", hiddenGems: "Geheimtipps", landmarks: "Hauptsehenswürdigkeiten", unesco: "UNESCO-Stätten", foodie: "Feinschmecker/Gourmet", adventure: "Abenteuer/Outdoor", culture: "Kultur/Museen", relaxation: "Entspannung/Strände", otherInterests: "Andere Interessen...", additionalInstructions: "Zusätzliche Anweisungen für die obigen Auswahlen:", additionalInstructionsPlaceholder: "Geben Sie spezifische Anweisungen oder Details ein (z.B. 'Essen: versteckte Restaurants bei Einheimischen beliebt. Empfehlen Sie Straßenessen.')", generate: "Reiseplan erstellen", back: "← Zurück", errorDestination: "Bitte geben Sie ein Reiseziel ein.", errorDates: "Bitte wählen Sie beide Daten aus.", errorDateOrder: "Das Enddatum muss nach dem Startdatum liegen." },
+  es: { title: "Crea tu propio planificador de viajes (Mejorado)", language: "Idioma / Language", budget: "Presupuesto (Total)", currency: "Moneda", travelers: "Viajeros", destination: "¿A dónde vas?", startDate: "Fecha de inicio", endDate: "Fecha de fin", transportation: "Tipo de transporte", air: "Avión", train: "Tren", car: "Coche", publicTransit: "Transporte público", boat: "Barco", bike: "Bicicleta", cheapTickets: "Consejos para comprar billetes baratos", pace: "Ritmo del viaje", slow: "Lento", medium: "Medio", fast: "Rápido", interests: "Intereses / Tema", history: "Historia", hiddenGems: "Joyas ocultas", landmarks: "Monumentos principales", unesco: "Sitios UNESCO", foodie: "Gourmet/Gastronomía", adventure: "Aventura/Aire libre", culture: "Cultura/Museos", relaxation: "Relajación/Playas", otherInterests: "Otros intereses...", additionalInstructions: "Instrucciones adicionales para las selecciones anteriores:", additionalInstructionsPlaceholder: "Ingrese instrucciones específicas para guiar sus selecciones (ej., 'Comida: restaurantes escondidos populares entre locales. Recomiende comida callejera.')", generate: "Generar itinerario", back: "← Volver", errorDestination: "Por favor ingrese un destino.", errorDates: "Por favor seleccione ambas fechas.", errorDateOrder: "La fecha de fin debe ser posterior a la fecha de inicio." },
+  fr: { title: "Créez votre propre planificateur de voyage (Amélioré)", language: "Langue / Language", budget: "Budget (Total)", currency: "Devise", travelers: "Voyageurs", destination: "Où allez-vous?", startDate: "Date de début", endDate: "Date de fin", transportation: "Type de transport", air: "Avion", train: "Train", car: "Voiture", publicTransit: "Transport en commun", boat: "Bateau", bike: "Vélo", cheapTickets: "Conseils pour acheter des billets pas chers", pace: "Rythme du voyage", slow: "Lent", medium: "Moyen", fast: "Rapide", interests: "Intérêts / Thème", history: "Histoire", hiddenGems: "Joyaux cachés", landmarks: "Monuments majeurs", unesco: "Sites UNESCO", foodie: "Gastronomie/Gourmet", adventure: "Aventure/Plein air", culture: "Culture/Musées", relaxation: "Détente/Plages", otherInterests: "Autres intérêts...", additionalInstructions: "Instructions supplémentaires pour les sélections ci-dessus:", additionalInstructionsPlaceholder: "Entrez des instructions spécifiques pour guider vos sélections (ex., 'Nourriture: restaurants cachés populaires auprès des locaux. Recommandez de la nourriture de rue.')", generate: "Générer l'itinéraire", back: "← Retour", errorDestination: "Veuillez entrer une destination.", errorDates: "Veuillez sélectionner les deux dates.", errorDateOrder: "La date de fin doit être après la date de début." }
+};
+
+function updateLanguage(lang) {
+  const t = translations[lang];
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    if (t[key]) el.textContent = t[key];
+  });
+  document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+    const key = el.getAttribute('data-i18n-placeholder');
+    if (t[key]) el.placeholder = t[key];
+  });
+}
+
+let currentLang = 'en';
+
+// Global variables for Extra Tools
+var tripData = {
+  destination: '',
+  days: 0,
+  itinerary: '',
+  startDate: '',
+  endDate: '',
+  transportation: [],
+  travelers: 1
+};
+
+// Set minimum date to today
+const today = new Date().toISOString().split('T')[0];
+document.getElementById('start-date').setAttribute('min', today);
+document.getElementById('end-date').setAttribute('min', today);
+
+// Update end date minimum when start date changes
+document.getElementById('start-date').addEventListener('change', function() {
+  const startDate = this.value;
+  document.getElementById('end-date').setAttribute('min', startDate);
+});
+
+document.getElementById('language-select').addEventListener('change', (e) => {
+  currentLang = e.target.value;
+  updateLanguage(currentLang);
+});
+
+document.getElementById('generate-button').addEventListener('click', async () => {
+  const dest = document.getElementById('destination').value.trim();
+  const start = document.getElementById('start-date').value;
+  const end = document.getElementById('end-date').value;
+  const t = translations[currentLang];
+
+  if (!dest) {
+    alert(t.errorDestination);
+    return;
+  }
+  if (!start || !end) {
+    alert(t.errorDates);
+    return;
+  }
+  if (new Date(end) < new Date(start)) {
+    alert(t.errorDateOrder);
+    return;
+  }
+
+  document.getElementById('loading-overlay').style.display = 'flex';
+
+  const days = Math.floor((new Date(end) - new Date(start)) / (1000*3600*24)) + 1;
+  const pace = document.querySelector('input[name="pace"]:checked').value;
+  const interests = [...document.querySelectorAll('#checkbox-group input:checked')].map(i => i.value);
+  const other = document.getElementById('other-interests').value;
+  if (other) interests.push(other);
+  
+  const transportation = [...document.querySelectorAll('input[type="checkbox"][value="Air"], input[type="checkbox"][value="Train"], input[type="checkbox"][value="Car"], input[type="checkbox"][value="Public Transportation"], input[type="checkbox"][value="Boat"], input[type="checkbox"][value="Bike"]')].filter(cb => cb.checked).map(cb => cb.value);
+
+  // Get number of travelers
+  const travelersInput = document.querySelector('[data-i18n="travelers"]').parentElement.querySelector('input');
+  const travelers = parseInt(travelersInput.value) || 1;
+
+  // Check if cheap tickets checkbox is selected
+  const wantsCheapTickets = document.getElementById('cheap-tickets-checkbox').checked;
+
+  const langMap = {
+    en:"English", zh:"Simplified Chinese", ja:"Japanese",
+    de:"German", es:"Spanish", fr:"French"
+  };
+
+  const additionalInstructions = document.getElementById('additional-instructions').value.trim();
+
+  // Build ticket tips instruction if checkbox is selected and transportation is chosen
+  let ticketTipsInstruction = '';
+  if (wantsCheapTickets && transportation.length > 0) {
+    ticketTipsInstruction = `
+
+IMPORTANT: At the end of the itinerary, include a dedicated section titled "Tips to Buy Cheap Tickets" with practical advice for the selected transportation methods (${transportation.join(", ")}).
+
+For ${travelers} traveler(s), provide:
+1. Cost-saving options such as day passes, travel cards, group passes, and early-purchase discounts for each selected transportation type.
+2. ${travelers > 1 ? `Group-specific recommendations for ${travelers} travelers: group discounts, family passes, companion fares.` : 'Individual traveler tips: solo passes, flexible tickets.'}
+3. Recommended reliable websites or platforms to purchase tickets for each transportation type.
+4. Timing advice: when to book for best prices.`;
+  }
+
+  const prompt = `
+Generate a detailed ${days}-day travel itinerary for ${dest}.
+Write the response in ${langMap[currentLang]}.
+Trip pace: ${pace}.
+Themes: ${interests.join(", ")}.
+${transportation.length > 0 ? `Preferred transportation: ${transportation.join(", ")}.` : ''}
+${additionalInstructions ? `Additional instructions: ${additionalInstructions}` : ''}
+
+IMPORTANT - For EVERY place, attraction, restaurant, and activity mentioned in the itinerary, you MUST include:
+1. A Google Maps link in this exact format: https://www.google.com/maps/search/?api=1&query=PLACE+NAME+CITY (replace spaces with +). ALWAYS provide this for every place.
+2. Official website: ONLY include a website if you are certain it is a real, well-known official domain (e.g., https://www.louvre.fr, https://www.nps.gov). Only use the homepage or main domain. Do NOT guess or make up any URLs. If you are not 100% sure the website exists, write "Website: Search online for latest info" instead.
+3. Address (full street address)
+4. Opening hours (e.g., "Open: 9:00 AM - 5:00 PM, Closed Mondays")
+5. Entry fees or price range (e.g., "Fee: $15 adults, $10 children" or "Free admission" or "$$$ - expensive")
+
+Format each place like this:
+**Place Name**
+- Map: https://www.google.com/maps/search/?api=1&query=Place+Name+City
+- Website: https://www.officialsite.com (or "Search online for latest info")
+- Address: 123 Main Street, City
+- Hours: 9:00 AM - 6:00 PM daily
+- Fee: $20 per person
+
+CRITICAL: Never invent or guess website URLs. Only include URLs you are absolutely certain are real.
+${ticketTipsInstruction}
+`;
+
+  const result = await callGemini(prompt);
+  
+  document.getElementById('loading-overlay').style.display = 'none';
+
+  let finalResult = result;
+  
+  // If API failed, generate a sample itinerary
+  if (!result) {
+    finalResult = `# ${days}-Day Itinerary for ${dest}\n\n`;
+    finalResult += `*Note: Using sample itinerary due to API quota limit. Please add billing to your Google Cloud project or wait for quota reset.*\n\n`;
+    
+    for (let i = 1; i <= days; i++) {
+      finalResult += `## Day ${i}\n\n`;
+      finalResult += `### Morning\n- Explore local attractions and landmarks\n- Visit cultural sites and museums\n\n`;
+      finalResult += `### Afternoon\n- Enjoy lunch at a highly-rated local restaurant\n- Continue sightseeing: ${interests.slice(0,2).join(", ")}\n\n`;
+      finalResult += `### Evening\n- Dinner at a recommended restaurant\n- Optional evening activities (${pace} pace)\n\n`;
+    }
+    
+    finalResult += `## Travel Tips\n- Book accommodations in advance\n- Try local cuisine\n- Respect local customs\n- Plan for ${pace.toLowerCase()} pace\n\n`;
+    finalResult += `## Interests: ${interests.join(", ")}\n\n`;
+    
+    // Add ticket tips section for sample itinerary if checkbox is selected
+    if (wantsCheapTickets && transportation.length > 0) {
+      finalResult += `## Tips to Buy Cheap Tickets\n\n`;
+      finalResult += `*For ${travelers} traveler(s) using ${transportation.join(", ")}:*\n\n`;
+      
+      if (transportation.includes('Air')) {
+        finalResult += `### Air Travel\n- Book 6-8 weeks in advance for best prices\n- Use comparison sites: Skyscanner, Google Flights, Kayak\n- Consider budget airlines and flexible dates\n- ${travelers > 1 ? `Look for group booking discounts for ${travelers} travelers` : 'Check for last-minute deals'}\n\n`;
+      }
+      if (transportation.includes('Train')) {
+        finalResult += `### Train Travel\n- Consider rail passes (Eurail, JR Pass, etc.) for multi-day travel\n- Book advance tickets for significant savings\n- Travel during off-peak hours\n- ${travelers > 1 ? `Check for group/family rail passes for ${travelers} travelers` : 'Look for solo traveler passes'}\n\n`;
+      }
+      if (transportation.includes('Public Transportation')) {
+        finalResult += `### Public Transportation\n- Purchase day passes or tourist travel cards\n- Look for weekly passes if staying longer\n- Use local transit apps for best routes and prices\n- ${travelers > 1 ? `Check if group day passes are available for ${travelers} travelers` : 'Individual day passes often offer best value'}\n\n`;
+      }
+      if (transportation.includes('Car')) {
+        finalResult += `### Car Rental\n- Compare prices on Rentalcars.com, AutoEurope\n- Book in advance for better rates\n- ${travelers > 1 ? `Splitting costs among ${travelers} travelers makes car rental economical` : 'Consider if public transit might be cheaper'}\n\n`;
+      }
+      if (transportation.includes('Boat')) {
+        finalResult += `### Boat/Ferry\n- Book round-trip tickets for discounts\n- Check for seasonal promotions\n- ${travelers > 1 ? `Group rates may be available for ${travelers} travelers` : 'Check for solo traveler options'}\n\n`;
+      }
+      if (transportation.includes('Bike')) {
+        finalResult += `### Bike Rental\n- Look for bike-share programs in the city\n- Multi-day rentals often have discounted rates\n- ${travelers > 1 ? `Some rental shops offer group discounts for ${travelers}+ bikes` : 'Daily or hourly rentals for flexibility'}\n\n`;
+      }
+    }
+  }
+
+  // Store trip data for Extra Tools
+  // Store trip data for Extra Tools
+  tripData.destination = dest;
+  tripData.days = days;
+  tripData.itinerary = finalResult;
+  tripData.startDate = start;
+  tripData.endDate = end;
+  tripData.transportation = transportation;
+  tripData.travelers = travelers;
+
+  document.getElementById('results-title').textContent = `Your Trip: ${dest} (${days} days)`;
+  document.getElementById('content-display').innerHTML = linkifyUrls(marked.parse(finalResult));
+
+  document.getElementById('planning-view').classList.add('hidden');
+  document.getElementById('results-view').classList.remove('hidden');
+});
+
+// API calls go through the server-side route — API key is stored securely in Vercel environment variables
+async function callGemini(prompt) {
+  try {
+    const response = await fetch('/api/generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prompt })
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error('API error:', errorData);
+
+      if (response.status === 429) {
+        console.log('Quota exceeded - will use sample itinerary');
+        return '';
+      }
+
+      throw new Error(errorData.error || `API error: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data.text || '';
+  } catch (error) {
+    console.error('API error:', error);
+    return '';
+  }
+}
+
+// Function to convert URLs in text to clickable hyperlinks
+function linkifyUrls(html) {
+  // Split by existing anchor tags to avoid double-linkifying
+  const parts = html.split(/(<a[^>]*>.*?<\/a>)/gi);
+  
+  return parts.map(part => {
+    // If this part is an anchor tag, leave it alone
+    if (part.match(/^<a[^>]*>/i)) {
+      return part;
+    }
+    // Otherwise, linkify URLs in this part
+    return part.replace(/(https?:\/\/[^\s<>"']+)/g, '<a href="$1" target="_blank" class="text-blue-600 hover:text-blue-800 underline">$1</a>');
+  }).join('');
+}
+
+document.getElementById('back-button').addEventListener('click', () => {
+  document.getElementById('results-view').classList.add('hidden');
+  document.getElementById('planning-view').classList.remove('hidden');
+});
+
+// Download menu toggle
+document.getElementById('download-button').addEventListener('click', (e) => {
+  e.stopPropagation();
+  const menu = document.getElementById('download-menu');
+  menu.classList.toggle('hidden');
+});
+
+// Close menu when clicking outside
+document.addEventListener('click', () => {
+  document.getElementById('download-menu').classList.add('hidden');
+});
+
+// Download as Word
+document.getElementById('download-word').addEventListener('click', () => {
+  const content = tripData.itinerary;
+  const htmlContent = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <title>${tripData.destination} Itinerary</title>
+    </head>
+    <body>
+      <h1>Your Trip: ${tripData.destination} (${tripData.days} days)</h1>
+      <p><strong>Dates:</strong> ${tripData.startDate} to ${tripData.endDate}</p>
+      ${marked.parse(content)}
+    </body>
+    </html>
+  `;
+  
+  const blob = new Blob([htmlContent], { type: 'application/msword' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `${tripData.destination.replace(/\s+/g, '_')}_Itinerary.doc`;
+  a.click();
+  URL.revokeObjectURL(url);
+  document.getElementById('download-menu').classList.add('hidden');
+});
+
+// Download as PDF
+document.getElementById('download-pdf').addEventListener('click', () => {
+  const content = document.getElementById('content-display').innerHTML;
+  const printWindow = window.open('', '_blank');
+  printWindow.document.write(`
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <title>${tripData.destination} Itinerary</title>
+      <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 40px auto; padding: 20px; }
+        h1 { color: #2563eb; border-bottom: 3px solid #2563eb; padding-bottom: 10px; }
+        h2 { color: #1e40af; margin-top: 30px; }
+        h3 { color: #1e3a8a; }
+        p { line-height: 1.6; }
+        ul, ol { line-height: 1.8; }
+      </style>
+    </head>
+    <body>
+      <h1>Your Trip: ${tripData.destination} (${tripData.days} days)</h1>
+      <p><strong>Dates:</strong> ${tripData.startDate} to ${tripData.endDate}</p>
+      ${content}
+    </body>
+    </html>
+  `);
+  printWindow.document.close();
+  printWindow.onload = function() {
+    printWindow.print();
+    printWindow.close();
+  };
+  document.getElementById('download-menu').classList.add('hidden');
+});
+
+// Extra Tools functionality
+document.getElementById('update-itinerary-btn').addEventListener('click', async () => {
+  const instruction = document.getElementById('update-instruction').value.trim();
+  if (!instruction) {
+    alert('Please enter an instruction to update the itinerary.');
+    return;
+  }
+  
+  document.getElementById('loading-overlay').style.display = 'flex';
+  
+  // Check if cheap tickets checkbox is still selected and transportation was chosen
+  const wantsCheapTickets = document.getElementById('cheap-tickets-checkbox').checked;
+  let ticketTipsInstruction = '';
+  if (wantsCheapTickets && tripData.transportation && tripData.transportation.length > 0) {
+    ticketTipsInstruction = `
+
+IMPORTANT: Keep or update the "Tips to Buy Cheap Tickets" section at the end with practical advice for: ${tripData.transportation.join(", ")}.
+For ${tripData.travelers} traveler(s), include: cost-saving options (day passes, travel cards, group passes, early-purchase discounts), ${tripData.travelers > 1 ? 'group discounts and family passes' : 'solo traveler tips'}, and recommended websites to purchase tickets.`;
+  }
+  
+  const placeDetailsInstruction = `
+
+IMPORTANT: For EVERY place, attraction, restaurant, and activity in the updated itinerary, include:
+1. A Google Maps link: https://www.google.com/maps/search/?api=1&query=PLACE+NAME+CITY (replace spaces with +). ALWAYS provide this.
+2. Official website: ONLY if you are 100% certain it is real. Otherwise write "Website: Search online for latest info". NEVER guess or invent URLs.
+3. Address (full street address)
+4. Opening hours
+5. Entry fees or price range
+CRITICAL: Never invent or guess website URLs.`;
+  
+  const prompt = `Based on this itinerary:\n\n${tripData.itinerary}\n\nPlease update it with this instruction: ${instruction}${placeDetailsInstruction}${ticketTipsInstruction}`;
+  const result = await callGemini(prompt);
+  
+  document.getElementById('loading-overlay').style.display = 'none';
+  
+  if (result) {
+    tripData.itinerary = result;
+    document.getElementById('content-display').innerHTML = linkifyUrls(marked.parse(result));
+    document.getElementById('update-instruction').value = '';
+  }
+});
+
+document.getElementById('packing-list-btn').addEventListener('click', async () => {
+  document.getElementById('loading-overlay').style.display = 'flex';
+  
+  const prompt = `Generate a comprehensive packing list for a ${tripData.days}-day trip to ${tripData.destination} from ${tripData.startDate} to ${tripData.endDate}. 
+
+IMPORTANT: Consider the weather and season for these specific dates. Check what the typical weather is like in ${tripData.destination} during this time period and recommend appropriate clothing (warm/cold weather gear, rain protection, etc.).
+
+Also consider the activities mentioned in the itinerary and provide specific recommendations based on those activities.`;
+  
+  const result = await callGemini(prompt);
+  
+  document.getElementById('loading-overlay').style.display = 'none';
+  
+  if (result) {
+    document.getElementById('content-display').innerHTML += '<hr class="my-6"><h2>Packing List</h2>' + linkifyUrls(marked.parse(result));
+  }
+});
+
+document.getElementById('fun-fact-btn').addEventListener('click', async () => {
+  if (!tripData.destination) {
+    alert('Error: Destination not found. Please regenerate your itinerary.');
+    return;
+  }
+  
+  document.getElementById('loading-overlay').style.display = 'flex';
+  
+  const prompt = `Share one interesting and fun fact specifically about ${tripData.destination}. Make sure the fact is about ${tripData.destination} and not any other location.`;
+  const result = await callGemini(prompt);
+  
+  document.getElementById('loading-overlay').style.display = 'none';
+  
+  if (result) {
+    document.getElementById('content-display').innerHTML += '<hr class="my-6"><h2>Fun Fact About ' + tripData.destination + '</h2>' + linkifyUrls(marked.parse(result));
+  }
+});
+</script>
+
+</body>
+</html>
