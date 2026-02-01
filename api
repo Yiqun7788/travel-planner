@@ -1,0 +1,54 @@
+module.exports = async function handler(req, res) {
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
+
+  const API_KEY = process.env.GEMINI_API_KEY;
+
+  if (!API_KEY) {
+    return res.status(500).json({ error: 'API key not configured on server.' });
+  }
+
+  try {
+    const { prompt } = req.body;
+
+    if (!prompt) {
+      return res.status(400).json({ error: 'Prompt is required.' });
+    }
+
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${API_KEY}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }]
+        })
+      }
+    );
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      const status = response.status;
+
+      if (status === 429) {
+        return res.status(429).json({ error: 'API quota exceeded. Please try again later.' });
+      }
+
+      return res.status(status).json({ error: `Gemini API error: ${JSON.stringify(errorData)}` });
+    }
+
+    const data = await response.json();
+    const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+
+    if (!text) {
+      return res.status(500).json({ error: 'No text in Gemini response.' });
+    }
+
+    return res.status(200).json({ text });
+
+  } catch (error) {
+    console.error('Server error:', error);
+    return res.status(500).json({ error: 'Internal server error.' });
+  }
+};
