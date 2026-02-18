@@ -164,8 +164,9 @@ body { font-family: 'Inter', system-ui, sans-serif; background: #f1f5f9; }
       <h1 class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight" data-i18n="title">Travel Planner</h1>
       <p class="text-sky-100 mt-1 text-sm sm:text-base font-medium">AI-powered itineraries, tailored to you.</p>
     </div>
-    <div class="relative">
-      <select id="language-select" class="appearance-none bg-white/20 backdrop-blur text-white border border-white/30 rounded-lg px-3 py-2 pr-8 text-sm font-medium cursor-pointer focus:outline-none focus:ring-2 focus:ring-white/50" style="background-image: url('data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 fill=%22none%22 viewBox=%220 0 20 20%22><path stroke=%22white%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22 stroke-width=%222%22 d=%22M6 8l4 4 4-4%22/></svg>'); background-repeat: no-repeat; background-position: right 8px center; background-size: 16px;">
+    <div class="flex items-center gap-2">
+      <span class="text-white/80 text-sm hidden sm:inline">&#127760;</span>
+      <select id="language-select" class="bg-white text-slate-700 border border-white/30 rounded-lg px-3 py-2 text-sm font-medium cursor-pointer focus:outline-none focus:ring-2 focus:ring-white/50 shadow-sm">
         <option value="en">English</option>
         <option value="zh">简体中文</option>
         <option value="ja">日本語</option>
