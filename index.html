@@ -7,6 +7,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <script>
@@ -145,20 +147,32 @@ body { font-family: 'Inter', system-ui, sans-serif; background: #f1f5f9; }
 .tool-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
 .tool-btn:active { transform: translateY(0); }
 
-/* Route button */
-.route-btn {
-  display: inline-flex; align-items: center; gap: 8px;
-  background: linear-gradient(135deg, #0ea5e9, #6366f1);
-  color: white !important; font-weight: 600; font-size: 0.9rem;
-  padding: 12px 20px; border-radius: 12px;
-  text-decoration: none !important; transition: all 0.2s ease;
-  box-shadow: 0 3px 12px rgba(99, 102, 241, 0.3);
-  margin: 8px 0 16px 0;
+/* Route map container */
+.route-map-container {
+  margin: 12px 0 20px 0;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 2px solid #e2e8f0;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.08);
 }
-.route-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 5px 16px rgba(99, 102, 241, 0.4);
+.route-map-container .leaflet-container {
+  height: 300px; width: 100%;
+  border-radius: 12px 12px 0 0;
+}
+.route-map-link {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  background: linear-gradient(135deg, #0ea5e9, #6366f1);
+  color: white !important; font-weight: 600; font-size: 0.85rem;
+  padding: 10px 16px;
+  text-decoration: none !important; transition: all 0.2s ease;
+}
+.route-map-link:hover {
+  filter: brightness(1.1);
   color: white !important;
+}
+.green-flag-marker {
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px; line-height: 1;
 }
 </style>
 </head>
@@ -504,15 +518,15 @@ Format each place like this:
 CRITICAL: Never invent or guess website URLs. Only include URLs you are absolutely certain are real.
 
 DAILY ROUTE MAP - VERY IMPORTANT:
-At the VERY BEGINNING of each day (right after the day heading like "## Day 1"), you MUST include a daily route link.
+At the VERY BEGINNING of each day (right after the day heading like "## Day 1"), you MUST include a daily route data block.
 - Arrange all places for that day in the most time-efficient route order to minimize travel time.
-- Create a Google Maps Directions URL that chains ALL the day's places together in this exact format:
-  DailyRoute: https://www.google.com/maps/dir/Place+A+${dest.replace(/\s+/g, '+')}/Place+B+${dest.replace(/\s+/g, '+')}/Place+C+${dest.replace(/\s+/g, '+')}/?travelmode=${travelMode}
-- Replace spaces with + in place names. Include the city name after each place.
-- The URL must start with "DailyRoute: " prefix so it can be detected.
-- Include ALL places for that day in the URL, in optimal visiting order.
-- Example for a day with 3 stops:
-  DailyRoute: https://www.google.com/maps/dir/Eiffel+Tower+Paris/Louvre+Museum+Paris/Notre+Dame+Paris/?travelmode=${travelMode}
+- Output the route data in this EXACT format on a single line (this will be parsed by code):
+  <!--ROUTE_DATA:{"stops":[{"name":"Place A","lat":12.345,"lng":67.890},{"name":"Place B","lat":12.346,"lng":67.891}],"mapsUrl":"https://www.google.com/maps/dir/Place+A+${dest.replace(/\s+/g, '+')}/Place+B+${dest.replace(/\s+/g, '+')}/?travelmode=${travelMode}"}-->
+- The lat and lng values MUST be accurate real-world coordinates for each place. Use your knowledge of geography to provide correct coordinates.
+- The mapsUrl should chain all places in optimal order as a Google Maps Directions URL with travelmode=${travelMode}.
+- Include ALL places for that day.
+- Example for Paris with 3 stops:
+  <!--ROUTE_DATA:{"stops":[{"name":"Eiffel Tower","lat":48.8584,"lng":2.2945},{"name":"Louvre Museum","lat":48.8606,"lng":2.3376},{"name":"Notre-Dame","lat":48.8530,"lng":2.3499}],"mapsUrl":"https://www.google.com/maps/dir/Eiffel+Tower+Paris/Louvre+Museum+Paris/Notre+Dame+Paris/?travelmode=${travelMode}"}-->
 ${ticketTipsInstruction}
 `;
 
@@ -573,7 +587,7 @@ ${ticketTipsInstruction}
   tripData.travelers = travelers;
 
   document.getElementById('results-title').textContent = `Your Trip: ${dest} (${days} days)`;
-  document.getElementById('content-display').innerHTML = linkifyUrls(embedRoutes(marked.parse(finalResult)));
+  setContentAndRunScripts(document.getElementById('content-display'), linkifyUrls(embedRoutes(marked.parse(finalResult))), false);
 
   document.getElementById('planning-view').classList.add('hidden');
   document.getElementById('results-view').classList.remove('hidden');
@@ -608,12 +622,73 @@ async function callGemini(prompt) {
   }
 }
 
-// Function to convert Google Maps direction URLs into styled route buttons
+// Helper: set innerHTML and execute any inline scripts
+function setContentAndRunScripts(el, html, append) {
+  if (append) {
+    el.innerHTML += html;
+  } else {
+    el.innerHTML = html;
+  }
+  el.querySelectorAll('script').forEach(oldScript => {
+    const newScript = document.createElement('script');
+    newScript.textContent = oldScript.textContent;
+    oldScript.parentNode.replaceChild(newScript, oldScript);
+  });
+}
+
+// Counter for unique map IDs
+let routeMapCounter = 0;
+
+// Function to convert route data into interactive Leaflet maps with green flags
 function embedRoutes(html) {
+  routeMapCounter = 0;
   return html.replace(
-    /DailyRoute:\s*(https:\/\/www\.google\.com\/maps\/dir\/[^\s<>"']+)/g,
-    (match, url) => {
-      return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="route-btn">&#128506; View Optimized Route on Google Maps</a>`;
+    /<!--ROUTE_DATA:(.*?)-->/g,
+    (match, jsonStr) => {
+      try {
+        const data = JSON.parse(jsonStr);
+        const stops = data.stops;
+        const mapsUrl = data.mapsUrl;
+        if (!stops || stops.length === 0) return '';
+        const mapId = 'route-map-' + (routeMapCounter++);
+        const stopsJson = JSON.stringify(stops);
+        return `<div class="route-map-container">
+          <div id="${mapId}" style="height:300px;width:100%;"></div>
+          <a href="${mapsUrl}" target="_blank" rel="noopener noreferrer" class="route-map-link">&#128506; Open Full Route in Google Maps</a>
+        </div>
+        <script>
+        (function() {
+          var stops = ${stopsJson};
+          var map = L.map('${mapId}', { scrollWheelZoom: false });
+          L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap'
+          }).addTo(map);
+          var bounds = [];
+          var latlngs = [];
+          stops.forEach(function(stop, i) {
+            var ll = [stop.lat, stop.lng];
+            bounds.push(ll);
+            latlngs.push(ll);
+            var icon = L.divIcon({
+              className: 'green-flag-marker',
+              html: '<span style="font-size:28px;">&#128681;</span>',
+              iconSize: [30, 36],
+              iconAnchor: [15, 36],
+              popupAnchor: [0, -36]
+            });
+            L.marker(ll, { icon: icon })
+              .addTo(map)
+              .bindPopup('<strong>' + (i+1) + '. ' + stop.name + '</strong>');
+          });
+          if (latlngs.length > 1) {
+            L.polyline(latlngs, { color: '#6366f1', weight: 3, opacity: 0.7, dashArray: '8 6' }).addTo(map);
+          }
+          map.fitBounds(bounds, { padding: [40, 40] });
+        })();
+        <\/script>`;
+      } catch(e) {
+        return '';
+      }
     }
   );
 }
@@ -742,9 +817,9 @@ IMPORTANT: For EVERY place, attraction, restaurant, and activity in the updated 
 5. Entry fees or price range
 CRITICAL: Never invent or guess website URLs.
 
-Also at the BEGINNING of each day, include a daily route link in this format:
-DailyRoute: https://www.google.com/maps/dir/Place+A/Place+B/Place+C/?travelmode=driving
-Chain all places for that day in optimal time-saving order. Replace spaces with +.`;
+Also at the BEGINNING of each day, include route data in this EXACT format on a single line:
+<!--ROUTE_DATA:{"stops":[{"name":"Place A","lat":12.345,"lng":67.890},{"name":"Place B","lat":12.346,"lng":67.891}],"mapsUrl":"https://www.google.com/maps/dir/Place+A/Place+B/?travelmode=driving"}-->
+Use accurate real-world coordinates. Chain all places in optimal time-saving order.`;
 
   const prompt = `Based on this itinerary:\n\n${tripData.itinerary}\n\nPlease update it with this instruction: ${instruction}${placeDetailsInstruction}${ticketTipsInstruction}`;
   const result = await callGemini(prompt);
@@ -753,7 +828,7 @@ Chain all places for that day in optimal time-saving order. Replace spaces with 
 
   if (result) {
     tripData.itinerary = result;
-    document.getElementById('content-display').innerHTML = linkifyUrls(embedRoutes(marked.parse(result)));
+    setContentAndRunScripts(document.getElementById('content-display'), linkifyUrls(embedRoutes(marked.parse(result))), false);
     document.getElementById('update-instruction').value = '';
   }
 });
@@ -772,7 +847,7 @@ Also consider the activities mentioned in the itinerary and provide specific rec
   document.getElementById('loading-overlay').style.display = 'none';
 
   if (result) {
-    document.getElementById('content-display').innerHTML += '<hr class="my-6"><h2>Packing List</h2>' + linkifyUrls(embedRoutes(marked.parse(result)));
+    setContentAndRunScripts(document.getElementById('content-display'), '<hr class="my-6"><h2>Packing List</h2>' + linkifyUrls(embedRoutes(marked.parse(result))), true);
   }
 });
 
@@ -790,7 +865,7 @@ document.getElementById('fun-fact-btn').addEventListener('click', async () => {
   document.getElementById('loading-overlay').style.display = 'none';
 
   if (result) {
-    document.getElementById('content-display').innerHTML += '<hr class="my-6"><h2>Fun Fact About ' + tripData.destination + '</h2>' + linkifyUrls(embedRoutes(marked.parse(result)));
+    setContentAndRunScripts(document.getElementById('content-display'), '<hr class="my-6"><h2>Fun Fact About ' + tripData.destination + '</h2>' + linkifyUrls(embedRoutes(marked.parse(result))), true);
   }
 });
 </script>
