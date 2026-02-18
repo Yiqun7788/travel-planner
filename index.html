@@ -170,10 +170,8 @@ body { font-family: 'Inter', system-ui, sans-serif; background: #f1f5f9; }
   filter: brightness(1.1);
   color: white !important;
 }
-.green-flag-marker {
-  display: flex; align-items: center; justify-content: center;
-  font-size: 22px; line-height: 1;
-}
+/* Leaflet marker icon reset */
+.leaflet-div-icon { background: none !important; border: none !important; }
 </style>
 </head>
 <body>
@@ -587,7 +585,8 @@ ${ticketTipsInstruction}
   tripData.travelers = travelers;
 
   document.getElementById('results-title').textContent = `Your Trip: ${dest} (${days} days)`;
-  setContentAndRunScripts(document.getElementById('content-display'), linkifyUrls(embedRoutes(marked.parse(finalResult))), false);
+  document.getElementById('content-display').innerHTML = linkifyUrls(embedRoutes(marked.parse(finalResult)));
+  initRouteMaps();
 
   document.getElementById('planning-view').classList.add('hidden');
   document.getElementById('results-view').classList.remove('hidden');
@@ -623,74 +622,103 @@ async function callGemini(prompt) {
 }
 
 // Helper: set innerHTML and execute any inline scripts
-function setContentAndRunScripts(el, html, append) {
-  if (append) {
-    el.innerHTML += html;
-  } else {
-    el.innerHTML = html;
-  }
-  el.querySelectorAll('script').forEach(oldScript => {
-    const newScript = document.createElement('script');
-    newScript.textContent = oldScript.textContent;
-    oldScript.parentNode.replaceChild(newScript, oldScript);
-  });
-}
-
 // Counter for unique map IDs
 let routeMapCounter = 0;
 
-// Function to convert route data into interactive Leaflet maps with green flags
+// Function to convert route data into map placeholder divs
 function embedRoutes(html) {
   routeMapCounter = 0;
   return html.replace(
+    /&lt;!--ROUTE_DATA:(.*?)--&gt;/g,
+    (match, jsonStr) => {
+      try {
+        const decoded = jsonStr.replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&lt;/g, '<').replace(/&gt;/g, '>');
+        const data = JSON.parse(decoded);
+        if (!data.stops || data.stops.length === 0) return '';
+        const mapId = 'route-map-' + (routeMapCounter++);
+        const safeData = JSON.stringify(data).replace(/'/g, '&#39;');
+        return `<div class="route-map-container"><div class="route-map-placeholder" id="${mapId}" data-route='${safeData}' style="height:300px;width:100%;"></div></div>`;
+      } catch(e) {
+        return '';
+      }
+    }
+  ).replace(
     /<!--ROUTE_DATA:(.*?)-->/g,
     (match, jsonStr) => {
       try {
         const data = JSON.parse(jsonStr);
-        const stops = data.stops;
-        const mapsUrl = data.mapsUrl;
-        if (!stops || stops.length === 0) return '';
+        if (!data.stops || data.stops.length === 0) return '';
         const mapId = 'route-map-' + (routeMapCounter++);
-        const stopsJson = JSON.stringify(stops);
-        return `<div class="route-map-container">
-          <div id="${mapId}" style="height:300px;width:100%;"></div>
-          <a href="${mapsUrl}" target="_blank" rel="noopener noreferrer" class="route-map-link">&#128506; Open Full Route in Google Maps</a>
-        </div>
-        <script>
-        (function() {
-          var stops = ${stopsJson};
-          var map = L.map('${mapId}', { scrollWheelZoom: false });
-          L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; OpenStreetMap'
-          }).addTo(map);
-          var bounds = [];
-          var latlngs = [];
-          stops.forEach(function(stop, i) {
-            var ll = [stop.lat, stop.lng];
-            bounds.push(ll);
-            latlngs.push(ll);
-            var icon = L.divIcon({
-              className: 'green-flag-marker',
-              html: '<span style="font-size:28px;">&#128681;</span>',
-              iconSize: [30, 36],
-              iconAnchor: [15, 36],
-              popupAnchor: [0, -36]
-            });
-            L.marker(ll, { icon: icon })
-              .addTo(map)
-              .bindPopup('<strong>' + (i+1) + '. ' + stop.name + '</strong>');
-          });
-          if (latlngs.length > 1) {
-            L.polyline(latlngs, { color: '#6366f1', weight: 3, opacity: 0.7, dashArray: '8 6' }).addTo(map);
-          }
-          map.fitBounds(bounds, { padding: [40, 40] });
-        })();
-        <\/script>`;
+        const safeData = JSON.stringify(data).replace(/'/g, '&#39;');
+        return `<div class="route-map-container"><div class="route-map-placeholder" id="${mapId}" data-route='${safeData}' style="height:300px;width:100%;"></div></div>`;
       } catch(e) {
         return '';
       }
     }
   );
+}
+
+// Initialize all Leaflet maps from placeholder divs
+function initRouteMaps() {
+  setTimeout(() => {
+    document.querySelectorAll('.route-map-placeholder').forEach(div => {
+      if (div.dataset.initialized) return;
+      div.dataset.initialized = 'true';
+      try {
+        const data = JSON.parse(div.dataset.route);
+        const stops = data.stops;
+        const mapsUrl = data.mapsUrl || '';
+
+        const map = L.map(div.id, { scrollWheelZoom: false });
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '&copy; OpenStreetMap'
+        }).addTo(map);
+
+        const latlngs = [];
+        stops.forEach((stop, i) => {
+          const ll = [stop.lat, stop.lng];
+          latlngs.push(ll);
+
+          const greenIcon = L.divIcon({
+            className: '',
+            html: `<svg width="28" height="36" viewBox="0 0 28 36" xmlns="http://www.w3.org/2000/svg">
+              <path d="M14 0C6.3 0 0 6.3 0 14c0 10.5 14 22 14 22s14-11.5 14-22C28 6.3 21.7 0 14 0z" fill="#16a34a"/>
+              <circle cx="14" cy="13" r="7" fill="white"/>
+              <text x="14" y="17" text-anchor="middle" font-size="11" font-weight="bold" fill="#16a34a">${i + 1}</text>
+            </svg>`,
+            iconSize: [28, 36],
+            iconAnchor: [14, 36],
+            popupAnchor: [0, -36]
+          });
+
+          L.marker(ll, { icon: greenIcon })
+            .addTo(map)
+            .bindPopup('<strong>' + (i + 1) + '. ' + stop.name + '</strong>');
+        });
+
+        if (latlngs.length > 1) {
+          L.polyline(latlngs, { color: '#6366f1', weight: 4, opacity: 0.8, dashArray: '10 8' }).addTo(map);
+        }
+
+        if (latlngs.length > 0) {
+          map.fitBounds(latlngs, { padding: [50, 50], maxZoom: 15 });
+        }
+
+        // Add Google Maps link below the map
+        if (mapsUrl) {
+          const linkEl = document.createElement('a');
+          linkEl.href = mapsUrl;
+          linkEl.target = '_blank';
+          linkEl.rel = 'noopener noreferrer';
+          linkEl.className = 'route-map-link';
+          linkEl.innerHTML = '&#128506; Open Full Route in Google Maps';
+          div.parentElement.appendChild(linkEl);
+        }
+      } catch(e) {
+        console.error('Route map error:', e);
+      }
+    });
+  }, 100);
 }
 
 // Function to convert URLs in text to clickable hyperlinks
@@ -828,7 +856,8 @@ Use accurate real-world coordinates. Chain all places in optimal time-saving ord
 
   if (result) {
     tripData.itinerary = result;
-    setContentAndRunScripts(document.getElementById('content-display'), linkifyUrls(embedRoutes(marked.parse(result))), false);
+    document.getElementById('content-display').innerHTML = linkifyUrls(embedRoutes(marked.parse(result)));
+    initRouteMaps();
     document.getElementById('update-instruction').value = '';
   }
 });
@@ -847,7 +876,8 @@ Also consider the activities mentioned in the itinerary and provide specific rec
   document.getElementById('loading-overlay').style.display = 'none';
 
   if (result) {
-    setContentAndRunScripts(document.getElementById('content-display'), '<hr class="my-6"><h2>Packing List</h2>' + linkifyUrls(embedRoutes(marked.parse(result))), true);
+    document.getElementById('content-display').innerHTML += '<hr class="my-6"><h2>Packing List</h2>' + linkifyUrls(embedRoutes(marked.parse(result)));
+    initRouteMaps();
   }
 });
 
@@ -865,7 +895,8 @@ document.getElementById('fun-fact-btn').addEventListener('click', async () => {
   document.getElementById('loading-overlay').style.display = 'none';
 
   if (result) {
-    setContentAndRunScripts(document.getElementById('content-display'), '<hr class="my-6"><h2>Fun Fact About ' + tripData.destination + '</h2>' + linkifyUrls(embedRoutes(marked.parse(result))), true);
+    document.getElementById('content-display').innerHTML += '<hr class="my-6"><h2>Fun Fact About ' + tripData.destination + '</h2>' + linkifyUrls(embedRoutes(marked.parse(result)));
+    initRouteMaps();
   }
 });
 </script>
