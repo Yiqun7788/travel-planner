@@ -144,6 +144,22 @@ body { font-family: 'Inter', system-ui, sans-serif; background: #f1f5f9; }
 }
 .tool-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
 .tool-btn:active { transform: translateY(0); }
+
+/* Route button */
+.route-btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: linear-gradient(135deg, #0ea5e9, #6366f1);
+  color: white !important; font-weight: 600; font-size: 0.9rem;
+  padding: 12px 20px; border-radius: 12px;
+  text-decoration: none !important; transition: all 0.2s ease;
+  box-shadow: 0 3px 12px rgba(99, 102, 241, 0.3);
+  margin: 8px 0 16px 0;
+}
+.route-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 16px rgba(99, 102, 241, 0.4);
+  color: white !important;
+}
 </style>
 </head>
 <body>
@@ -442,6 +458,12 @@ document.getElementById('generate-button').addEventListener('click', async () =>
 
   const additionalInstructions = document.getElementById('additional-instructions').value.trim();
 
+  // Determine Google Maps travel mode from selected transportation
+  let travelMode = 'driving';
+  if (transportation.includes('Public Transportation')) travelMode = 'transit';
+  else if (transportation.includes('Bike')) travelMode = 'bicycling';
+  else if (transportation.includes('Car')) travelMode = 'driving';
+
   // Build ticket tips instruction if checkbox is selected and transportation is chosen
   let ticketTipsInstruction = '';
   if (wantsCheapTickets && transportation.length > 0) {
@@ -480,6 +502,17 @@ Format each place like this:
 - Fee: $20 per person
 
 CRITICAL: Never invent or guess website URLs. Only include URLs you are absolutely certain are real.
+
+DAILY ROUTE MAP - VERY IMPORTANT:
+At the VERY BEGINNING of each day (right after the day heading like "## Day 1"), you MUST include a daily route link.
+- Arrange all places for that day in the most time-efficient route order to minimize travel time.
+- Create a Google Maps Directions URL that chains ALL the day's places together in this exact format:
+  DailyRoute: https://www.google.com/maps/dir/Place+A+${dest.replace(/\s+/g, '+')}/Place+B+${dest.replace(/\s+/g, '+')}/Place+C+${dest.replace(/\s+/g, '+')}/?travelmode=${travelMode}
+- Replace spaces with + in place names. Include the city name after each place.
+- The URL must start with "DailyRoute: " prefix so it can be detected.
+- Include ALL places for that day in the URL, in optimal visiting order.
+- Example for a day with 3 stops:
+  DailyRoute: https://www.google.com/maps/dir/Eiffel+Tower+Paris/Louvre+Museum+Paris/Notre+Dame+Paris/?travelmode=${travelMode}
 ${ticketTipsInstruction}
 `;
 
@@ -540,7 +573,7 @@ ${ticketTipsInstruction}
   tripData.travelers = travelers;
 
   document.getElementById('results-title').textContent = `Your Trip: ${dest} (${days} days)`;
-  document.getElementById('content-display').innerHTML = linkifyUrls(marked.parse(finalResult));
+  document.getElementById('content-display').innerHTML = linkifyUrls(embedRoutes(marked.parse(finalResult)));
 
   document.getElementById('planning-view').classList.add('hidden');
   document.getElementById('results-view').classList.remove('hidden');
@@ -573,6 +606,16 @@ async function callGemini(prompt) {
     console.error('API error:', error);
     return '';
   }
+}
+
+// Function to convert Google Maps direction URLs into styled route buttons
+function embedRoutes(html) {
+  return html.replace(
+    /DailyRoute:\s*(https:\/\/www\.google\.com\/maps\/dir\/[^\s<>"']+)/g,
+    (match, url) => {
+      return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="route-btn">&#128506; View Optimized Route on Google Maps</a>`;
+    }
+  );
 }
 
 // Function to convert URLs in text to clickable hyperlinks
@@ -697,7 +740,11 @@ IMPORTANT: For EVERY place, attraction, restaurant, and activity in the updated 
 3. Address (full street address)
 4. Opening hours
 5. Entry fees or price range
-CRITICAL: Never invent or guess website URLs.`;
+CRITICAL: Never invent or guess website URLs.
+
+Also at the BEGINNING of each day, include a daily route link in this format:
+DailyRoute: https://www.google.com/maps/dir/Place+A/Place+B/Place+C/?travelmode=driving
+Chain all places for that day in optimal time-saving order. Replace spaces with +.`;
 
   const prompt = `Based on this itinerary:\n\n${tripData.itinerary}\n\nPlease update it with this instruction: ${instruction}${placeDetailsInstruction}${ticketTipsInstruction}`;
   const result = await callGemini(prompt);
@@ -706,7 +753,7 @@ CRITICAL: Never invent or guess website URLs.`;
 
   if (result) {
     tripData.itinerary = result;
-    document.getElementById('content-display').innerHTML = linkifyUrls(marked.parse(result));
+    document.getElementById('content-display').innerHTML = linkifyUrls(embedRoutes(marked.parse(result)));
     document.getElementById('update-instruction').value = '';
   }
 });
@@ -725,7 +772,7 @@ Also consider the activities mentioned in the itinerary and provide specific rec
   document.getElementById('loading-overlay').style.display = 'none';
 
   if (result) {
-    document.getElementById('content-display').innerHTML += '<hr class="my-6"><h2>Packing List</h2>' + linkifyUrls(marked.parse(result));
+    document.getElementById('content-display').innerHTML += '<hr class="my-6"><h2>Packing List</h2>' + linkifyUrls(embedRoutes(marked.parse(result)));
   }
 });
 
@@ -743,7 +790,7 @@ document.getElementById('fun-fact-btn').addEventListener('click', async () => {
   document.getElementById('loading-overlay').style.display = 'none';
 
   if (result) {
-    document.getElementById('content-display').innerHTML += '<hr class="my-6"><h2>Fun Fact About ' + tripData.destination + '</h2>' + linkifyUrls(marked.parse(result));
+    document.getElementById('content-display').innerHTML += '<hr class="my-6"><h2>Fun Fact About ' + tripData.destination + '</h2>' + linkifyUrls(embedRoutes(marked.parse(result)));
   }
 });
 </script>
