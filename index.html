@@ -360,6 +360,16 @@ function updateLanguage(lang) {
 
 let currentLang = 'en';
 
+// Configure marked to open all links in new tabs
+marked.use({
+  renderer: {
+    link({ href, title, text }) {
+      const titleAttr = title ? ` title="${title}"` : '';
+      return `<a href="${href}"${titleAttr} target="_blank" rel="noopener noreferrer">${text}</a>`;
+    }
+  }
+});
+
 // Global variables for Extra Tools
 var tripData = {
   destination: '',
