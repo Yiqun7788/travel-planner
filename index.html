@@ -674,7 +674,7 @@ document.getElementById('download-word').addEventListener('click', () => {
     <body>
       <h1>Your Trip: ${tripData.destination} (${tripData.days} days)</h1>
       <p><strong>Dates:</strong> ${tripData.startDate} to ${tripData.endDate}</p>
-      ${marked.parse(content)}
+      ${linkifyUrls(embedRoutes(marked.parse(content)))}
     </body>
     </html>
   `;
