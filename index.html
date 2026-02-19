@@ -672,7 +672,7 @@ ${ticketTipsInstruction}
 
   document.getElementById('results-title').textContent = `Your Trip: ${dest} (${days} days)`;
   const routeMapHtml = buildLongDistanceRouteMap(dest, longDistance);
-  const cheapTicketsLink = wantsCheapTickets && transportation.length > 0
+  const cheapTicketsLink = wantsCheapTickets
     ? `<a href="#cheap-tickets-section" style="display:inline-flex;align-items:center;gap:8px;background:linear-gradient(135deg,#f59e0b,#d97706);color:white !important;font-weight:700;font-size:0.95rem;padding:12px 20px;border-radius:12px;text-decoration:none !important;margin-bottom:16px;box-shadow:0 2px 8px rgba(245,158,11,0.3);transition:all 0.2s ease;">&#128176; Jump to Tips to Buy Cheap Tickets</a>`
     : '';
   document.getElementById('content-display').innerHTML = routeMapHtml + cheapTicketsLink + linkifyUrls(highlightCheapTickets(marked.parse(processDailyRoutes(finalResult))));
@@ -822,7 +822,7 @@ document.getElementById('download-word').addEventListener('click', () => {
       <h1>Your Trip: ${tripData.destination} (${tripData.days} days)</h1>
       <p><strong>Dates:</strong> ${tripData.startDate} to ${tripData.endDate}</p>
       ${routeOverview}
-      ${document.getElementById('cheap-tickets-checkbox').checked && (tripData.transportation || []).length > 0 ? '<a href="#cheap-tickets-section" style="display:inline-block;background:#d97706;color:white;font-weight:700;padding:10px 18px;border-radius:8px;text-decoration:none;margin:8px 0;">&#128176; Jump to Tips to Buy Cheap Tickets</a>' : ''}
+      ${document.getElementById('cheap-tickets-checkbox').checked ? '<a href="#cheap-tickets-section" style="display:inline-block;background:#d97706;color:white;font-weight:700;padding:10px 18px;border-radius:8px;text-decoration:none;margin:8px 0;">&#128176; Jump to Tips to Buy Cheap Tickets</a>' : ''}
       ${linkifyUrls(highlightCheapTickets(marked.parse(processDailyRoutes(content))))}
     </body>
     </html>
