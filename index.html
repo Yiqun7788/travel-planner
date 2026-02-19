@@ -754,19 +754,21 @@ function processDailyRoutes(markdown) {
 
 // Highlight the "Tips to Buy Cheap Tickets" section with anchor and styled wrapper
 function highlightCheapTickets(html) {
-  // Find the cheap tickets heading (match various formats the AI might use)
-  const headingRegex = /<h[23][^>]*>.*?(?:Tips to Buy Cheap Tickets|Cheap Ticket|Budget.*?Ticket).*?<\/h[23]>/i;
-  const match = html.match(headingRegex);
-  if (!match) return html;
-
-  const headingIndex = html.indexOf(match[0]);
-  const beforeSection = html.substring(0, headingIndex);
-  const fromSection = html.substring(headingIndex);
-
-  return beforeSection +
-    `<div id="cheap-tickets-section" style="background:linear-gradient(135deg,#fffbeb,#fef3c7);border:2px solid #f59e0b;border-radius:16px;padding:20px 24px;margin-top:2rem;">` +
-    fromSection +
-    `</div>`;
+  return html.replace(
+    /(<h2[^>]*>)(.*?Tips to Buy Cheap Tickets.*?)(<\/h2>)/i,
+    (match, openTag, content, closeTag) => {
+      return `<div id="cheap-tickets-section" style="background:linear-gradient(135deg,#fffbeb,#fef3c7);border:2px solid #f59e0b;border-radius:16px;padding:20px 24px;margin-top:2rem;">` +
+        openTag.replace('>', ' style="color:#b45309;margin-top:0;">') +
+        `&#128176; ` + content + closeTag;
+    }
+  ).replace(
+    // Close the wrapper div at the end of the section (before next h2 or end of content)
+    /(<div id="cheap-tickets-section"[\s\S]*?)(<h2|$)/i,
+    (match, section, next) => {
+      if (next === '') return section + '</div>';
+      return section + '</div>' + next;
+    }
+  );
 }
 
 // Function to convert URLs in text to clickable hyperlinks
