@@ -822,6 +822,7 @@ document.getElementById('download-word').addEventListener('click', () => {
       <h1>Your Trip: ${tripData.destination} (${tripData.days} days)</h1>
       <p><strong>Dates:</strong> ${tripData.startDate} to ${tripData.endDate}</p>
       ${routeOverview}
+      ${document.getElementById('cheap-tickets-checkbox').checked && (tripData.transportation || []).length > 0 ? '<a href="#cheap-tickets-section" style="display:inline-block;background:#d97706;color:white;font-weight:700;padding:10px 18px;border-radius:8px;text-decoration:none;margin:8px 0;">&#128176; Jump to Tips to Buy Cheap Tickets</a>' : ''}
       ${linkifyUrls(highlightCheapTickets(marked.parse(processDailyRoutes(content))))}
     </body>
     </html>
