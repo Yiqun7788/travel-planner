@@ -695,11 +695,17 @@ async function callGemini(prompt) {
       const errorData = await response.json();
       console.error('API error:', errorData);
 
+      const errBanner = document.getElementById('error-message');
       if (response.status === 429) {
-        console.log('Quota exceeded - will use sample itinerary');
+        errBanner.textContent = 'API quota exceeded. Using sample itinerary. Please try again later.';
+        errBanner.classList.remove('hidden');
+        setTimeout(() => errBanner.classList.add('hidden'), 8000);
         return '';
       }
 
+      errBanner.textContent = `API error: ${errorData.error || response.status}`;
+      errBanner.classList.remove('hidden');
+      setTimeout(() => errBanner.classList.add('hidden'), 8000);
       throw new Error(errorData.error || `API error: ${response.status}`);
     }
 
@@ -707,6 +713,12 @@ async function callGemini(prompt) {
     return data.text || '';
   } catch (error) {
     console.error('API error:', error);
+    const errBanner = document.getElementById('error-message');
+    if (!errBanner.textContent) {
+      errBanner.textContent = `Connection error: ${error.message}`;
+      errBanner.classList.remove('hidden');
+      setTimeout(() => errBanner.classList.add('hidden'), 8000);
+    }
     return '';
   }
 }
