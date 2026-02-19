@@ -757,13 +757,13 @@ function highlightCheapTickets(html) {
   return html.replace(
     /(<h2[^>]*>)(.*?Tips to Buy Cheap Tickets.*?)(<\/h2>)/i,
     (match, openTag, content, closeTag) => {
-      return `<div id="cheap-tickets-section" style="background:linear-gradient(135deg,#fffbeb,#fef3c7);border:2px solid #f59e0b;border-radius:16px;padding:20px 24px;margin-top:2rem;">` +
+      return `<a name="cheap-tickets-section" id="cheap-tickets-section"></a><div style="background:linear-gradient(135deg,#fffbeb,#fef3c7);border:2px solid #f59e0b;border-radius:16px;padding:20px 24px;margin-top:2rem;">` +
         openTag.replace('>', ' style="color:#b45309;margin-top:0;">') +
         `&#128176; ` + content + closeTag;
     }
   ).replace(
     // Close the wrapper div at the end of the section (before next h2 or end of content)
-    /(<div id="cheap-tickets-section"[\s\S]*?)(<h2|$)/i,
+    /(<a name="cheap-tickets-section"[\s\S]*?)(<h2|$)/i,
     (match, section, next) => {
       if (next === '') return section + '</div>';
       return section + '</div>' + next;
