@@ -667,7 +667,7 @@ ${ticketTipsInstruction}
 
   document.getElementById('results-title').textContent = `Your Trip: ${dest} (${days} days)`;
   const routeMapHtml = buildLongDistanceRouteMap(dest, longDistance);
-  document.getElementById('content-display').innerHTML = routeMapHtml + linkifyUrls(embedRoutes(marked.parse(finalResult)));
+  document.getElementById('content-display').innerHTML = routeMapHtml + linkifyUrls(marked.parse(processDailyRoutes(finalResult)));
 
   document.getElementById('planning-view').classList.add('hidden');
   document.getElementById('results-view').classList.remove('hidden');
@@ -730,21 +730,18 @@ function buildLongDistanceRouteMap(dest, longDistance) {
   </div>`;
 }
 
-// Convert DailyRoute lines into Google Maps route buttons
-function embedRoutes(html) {
-  return html.replace(
-    /<p>\s*DailyRoute:\s*(.+?)\s*<\/p>/gi,
-    (match, stopsStr) => {
-      const stops = stopsStr.split('|').map(s => s.trim()).filter(s => s);
-      if (stops.length === 0) return '';
+// Extract DailyRoute lines from raw markdown BEFORE marked parsing, replace with HTML buttons
+function processDailyRoutes(markdown) {
+  return markdown.replace(/^DailyRoute:\s*(.+)$/gim, (match, stopsStr) => {
+    const stops = stopsStr.split('|').map(s => s.trim()).filter(s => s);
+    if (stops.length === 0) return '';
 
-      const directionsUrl = stops.length === 1
-        ? `https://www.google.com/maps/search/?api=1&query=${stops[0]}`
-        : `https://www.google.com/maps/dir/${stops.join('/')}/`;
+    const directionsUrl = stops.length === 1
+      ? `https://www.google.com/maps/search/?api=1&query=${stops[0]}`
+      : `https://www.google.com/maps/dir/${stops.join('/')}/`;
 
-      return `<a href="${directionsUrl}" target="_blank" rel="noopener noreferrer" class="route-map-link">&#128506; View Day's Route on Google Maps</a>`;
-    }
-  );
+    return `<a href="${directionsUrl}" target="_blank" rel="noopener noreferrer" class="route-map-link">&#128506; View Day's Route on Google Maps</a>`;
+  });
 }
 
 // Function to convert URLs in text to clickable hyperlinks
@@ -793,7 +790,7 @@ document.getElementById('download-word').addEventListener('click', () => {
     <body>
       <h1>Your Trip: ${tripData.destination} (${tripData.days} days)</h1>
       <p><strong>Dates:</strong> ${tripData.startDate} to ${tripData.endDate}</p>
-      ${linkifyUrls(embedRoutes(marked.parse(content)))}
+      ${linkifyUrls(marked.parse(processDailyRoutes(content)))}
     </body>
     </html>
   `;
@@ -886,7 +883,7 @@ Replace spaces with + in each place name. Include the city name. Separate stops 
 
   if (result) {
     tripData.itinerary = result;
-    document.getElementById('content-display').innerHTML = linkifyUrls(embedRoutes(marked.parse(result)));
+    document.getElementById('content-display').innerHTML = linkifyUrls(marked.parse(processDailyRoutes(result)));
     document.getElementById('update-instruction').value = '';
   }
 });
