@@ -418,7 +418,8 @@ var tripData = {
   startDate: '',
   endDate: '',
   transportation: [],
-  travelers: 1
+  travelers: 1,
+  interests: []
 };
 var selectedTravelMode = 'driving';
 
@@ -530,16 +531,19 @@ document.getElementById('generate-button').addEventListener('click', async () =>
     let tipsParts = '';
     if (longDistance.length > 0) tipsParts += `\nLong-Distance Transportation (${longDistance.join(", ")}): tips for booking between cities/countries, advance purchase discounts, rail passes, budget airlines, coach services like FlixBus, etc.`;
     if (localTransport.length > 0) tipsParts += `\nLocal Transportation (${localTransport.join(", ")}): tips for day passes, tourist travel cards, metro/bus passes, bike-share programs, etc.`;
+    if (interests.length > 0) tipsParts += `\nInterests & Activities (${interests.join(", ")}): tips for saving on attraction tickets, museum passes, city passes that bundle activities, combo deals, free entry days, student/senior discounts, and online pre-booking discounts related to these interests.`;
     ticketTipsInstruction = `
 
-IMPORTANT: At the end of the itinerary, include a dedicated section titled "Tips to Buy Cheap Tickets" with TWO sub-sections:
+IMPORTANT: At the end of the itinerary, include a dedicated section using this EXACT heading: ## Tips to Buy Cheap Tickets
+Include sub-sections for:
 ${tipsParts}
 
 For ${travelers} traveler(s), provide:
 1. Cost-saving options such as day passes, travel cards, group passes, and early-purchase discounts for each selected transportation type.
 2. ${travelers > 1 ? `Group-specific recommendations for ${travelers} travelers: group discounts, family passes, companion fares.` : 'Individual traveler tips: solo passes, flexible tickets.'}
 3. Recommended reliable websites or platforms to purchase tickets for each transportation type.
-4. Timing advice: when to book for best prices.`;
+4. Timing advice: when to book for best prices.
+5. Activity and attraction savings: city passes, combo tickets, free entry days, online pre-booking deals for the selected interests.`;
   }
 
   const startTime = new Date(start).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
@@ -664,10 +668,14 @@ ${ticketTipsInstruction}
   tripData.longDistance = longDistance;
   tripData.localTransport = localTransport;
   tripData.travelers = travelers;
+  tripData.interests = interests;
 
   document.getElementById('results-title').textContent = `Your Trip: ${dest} (${days} days)`;
   const routeMapHtml = buildLongDistanceRouteMap(dest, longDistance);
-  document.getElementById('content-display').innerHTML = routeMapHtml + linkifyUrls(marked.parse(processDailyRoutes(finalResult)));
+  const cheapTicketsLink = wantsCheapTickets && transportation.length > 0
+    ? `<a href="#cheap-tickets-section" style="display:inline-flex;align-items:center;gap:8px;background:linear-gradient(135deg,#f59e0b,#d97706);color:white !important;font-weight:700;font-size:0.95rem;padding:12px 20px;border-radius:12px;text-decoration:none !important;margin-bottom:16px;box-shadow:0 2px 8px rgba(245,158,11,0.3);transition:all 0.2s ease;">&#128176; Jump to Tips to Buy Cheap Tickets</a>`
+    : '';
+  document.getElementById('content-display').innerHTML = routeMapHtml + cheapTicketsLink + linkifyUrls(highlightCheapTickets(marked.parse(processDailyRoutes(finalResult))));
 
   document.getElementById('planning-view').classList.add('hidden');
   document.getElementById('results-view').classList.remove('hidden');
@@ -744,6 +752,25 @@ function processDailyRoutes(markdown) {
   });
 }
 
+// Highlight the "Tips to Buy Cheap Tickets" section with anchor and styled wrapper
+function highlightCheapTickets(html) {
+  return html.replace(
+    /(<h2[^>]*>)(.*?Tips to Buy Cheap Tickets.*?)(<\/h2>)/i,
+    (match, openTag, content, closeTag) => {
+      return `<div id="cheap-tickets-section" style="background:linear-gradient(135deg,#fffbeb,#fef3c7);border:2px solid #f59e0b;border-radius:16px;padding:20px 24px;margin-top:2rem;">` +
+        openTag.replace('>', ' style="color:#b45309;margin-top:0;">') +
+        `&#128176; ` + content + closeTag;
+    }
+  ).replace(
+    // Close the wrapper div at the end of the section (before next h2 or end of content)
+    /(<div id="cheap-tickets-section"[\s\S]*?)(<h2|$)/i,
+    (match, section, next) => {
+      if (next === '') return section + '</div>';
+      return section + '</div>' + next;
+    }
+  );
+}
+
 // Function to convert URLs in text to clickable hyperlinks
 function linkifyUrls(html) {
   // Split by existing anchor tags to avoid double-linkifying
@@ -795,7 +822,7 @@ document.getElementById('download-word').addEventListener('click', () => {
       <h1>Your Trip: ${tripData.destination} (${tripData.days} days)</h1>
       <p><strong>Dates:</strong> ${tripData.startDate} to ${tripData.endDate}</p>
       ${routeOverview}
-      ${linkifyUrls(marked.parse(processDailyRoutes(content)))}
+      ${linkifyUrls(highlightCheapTickets(marked.parse(processDailyRoutes(content))))}
     </body>
     </html>
   `;
@@ -861,10 +888,11 @@ document.getElementById('update-itinerary-btn').addEventListener('click', async 
     let tipsParts = '';
     if (tripData.longDistance && tripData.longDistance.length > 0) tipsParts += `\nLong-Distance Transportation (${tripData.longDistance.join(", ")}): tips for booking between cities/countries.`;
     if (tripData.localTransport && tripData.localTransport.length > 0) tipsParts += `\nLocal Transportation (${tripData.localTransport.join(", ")}): tips for day passes, tourist cards, etc.`;
+    if (tripData.interests && tripData.interests.length > 0) tipsParts += `\nInterests & Activities (${tripData.interests.join(", ")}): tips for saving on attraction tickets, museum passes, city passes, combo deals, free entry days, online pre-booking discounts.`;
     ticketTipsInstruction = `
 
-IMPORTANT: Keep or update the "Tips to Buy Cheap Tickets" section at the end with TWO sub-sections:${tipsParts}
-For ${tripData.travelers} traveler(s), include: cost-saving options (day passes, travel cards, group passes, early-purchase discounts), ${tripData.travelers > 1 ? 'group discounts and family passes' : 'solo traveler tips'}, and recommended websites to purchase tickets.`;
+IMPORTANT: Keep or update the "## Tips to Buy Cheap Tickets" section at the end with sub-sections for:${tipsParts}
+For ${tripData.travelers} traveler(s), include: cost-saving options, ${tripData.travelers > 1 ? 'group discounts and family passes' : 'solo traveler tips'}, recommended websites, and activity/attraction savings.`;
   }
 
   const placeDetailsInstruction = `
@@ -888,7 +916,7 @@ Replace spaces with + in each place name. Include the city name. Separate stops 
 
   if (result) {
     tripData.itinerary = result;
-    document.getElementById('content-display').innerHTML = linkifyUrls(marked.parse(processDailyRoutes(result)));
+    document.getElementById('content-display').innerHTML = linkifyUrls(highlightCheapTickets(marked.parse(processDailyRoutes(result))));
     document.getElementById('update-instruction').value = '';
   }
 });
