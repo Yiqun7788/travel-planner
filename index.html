@@ -943,13 +943,17 @@ function makeCollapsibleDays() {
   function extractPlaces(elements) {
     const places = [];
     const seen = new Set();
+    // Build a single HTML string to look ahead for Maps links after each bold name
+    const html = elements.map(el => el.outerHTML || '').join('');
     for (const el of elements) {
       const bolds = el.querySelectorAll ? el.querySelectorAll('strong, b') : [];
       for (const bold of bolds) {
         const name = bold.textContent.trim();
         if (name.length < 3) continue;
-        if (/^\d{1,2}[.:]\d{2}/.test(name)) continue;
-        if (/^(morning|afternoon|evening|night|lunch|dinner|breakfast|day\s+\d)/i.test(name)) continue;
+        // Only include places that have a Google Maps link nearby (the prompt requires one for every real place)
+        const escapedName = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const mapsPattern = new RegExp(escapedName + '[\\s\\S]{0,500}google\\.com\\/maps', 'i');
+        if (!mapsPattern.test(html)) continue;
         const key = name.toLowerCase();
         if (seen.has(key)) continue;
         seen.add(key);
