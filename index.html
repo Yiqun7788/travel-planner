@@ -726,10 +726,11 @@ async function callGemini(prompt) {
 // Build long-distance route map HTML if Car or Bike is selected with 2+ destinations
 function buildLongDistanceRouteMap(dest, longDistance) {
   const places = dest.split(/[,\u3001;]/).map(s => s.trim()).filter(s => s.length > 0);
-  if (places.length < 2) return '';
-
   const hasCar = longDistance.includes('Car');
   const hasBike = longDistance.includes('Bike');
+  const hasTrain = longDistance.includes('Train');
+  const hasBus = longDistance.includes('Long-Distance Bus');
+  if (places.length < 2 || hasTrain || hasBus || (!hasCar && !hasBike)) return '';
   const stops = places.map(p => encodeURIComponent(p));
   const directionsUrl = `https://www.google.com/maps/dir/${stops.join('/')}/`;
   let modeLabel, modeIcon;
