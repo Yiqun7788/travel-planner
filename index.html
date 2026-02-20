@@ -160,6 +160,58 @@ body { font-family: 'Inter', system-ui, sans-serif; background: #f1f5f9; }
   box-shadow: 0 4px 12px rgba(99, 102, 241, 0.35);
   color: white !important;
 }
+
+/* Collapsible day sections */
+#content-display details.day-section {
+  border: 1px solid #e2e8f0; border-radius: 12px;
+  margin-top: 1rem; overflow: hidden;
+  transition: box-shadow 0.2s ease;
+}
+#content-display details.day-section[open] {
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+#content-display details.day-section summary {
+  cursor: pointer; list-style: none;
+  padding: 14px 20px;
+  background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+  border-bottom: 1px solid transparent;
+  user-select: none; transition: background 0.15s ease;
+}
+#content-display details.day-section[open] summary {
+  border-bottom-color: #e2e8f0;
+  background: linear-gradient(135deg, #eef2ff, #e0e7ff);
+}
+#content-display details.day-section summary:hover {
+  background: linear-gradient(135deg, #eef2ff, #e0e7ff);
+}
+#content-display details.day-section summary::-webkit-details-marker { display: none; }
+#content-display details.day-section summary::marker { display: none; content: ''; }
+#content-display details.day-section .day-summary-header {
+  display: flex; align-items: center; gap: 10px;
+}
+#content-display details.day-section .day-chevron {
+  transition: transform 0.2s ease;
+  font-size: 0.85rem; color: #64748b; flex-shrink: 0;
+}
+#content-display details.day-section[open] .day-chevron {
+  transform: rotate(90deg);
+}
+#content-display details.day-section .day-heading-text {
+  font-size: 1.25rem; font-weight: 700; color: #334155; margin: 0;
+}
+#content-display details.day-section .day-icon-strip {
+  display: flex; flex-wrap: wrap; gap: 6px;
+  margin-top: 8px; padding-left: 24px;
+}
+#content-display details.day-section .day-icon-item {
+  display: inline-flex; align-items: center; gap: 4px;
+  background: white; border: 1px solid #e2e8f0;
+  border-radius: 20px; padding: 3px 10px 3px 6px;
+  font-size: 0.8rem; color: #475569; white-space: nowrap;
+}
+#content-display details.day-section .day-icon-item .icon-emoji { font-size: 1rem; }
+#content-display details.day-section .day-content { padding: 16px 20px; }
+#content-display details.day-section .day-content h2 { display: none; }
 </style>
 </head>
 <body>
@@ -726,6 +778,7 @@ ${ticketTipsInstruction}
     ? `<a href="#cheap-tickets-section" style="display:inline-flex;align-items:center;gap:8px;background:linear-gradient(135deg,#f59e0b,#d97706);color:white !important;font-weight:700;font-size:0.95rem;padding:12px 20px;border-radius:12px;text-decoration:none !important;margin-bottom:16px;box-shadow:0 2px 8px rgba(245,158,11,0.3);transition:all 0.2s ease;">&#128176; Jump to Tips to Buy Cheap Tickets</a>`
     : '';
   document.getElementById('content-display').innerHTML = routeMapHtml + cheapTicketsLink + linkifyUrls(highlightCheapTickets(marked.parse(processDailyRoutes(finalResult))));
+  makeCollapsibleDays();
 
   document.getElementById('planning-view').classList.add('hidden');
   document.getElementById('results-view').classList.remove('hidden');
@@ -849,6 +902,111 @@ function linkifyUrls(html) {
     // Otherwise, linkify URLs in this part
     return part.replace(/(https?:\/\/[^\s<>"']+)/g, '<a href="$1" target="_blank" class="text-indigo-500 hover:text-indigo-700 underline">$1</a>');
   }).join('');
+}
+
+function makeCollapsibleDays() {
+  const container = document.getElementById('content-display');
+  if (!container) return;
+
+  const iconRules = [
+    { keywords: ['restaurant', 'cafe', 'café', 'coffee', 'bakery', 'bistro', 'diner', 'eatery', 'food hall', 'food court', 'pizzeria', 'trattoria', 'brasserie', 'pub', 'tavern', 'tapas', 'ramen', 'sushi', 'izakaya', 'biergarten', 'gasthaus'], icon: '🍽️' },
+    { keywords: ['market', 'mercado', 'marché', 'bazar', 'bazaar', 'markt', 'fish market', 'food market', 'night market', 'street food'], icon: '🍴' },
+    { keywords: ['church', 'cathedral', 'basilica', 'chapel', 'duomo', 'minster', 'abbey', 'priory', 'monastery', 'kirche', 'église', 'iglesia', 'chiesa', 'mosque', 'masjid', 'synagogue'], icon: '⛪' },
+    { keywords: ['temple', 'shrine', 'pagoda', 'jinja', 'torii', 'gurdwara'], icon: '⛩️' },
+    { keywords: ['castle', 'fortress', 'fort ', 'citadel', 'alcazar', 'alcázar', 'château', 'chateau', 'schloss', 'kremlin', 'palace', 'palais', 'palazzo', 'palacio', 'buckingham', 'versailles'], icon: '🏰' },
+    { keywords: ['museum', 'gallery', 'galerie', 'exhibit', 'collection', 'musée', 'museo', 'pinacoteca'], icon: '🏛️' },
+    { keywords: ['theater', 'theatre', 'opera', 'concert', 'ballet', 'cinema'], icon: '🎭' },
+    { keywords: ['park', 'garden', 'botanical', 'jardin', 'garten', 'giardino', 'arboretum'], icon: '🌳' },
+    { keywords: ['beach', 'playa', 'plage', 'strand', 'coast', 'seaside', 'shore', 'cove'], icon: '🏖️' },
+    { keywords: ['mountain', 'volcano', 'peak', 'summit', 'trail', 'hike', 'hiking', 'canyon', 'gorge', 'cliff', 'waterfall'], icon: '⛰️' },
+    { keywords: ['lake', 'river', 'canal', 'lagoon', 'fjord'], icon: '🌊' },
+    { keywords: ['bridge', 'pont ', 'ponte', 'puente', 'brücke'], icon: '🌉' },
+    { keywords: ['tower', 'observation', 'viewpoint', 'lookout', 'panorama', 'skyline', 'skydeck', 'mirador'], icon: '📸' },
+    { keywords: ['shop', 'mall', 'store', 'boutique', 'souk', 'outlet', 'department', 'flea market'], icon: '🛍️' },
+    { keywords: ['zoo', 'aquarium', 'safari', 'wildlife', 'animal'], icon: '🐾' },
+    { keywords: ['stadium', 'arena'], icon: '🏟️' },
+    { keywords: ['station', 'airport', 'terminal', 'port', 'pier', 'wharf', 'harbor', 'harbour'], icon: '🚏' },
+    { keywords: ['monument', 'memorial', 'statue', 'obelisk', 'triumphal'], icon: '🗽' },
+    { keywords: ['square', 'plaza', 'piazza', 'platz', 'quarter', 'district', 'old town', 'downtown'], icon: '🏘️' },
+  ];
+
+  function getIcon(name) {
+    const lower = name.toLowerCase();
+    for (const rule of iconRules) {
+      for (const kw of rule.keywords) {
+        if (lower.includes(kw.trim())) return rule.icon;
+      }
+    }
+    return '📍';
+  }
+
+  function extractPlaces(elements) {
+    const places = [];
+    const seen = new Set();
+    for (const el of elements) {
+      const bolds = el.querySelectorAll ? el.querySelectorAll('strong, b') : [];
+      for (const bold of bolds) {
+        const name = bold.textContent.trim();
+        if (name.length < 3) continue;
+        if (/^\d{1,2}[.:]\d{2}/.test(name)) continue;
+        if (/^(morning|afternoon|evening|night|lunch|dinner|breakfast|day\s+\d)/i.test(name)) continue;
+        const key = name.toLowerCase();
+        if (seen.has(key)) continue;
+        seen.add(key);
+        places.push({
+          name: name.length > 30 ? name.substring(0, 28) + '…' : name,
+          icon: getIcon(name)
+        });
+      }
+    }
+    return places;
+  }
+
+  const allH2s = Array.from(container.querySelectorAll('h2'));
+  const dayPattern = /\b(Day|Tag|Jour|Día)\s+\d+|\d+\s*日目|第\s*\d+\s*天/i;
+  const dayH2s = allH2s.filter(h2 => dayPattern.test(h2.textContent.trim()));
+  if (dayH2s.length === 0) return;
+
+  for (let i = dayH2s.length - 1; i >= 0; i--) {
+    const h2 = dayH2s[i];
+    const headingText = h2.textContent.trim();
+
+    const contentElements = [];
+    let sibling = h2.nextElementSibling;
+    while (sibling) {
+      if (sibling.tagName === 'H2') break;
+      if (sibling.id === 'cheap-tickets-section') break;
+      if (sibling.tagName === 'A' && sibling.getAttribute('name') === 'cheap-tickets-section') break;
+      contentElements.push(sibling);
+      sibling = sibling.nextElementSibling;
+    }
+
+    const places = extractPlaces(contentElements);
+    const iconStripHtml = places.length > 0
+      ? '<div class="day-icon-strip">' + places.map(p =>
+          '<span class="day-icon-item"><span class="icon-emoji">' + p.icon + '</span> ' + p.name + '</span>'
+        ).join('') + '</div>'
+      : '';
+
+    const details = document.createElement('details');
+    details.className = 'day-section';
+    if (i === 0) details.setAttribute('open', '');
+
+    const summary = document.createElement('summary');
+    summary.innerHTML =
+      '<div class="day-summary-header"><span class="day-chevron">&#9654;</span><span class="day-heading-text">' + headingText + '</span></div>' +
+      iconStripHtml;
+
+    const contentDiv = document.createElement('div');
+    contentDiv.className = 'day-content';
+    for (const el of contentElements) {
+      contentDiv.appendChild(el);
+    }
+
+    details.appendChild(summary);
+    details.appendChild(contentDiv);
+    h2.parentNode.replaceChild(details, h2);
+  }
 }
 
 document.getElementById('back-button').addEventListener('click', () => {
@@ -983,6 +1141,7 @@ Replace spaces with + in each place name. Include the city name. Separate stops 
   if (result) {
     tripData.itinerary = result;
     document.getElementById('content-display').innerHTML = linkifyUrls(highlightCheapTickets(marked.parse(processDailyRoutes(result))));
+    makeCollapsibleDays();
     document.getElementById('update-instruction').value = '';
   }
 });
