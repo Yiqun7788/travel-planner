@@ -1029,7 +1029,7 @@ document.getElementById('download-word').addEventListener('click', () => {
 
 // Download as PDF
 document.getElementById('download-pdf').addEventListener('click', () => {
-  const content = document.getElementById('content-display').innerHTML;
+  const content = document.getElementById('content-display').innerHTML.replace(/<details /g, '<details open ');
   const printWindow = window.open('', '_blank');
   printWindow.document.write(`
     <!DOCTYPE html>
