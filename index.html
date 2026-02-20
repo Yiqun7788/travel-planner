@@ -1012,7 +1012,8 @@ document.getElementById('download-word').addEventListener('click', () => {
       <h1>Your Trip: ${tripData.destination} (${tripData.days} days)</h1>
       <p><strong>Dates:</strong> ${tripData.startDate} to ${tripData.endDate}</p>
       ${routeOverview}
-      ${linkifyUrls(marked.parse(processDailyRoutes(content)))}
+      ${document.getElementById('cheap-tickets-checkbox').checked ? '<a href="#cheap-tickets-section" style="display:inline-block;background:#d97706;color:white;font-weight:700;padding:10px 18px;border-radius:8px;text-decoration:none;margin:8px 0;">&#128176; Jump to Tips to Buy Cheap Tickets</a>' : ''}
+      ${linkifyUrls(marked.parse(processDailyRoutes(content))).replace(/(<h2[^>]*>)([\s\S]*?Tips to Buy Cheap Tickets[\s\S]*?)(<\/h2>)/i, '<a id="cheap-tickets-section"></a>$1$2$3')}
     </body>
     </html>
   `;
@@ -1029,7 +1030,11 @@ document.getElementById('download-word').addEventListener('click', () => {
 
 // Download as PDF
 document.getElementById('download-pdf').addEventListener('click', () => {
-  const content = document.getElementById('content-display').innerHTML.replace(/<details /g, '<details open ');
+  const cheapTicketsChecked = document.getElementById('cheap-tickets-checkbox').checked;
+  const pdfContent = document.getElementById('content-display').innerHTML
+    .replace(/<details /g, '<details open ')
+    .replace(/<details open class="cheap-tickets-section">/,  '<a id="cheap-tickets-section"></a><details open class="cheap-tickets-section">');
+  const cheapTicketsJump = cheapTicketsChecked ? '<a href="#cheap-tickets-section" style="display:inline-block;background:#d97706;color:white;font-weight:700;padding:10px 18px;border-radius:8px;text-decoration:none;margin:8px 0;">&#128176; Jump to Tips to Buy Cheap Tickets</a>' : '';
   const printWindow = window.open('', '_blank');
   printWindow.document.write(`
     <!DOCTYPE html>
@@ -1053,7 +1058,8 @@ document.getElementById('download-pdf').addEventListener('click', () => {
     <body>
       <h1>Your Trip: ${tripData.destination} (${tripData.days} days)</h1>
       <p><strong>Dates:</strong> ${tripData.startDate} to ${tripData.endDate}</p>
-      ${content}
+      ${cheapTicketsJump}
+      ${pdfContent}
     </body>
     </html>
   `);
