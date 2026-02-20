@@ -160,6 +160,53 @@ body { font-family: 'Inter', system-ui, sans-serif; background: #f1f5f9; }
   box-shadow: 0 4px 12px rgba(99, 102, 241, 0.35);
   color: white !important;
 }
+
+/* Collapsible day sections */
+details.day-section {
+  border: 1.5px solid #e2e8f0;
+  border-radius: 14px;
+  margin: 1rem 0;
+  overflow: hidden;
+  transition: box-shadow 0.2s ease;
+}
+details.day-section[open] {
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+}
+details.day-section > summary {
+  list-style: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 18px;
+  background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+  font-weight: 700;
+  font-size: 1.25rem;
+  color: #334155;
+  user-select: none;
+  transition: background 0.15s ease;
+}
+details.day-section > summary:hover {
+  background: linear-gradient(135deg, #f1f5f9, #e2e8f0);
+}
+details.day-section[open] > summary {
+  background: linear-gradient(135deg, #eef2ff, #e0e7ff);
+  border-bottom: 1.5px solid #e2e8f0;
+}
+details.day-section > summary::-webkit-details-marker { display: none; }
+.day-chevron {
+  display: inline-block;
+  transition: transform 0.2s ease;
+  font-size: 0.75rem;
+  color: #94a3b8;
+}
+details.day-section[open] > summary .day-chevron {
+  transform: rotate(90deg);
+}
+.day-content {
+  padding: 4px 18px 18px;
+}
+.day-content h2 { display: none; }
 </style>
 </head>
 <body>
@@ -726,6 +773,7 @@ ${ticketTipsInstruction}
     ? `<a href="#cheap-tickets-section" style="display:inline-flex;align-items:center;gap:8px;background:linear-gradient(135deg,#f59e0b,#d97706);color:white !important;font-weight:700;font-size:0.95rem;padding:12px 20px;border-radius:12px;text-decoration:none !important;margin-bottom:16px;box-shadow:0 2px 8px rgba(245,158,11,0.3);transition:all 0.2s ease;">&#128176; Jump to Tips to Buy Cheap Tickets</a>`
     : '';
   document.getElementById('content-display').innerHTML = routeMapHtml + cheapTicketsLink + linkifyUrls(highlightCheapTickets(marked.parse(processDailyRoutes(finalResult))));
+  makeCollapsibleDays();
 
   document.getElementById('planning-view').classList.add('hidden');
   document.getElementById('results-view').classList.remove('hidden');
@@ -851,6 +899,46 @@ function linkifyUrls(html) {
   }).join('');
 }
 
+// Wrap day headings in collapsible <details> sections
+function makeCollapsibleDays() {
+  const container = document.getElementById('content-display');
+  // Match day patterns in 6 languages: Day N, Tag N, Jour N, Día N, 第N天, N日目
+  const dayPattern = /^(Day\s+\d+|Tag\s+\d+|Jour\s+\d+|D[ií]a\s+\d+|第\d+天|\d+日目)/i;
+  const h2s = Array.from(container.querySelectorAll('h2')).filter(h2 => dayPattern.test(h2.textContent.trim()));
+  if (h2s.length === 0) return;
+
+  h2s.forEach((h2, idx) => {
+    const siblings = [];
+    let next = h2.nextSibling;
+    while (next) {
+      // Stop at the next day h2 or at the cheap-tickets anchor
+      if (next.nodeType === 1) {
+        if (next.tagName === 'H2' && dayPattern.test(next.textContent.trim())) break;
+        if (next.tagName === 'A' && next.getAttribute('name') === 'cheap-tickets-section') break;
+        if (next.tagName === 'DIV' && next.querySelector && next.querySelector('#cheap-tickets-section')) break;
+      }
+      siblings.push(next);
+      next = next.nextSibling;
+    }
+
+    const details = document.createElement('details');
+    details.className = 'day-section';
+    if (idx === 0) details.setAttribute('open', '');
+
+    const summary = document.createElement('summary');
+    summary.innerHTML = '<span class="day-chevron">\u25B6</span> <span class="day-heading-text">' + h2.textContent + '</span>';
+
+    const content = document.createElement('div');
+    content.className = 'day-content';
+    content.appendChild(h2.cloneNode(true));
+    siblings.forEach(s => content.appendChild(s));
+
+    details.appendChild(summary);
+    details.appendChild(content);
+    h2.replaceWith(details);
+  });
+}
+
 document.getElementById('back-button').addEventListener('click', () => {
   document.getElementById('results-view').classList.add('hidden');
   document.getElementById('planning-view').classList.remove('hidden');
@@ -920,6 +1008,10 @@ document.getElementById('download-pdf').addEventListener('click', () => {
         h3 { color: #1e3a8a; }
         p { line-height: 1.6; }
         ul, ol { line-height: 1.8; }
+        details.day-section { display: block; border: none; box-shadow: none; margin: 0; }
+        details.day-section > summary { display: none; }
+        details.day-section .day-content { padding: 0; }
+        details.day-section .day-content h2 { display: block; }
       </style>
     </head>
     <body>
@@ -983,6 +1075,7 @@ Replace spaces with + in each place name. Include the city name. Separate stops 
   if (result) {
     tripData.itinerary = result;
     document.getElementById('content-display').innerHTML = linkifyUrls(highlightCheapTickets(marked.parse(processDailyRoutes(result))));
+    makeCollapsibleDays();
     document.getElementById('update-instruction').value = '';
   }
 });
