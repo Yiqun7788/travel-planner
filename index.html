@@ -726,19 +726,16 @@ async function callGemini(prompt) {
 // Build long-distance route map HTML if Car or Bike is selected with 2+ destinations
 function buildLongDistanceRouteMap(dest, longDistance) {
   const places = dest.split(/[,\u3001;]/).map(s => s.trim()).filter(s => s.length > 0);
+  if (places.length < 2) return '';
+
   const hasCar = longDistance.includes('Car');
   const hasBike = longDistance.includes('Bike');
-  const hasTrain = longDistance.includes('Train');
-  const hasBus = longDistance.includes('Long-Distance Bus');
-  if (places.length < 2 || (!hasCar && !hasBike && !hasTrain && !hasBus)) return '';
-
   const stops = places.map(p => encodeURIComponent(p));
   const directionsUrl = `https://www.google.com/maps/dir/${stops.join('/')}/`;
   let modeLabel, modeIcon;
   if (hasCar) { modeLabel = 'Driving'; modeIcon = '&#128663;'; }
-  else if (hasBus) { modeLabel = 'Bus'; modeIcon = '&#128653;'; }
-  else if (hasTrain) { modeLabel = 'Train'; modeIcon = '&#128646;'; }
-  else { modeLabel = 'Biking'; modeIcon = '&#128690;'; }
+  else if (hasBike) { modeLabel = 'Biking'; modeIcon = '&#128690;'; }
+  else { modeLabel = ''; modeIcon = '&#128506;'; }
 
   const stopsHtml = places.map((p, i) => {
     const marker = i === 0 ? '&#128205;' : i === places.length - 1 ? '&#127937;' : '&#128204;';
