@@ -207,6 +207,40 @@ details.day-section[open] > summary .day-chevron {
   padding: 4px 18px 18px;
 }
 .day-content h2 { display: none; }
+
+/* Collapsible cheap tickets section (amber theme) */
+details.cheap-tickets-section {
+  border: 2px solid #f59e0b;
+  border-radius: 14px;
+  margin: 2rem 0 1rem;
+  overflow: hidden;
+  transition: box-shadow 0.2s ease;
+}
+details.cheap-tickets-section[open] {
+  box-shadow: 0 2px 12px rgba(245,158,11,0.15);
+}
+details.cheap-tickets-section > summary {
+  list-style: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 18px;
+  background: linear-gradient(135deg, #fffbeb, #fef3c7);
+  font-weight: 700;
+  font-size: 1.25rem;
+  color: #b45309;
+  user-select: none;
+  transition: background 0.15s ease;
+}
+details.cheap-tickets-section > summary:hover {
+  background: linear-gradient(135deg, #fef3c7, #fde68a);
+}
+details.cheap-tickets-section[open] > summary {
+  background: linear-gradient(135deg, #fef3c7, #fde68a);
+  border-bottom: 2px solid #f59e0b;
+}
+details.cheap-tickets-section > summary::-webkit-details-marker { display: none; }
 </style>
 </head>
 <body>
@@ -769,10 +803,7 @@ ${ticketTipsInstruction}
 
   document.getElementById('results-title').textContent = `Your Trip: ${dest} (${days} days)`;
   const routeMapHtml = buildLongDistanceRouteMap(dest, longDistance);
-  const cheapTicketsLink = wantsCheapTickets
-    ? `<a href="#cheap-tickets-section" style="display:inline-flex;align-items:center;gap:8px;background:linear-gradient(135deg,#f59e0b,#d97706);color:white !important;font-weight:700;font-size:0.95rem;padding:12px 20px;border-radius:12px;text-decoration:none !important;margin-bottom:16px;box-shadow:0 2px 8px rgba(245,158,11,0.3);transition:all 0.2s ease;">&#128176; Jump to Tips to Buy Cheap Tickets</a>`
-    : '';
-  document.getElementById('content-display').innerHTML = routeMapHtml + cheapTicketsLink + linkifyUrls(highlightCheapTickets(marked.parse(processDailyRoutes(finalResult))));
+  document.getElementById('content-display').innerHTML = routeMapHtml + linkifyUrls(marked.parse(processDailyRoutes(finalResult)));
   makeCollapsibleDays();
 
   document.getElementById('planning-view').classList.add('hidden');
@@ -865,25 +896,6 @@ function processDailyRoutes(markdown) {
   });
 }
 
-// Highlight the "Tips to Buy Cheap Tickets" section with anchor and styled wrapper
-function highlightCheapTickets(html) {
-  return html.replace(
-    /(<h2[^>]*>)(.*?Tips to Buy Cheap Tickets.*?)(<\/h2>)/i,
-    (match, openTag, content, closeTag) => {
-      return `<a name="cheap-tickets-section" id="cheap-tickets-section"></a><div style="background:linear-gradient(135deg,#fffbeb,#fef3c7);border:2px solid #f59e0b;border-radius:16px;padding:20px 24px;margin-top:2rem;">` +
-        openTag.replace('>', ' style="color:#b45309;margin-top:0;">') +
-        `&#128176; ` + content + closeTag;
-    }
-  ).replace(
-    // Close the wrapper div at the end of the section (before next h2 or end of content)
-    /(<a name="cheap-tickets-section"[\s\S]*?)(<h2|$)/i,
-    (match, section, next) => {
-      if (next === '') return section + '</div>';
-      return section + '</div>' + next;
-    }
-  );
-}
-
 // Function to convert URLs in text to clickable hyperlinks
 function linkifyUrls(html) {
   // Split by existing anchor tags to avoid double-linkifying
@@ -899,24 +911,20 @@ function linkifyUrls(html) {
   }).join('');
 }
 
-// Wrap day headings in collapsible <details> sections
+// Wrap day headings and cheap tickets section in collapsible <details> sections
 function makeCollapsibleDays() {
   const container = document.getElementById('content-display');
   // Match day patterns in 6 languages: Day N, Tag N, Jour N, Día N, 第N天, N日目
   const dayPattern = /(Day\s+\d+|Tag\s+\d+|Jour\s+\d+|D[ií]a\s+\d+|第\d+天|\d+日目)/i;
+  const cheapPattern = /(cheap tickets|günstige tickets|billetes baratos|billets pas chers|便宜票|安いチケット)/i;
   const h2s = Array.from(container.querySelectorAll('h2')).filter(h2 => dayPattern.test(h2.textContent.trim()));
-  if (h2s.length === 0) return;
 
   h2s.forEach((h2, idx) => {
     const siblings = [];
     let next = h2.nextSibling;
     while (next) {
-      // Stop at the next day h2 or at the cheap-tickets anchor
-      if (next.nodeType === 1) {
-        if (next.tagName === 'H2' && dayPattern.test(next.textContent.trim())) break;
-        if (next.tagName === 'A' && next.getAttribute('name') === 'cheap-tickets-section') break;
-        if (next.tagName === 'DIV' && next.querySelector && next.querySelector('#cheap-tickets-section')) break;
-      }
+      // Stop at any h2 (next day, cheap tickets, travel tips, etc.)
+      if (next.nodeType === 1 && next.tagName === 'H2') break;
       siblings.push(next);
       next = next.nextSibling;
     }
@@ -937,6 +945,35 @@ function makeCollapsibleDays() {
     details.appendChild(content);
     h2.replaceWith(details);
   });
+
+  // Make cheap tickets section collapsible (amber theme)
+  const cheapH2 = Array.from(container.querySelectorAll('h2')).find(h2 =>
+    !h2.closest('.day-content') && cheapPattern.test(h2.textContent)
+  );
+  if (cheapH2) {
+    const siblings = [];
+    let next = cheapH2.nextSibling;
+    while (next) {
+      if (next.nodeType === 1 && next.tagName === 'H2') break;
+      siblings.push(next);
+      next = next.nextSibling;
+    }
+
+    const details = document.createElement('details');
+    details.className = 'cheap-tickets-section';
+
+    const summary = document.createElement('summary');
+    summary.innerHTML = '<span class="day-chevron">\u25B6</span> <span class="day-heading-text">&#128176; ' + cheapH2.textContent + '</span>';
+
+    const content = document.createElement('div');
+    content.className = 'day-content';
+    content.appendChild(cheapH2.cloneNode(true));
+    siblings.forEach(s => content.appendChild(s));
+
+    details.appendChild(summary);
+    details.appendChild(content);
+    cheapH2.replaceWith(details);
+  }
 }
 
 document.getElementById('back-button').addEventListener('click', () => {
@@ -975,8 +1012,7 @@ document.getElementById('download-word').addEventListener('click', () => {
       <h1>Your Trip: ${tripData.destination} (${tripData.days} days)</h1>
       <p><strong>Dates:</strong> ${tripData.startDate} to ${tripData.endDate}</p>
       ${routeOverview}
-      ${document.getElementById('cheap-tickets-checkbox').checked ? '<a href="#cheap-tickets-section" style="display:inline-block;background:#d97706;color:white;font-weight:700;padding:10px 18px;border-radius:8px;text-decoration:none;margin:8px 0;">&#128176; Jump to Tips to Buy Cheap Tickets</a>' : ''}
-      ${linkifyUrls(highlightCheapTickets(marked.parse(processDailyRoutes(content))))}
+      ${linkifyUrls(marked.parse(processDailyRoutes(content)))}
     </body>
     </html>
   `;
@@ -1008,10 +1044,10 @@ document.getElementById('download-pdf').addEventListener('click', () => {
         h3 { color: #1e3a8a; }
         p { line-height: 1.6; }
         ul, ol { line-height: 1.8; }
-        details.day-section { display: block; border: none; box-shadow: none; margin: 0; }
-        details.day-section > summary { display: none; }
-        details.day-section .day-content { padding: 0; }
-        details.day-section .day-content h2 { display: block; }
+        details.day-section, details.cheap-tickets-section { display: block; border: none; box-shadow: none; margin: 0; }
+        details.day-section > summary, details.cheap-tickets-section > summary { display: none; }
+        details.day-section .day-content, details.cheap-tickets-section .day-content { padding: 0; }
+        details.day-section .day-content h2, details.cheap-tickets-section .day-content h2 { display: block; }
       </style>
     </head>
     <body>
@@ -1074,7 +1110,7 @@ Replace spaces with + in each place name. Include the city name. Separate stops 
 
   if (result) {
     tripData.itinerary = result;
-    document.getElementById('content-display').innerHTML = linkifyUrls(highlightCheapTickets(marked.parse(processDailyRoutes(result))));
+    document.getElementById('content-display').innerHTML = linkifyUrls(marked.parse(processDailyRoutes(result)));
     makeCollapsibleDays();
     document.getElementById('update-instruction').value = '';
   }
