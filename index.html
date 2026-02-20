@@ -903,7 +903,7 @@ function linkifyUrls(html) {
 function makeCollapsibleDays() {
   const container = document.getElementById('content-display');
   // Match day patterns in 6 languages: Day N, Tag N, Jour N, Día N, 第N天, N日目
-  const dayPattern = /^(Day\s+\d+|Tag\s+\d+|Jour\s+\d+|D[ií]a\s+\d+|第\d+天|\d+日目)/i;
+  const dayPattern = /(Day\s+\d+|Tag\s+\d+|Jour\s+\d+|D[ií]a\s+\d+|第\d+天|\d+日目)/i;
   const h2s = Array.from(container.querySelectorAll('h2')).filter(h2 => dayPattern.test(h2.textContent.trim()));
   if (h2s.length === 0) return;
 
