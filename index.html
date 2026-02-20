@@ -728,12 +728,17 @@ function buildLongDistanceRouteMap(dest, longDistance) {
   const places = dest.split(/[,\u3001;]/).map(s => s.trim()).filter(s => s.length > 0);
   const hasCar = longDistance.includes('Car');
   const hasBike = longDistance.includes('Bike');
-  if (places.length < 2 || (!hasCar && !hasBike)) return '';
+  const hasTrain = longDistance.includes('Train');
+  const hasBus = longDistance.includes('Long-Distance Bus');
+  if (places.length < 2 || (!hasCar && !hasBike && !hasTrain && !hasBus)) return '';
 
   const stops = places.map(p => encodeURIComponent(p));
   const directionsUrl = `https://www.google.com/maps/dir/${stops.join('/')}/`;
-  const modeLabel = hasCar ? 'Driving' : 'Biking';
-  const modeIcon = hasCar ? '&#128663;' : '&#128690;';
+  let modeLabel, modeIcon;
+  if (hasCar) { modeLabel = 'Driving'; modeIcon = '&#128663;'; }
+  else if (hasBus) { modeLabel = 'Bus'; modeIcon = '&#128653;'; }
+  else if (hasTrain) { modeLabel = 'Train'; modeIcon = '&#128646;'; }
+  else { modeLabel = 'Biking'; modeIcon = '&#128690;'; }
 
   const stopsHtml = places.map((p, i) => {
     const marker = i === 0 ? '&#128205;' : i === places.length - 1 ? '&#127937;' : '&#128204;';
