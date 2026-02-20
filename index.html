@@ -1136,7 +1136,7 @@ Also consider the activities mentioned in the itinerary and provide specific rec
   document.getElementById('loading-overlay').style.display = 'none';
 
   if (result) {
-    document.getElementById('content-display').innerHTML += '<hr class="my-6"><h2>Packing List</h2>' + linkifyUrls(marked.parse(result));
+    document.getElementById('content-display').innerHTML += '<details class="day-section" open><summary><span class="day-chevron">\u25B6</span> <span class="day-heading-text">&#127890; Packing List</span></summary><div class="day-content"><h2>Packing List</h2>' + linkifyUrls(marked.parse(result)) + '</div></details>';
   }
 });
 
@@ -1154,7 +1154,7 @@ document.getElementById('fun-fact-btn').addEventListener('click', async () => {
   document.getElementById('loading-overlay').style.display = 'none';
 
   if (result) {
-    document.getElementById('content-display').innerHTML += '<hr class="my-6"><h2>Fun Fact About ' + tripData.destination + '</h2>' + linkifyUrls(marked.parse(result));
+    document.getElementById('content-display').innerHTML += '<details class="day-section" open><summary><span class="day-chevron">\u25B6</span> <span class="day-heading-text">&#128161; Fun Fact About ' + tripData.destination + '</span></summary><div class="day-content"><h2>Fun Fact About ' + tripData.destination + '</h2>' + linkifyUrls(marked.parse(result)) + '</div></details>';
   }
 });
 </script>
