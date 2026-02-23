@@ -1115,14 +1115,14 @@ function restructureItinerary() {
   const container = document.getElementById('content-display');
   const dayPattern = /(Day\s+\d+|Tag\s+\d+|Jour\s+\d+|D[ií]a\s+\d+|第\d+天|\d+日目)/i;
   const cheapPattern = /(cheap tickets|günstige tickets|billetes baratos|billets pas chers|便宜票|安いチケット)/i;
-  const timeBlockPattern = /^(Morning|Afternoon|Evening|Vormittag|Nachmittag|Abend|Matin|Après-midi|Soir|Mañana|Tarde|Noche|午前|午後|夜|上午|下午|晚上)/i;
+  const timeBlockPattern = /^(early\s+morning|mid[- ]?morning|late\s+morning|morning|lunch|early\s+afternoon|mid[- ]?afternoon|late\s+afternoon|afternoon|early\s+evening|evening|night|dinner|brunch|breakfast|vormittag|nachmittag|abend|mittag|matin|après-midi|soir|midi|déjeuner|mañana|mediodía|tarde|noche|almuerzo|午前|午後|夜|昼|朝|上午|下午|晚上|中午)/i;
   const timeIcons = { morning: '\u2600\uFE0F', afternoon: '\uD83C\uDF24\uFE0F', evening: '\uD83C\uDF19' };
 
   function getTimeIcon(label) {
     const l = label.toLowerCase();
-    if (/morning|vormittag|matin|mañana|午前|上午/.test(l)) return timeIcons.morning;
-    if (/afternoon|nachmittag|après-midi|tarde|午後|下午/.test(l)) return timeIcons.afternoon;
-    if (/evening|abend|soir|noche|夜|晚上/.test(l)) return timeIcons.evening;
+    if (/morning|breakfast|brunch|vormittag|matin|mañana|午前|上午|朝/.test(l)) return timeIcons.morning;
+    if (/afternoon|lunch|midday|mediod|nachmittag|midi|après-midi|almuerzo|tarde|午後|下午|昼|中午/.test(l)) return timeIcons.afternoon;
+    if (/evening|night|dinner|abend|soir|noche|cena|夜|晚上/.test(l)) return timeIcons.evening;
     return '\uD83D\uDD52';
   }
 
@@ -1144,13 +1144,22 @@ function restructureItinerary() {
       const el = elements[i];
       if (el.nodeType !== 1) continue;
 
-      // Detect place name: <p> containing <strong>
+      // Detect place name: <p> containing <strong>, or <h3>/<h4> as place heading
       if (el.tagName === 'P' && el.querySelector('strong')) {
         if (current) stops.push(current);
         const nameEl = el.querySelector('strong');
         current = {
           name: nameEl.textContent.trim(),
           description: el.textContent.replace(nameEl.textContent, '').trim().replace(/^[:\-–—\s]+/, ''),
+          mapUrl: '', website: '', address: '', hours: '', fee: '', notes: [], extraEls: []
+        };
+        continue;
+      }
+      if ((el.tagName === 'H3' || el.tagName === 'H4') && !timeBlockPattern.test(el.textContent.trim())) {
+        if (current) stops.push(current);
+        current = {
+          name: el.textContent.trim().replace(/^[\d]+[\.\)]\s*/, ''),
+          description: '',
           mapUrl: '', website: '', address: '', hours: '', fee: '', notes: [], extraEls: []
         };
         continue;
@@ -1378,8 +1387,33 @@ function restructureItinerary() {
     // Find h3 time blocks
     const h3s = elSiblings.filter(s => s.tagName === 'H3' && timeBlockPattern.test(s.textContent.trim()));
 
-    // Graceful fallback: if no time blocks found, render raw content
+    // Fallback: if no time block h3s, try parsing stops directly from all elements
     if (h3s.length === 0) {
+      const directStops = parseStopsFromElements(elSiblings);
+
+      // If we found stops, build a day card with stop cards (no time block wrappers)
+      if (directStops.length > 0) {
+        const details = document.createElement('details');
+        details.className = 'day-section';
+        if (idx === 0) details.setAttribute('open', '');
+        const summary = document.createElement('summary');
+        const names = directStops.slice(0, 3).map(s => s.name).join(', ');
+        let sHtml = '<span class="day-chevron">\u25B6</span> <span class="day-heading-text">' + h2.textContent + '</span>';
+        if (names) sHtml += '<ul class="day-highlights"><li>' + names + '</li></ul>';
+        summary.innerHTML = sHtml;
+        const content = document.createElement('div');
+        content.className = 'day-content';
+        content.appendChild(h2.cloneNode(true));
+        if (routeMapEl) content.appendChild(routeMapEl.cloneNode(true));
+        directStops.forEach(stop => content.appendChild(buildStopCard(stop)));
+        details.appendChild(summary);
+        details.appendChild(content);
+        siblings.forEach(s => { if (s.parentNode) s.parentNode.removeChild(s); });
+        h2.replaceWith(details);
+        return;
+      }
+
+      // True fallback: no stops parseable, render raw content
       const details = document.createElement('details');
       details.className = 'day-section';
       if (idx === 0) details.setAttribute('open', '');
