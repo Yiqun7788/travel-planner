@@ -241,6 +241,168 @@ details.cheap-tickets-section[open] > summary {
   border-bottom: 2px solid #f59e0b;
 }
 details.cheap-tickets-section > summary::-webkit-details-marker { display: none; }
+
+/* ─── Day Highlights (collapsed summary) ─── */
+.day-highlights {
+  list-style: none; padding: 0; margin: 6px 0 0 28px;
+  display: flex; flex-wrap: wrap; gap: 6px 14px;
+  font-size: 0.82rem; color: #64748b;
+}
+.day-highlights li::before {
+  content: ''; display: inline-block; width: 6px; height: 6px;
+  background: #94a3b8; border-radius: 50%; margin-right: 6px;
+  vertical-align: middle;
+}
+
+/* ─── Day Overview (inside expanded day) ─── */
+.day-overview {
+  display: flex; flex-wrap: wrap; gap: 8px 18px;
+  padding: 10px 14px; margin-bottom: 10px;
+  background: #f8fafc; border-radius: 10px; border: 1px solid #e2e8f0;
+  font-size: 0.85rem; color: #475569;
+}
+.day-overview span { white-space: nowrap; }
+
+/* ─── Time Block ─── */
+.time-block { margin-bottom: 12px; }
+.time-block-label {
+  display: flex; align-items: center; gap: 6px;
+  font-weight: 700; font-size: 1rem; color: #334155;
+  margin: 14px 0 8px; padding-bottom: 4px;
+  border-bottom: 1.5px solid #e2e8f0;
+}
+
+/* ─── Schedule & Reference accordions ─── */
+details.schedule-section {
+  border: 1px solid #e2e8f0; border-radius: 12px;
+  margin: 8px 0; overflow: hidden;
+}
+details.schedule-section > summary {
+  list-style: none; cursor: pointer;
+  padding: 10px 14px; font-weight: 600; font-size: 0.95rem;
+  color: #334155; background: #f8fafc;
+  display: flex; align-items: center; gap: 8px;
+  user-select: none;
+}
+details.schedule-section > summary:hover { background: #f1f5f9; }
+details.schedule-section[open] > summary { background: #eef2ff; border-bottom: 1px solid #e2e8f0; }
+details.schedule-section > summary::-webkit-details-marker { display: none; }
+details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
+
+details.reference-section {
+  border: 1px solid #e2e8f0; border-radius: 12px;
+  margin: 8px 0; overflow: hidden;
+}
+details.reference-section > summary {
+  list-style: none; cursor: pointer;
+  padding: 10px 14px; font-weight: 600; font-size: 0.95rem;
+  color: #475569; background: #f8fafc;
+  display: flex; align-items: center; gap: 8px;
+  user-select: none;
+}
+details.reference-section > summary:hover { background: #f1f5f9; }
+details.reference-section[open] > summary { background: #f1f5f9; border-bottom: 1px solid #e2e8f0; }
+details.reference-section > summary::-webkit-details-marker { display: none; }
+details.reference-section > .reference-content { padding: 8px 14px 14px; }
+
+/* ─── Stop Card ─── */
+details.stop-card {
+  border: 1px solid #e2e8f0; border-radius: 10px;
+  margin: 6px 0; overflow: hidden;
+  transition: box-shadow 0.15s ease;
+}
+details.stop-card[open] { box-shadow: 0 1px 6px rgba(0,0,0,0.06); }
+details.stop-card > summary.stop-header {
+  list-style: none; cursor: pointer;
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 10px 12px; background: white;
+  user-select: none; transition: background 0.15s;
+  flex-wrap: wrap;
+}
+details.stop-card > summary.stop-header:hover { background: #f8fafc; }
+details.stop-card[open] > summary.stop-header { background: #f0f4ff; border-bottom: 1px solid #e2e8f0; }
+details.stop-card > summary.stop-header::-webkit-details-marker { display: none; }
+.stop-header .stop-name {
+  font-weight: 700; font-size: 0.95rem; color: #1e293b;
+}
+.stop-header .stop-desc-preview {
+  font-size: 0.82rem; color: #64748b;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  max-width: 100%;
+}
+.stop-header .stop-header-left { flex: 1; min-width: 0; }
+.stop-header .stop-header-right {
+  display: flex; align-items: center; gap: 6px;
+  flex-shrink: 0;
+}
+
+/* ─── Stop Chips ─── */
+.stop-chips { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 2px; }
+.stop-chip {
+  display: inline-block; padding: 1px 8px;
+  border-radius: 999px; font-size: 0.7rem; font-weight: 600;
+  line-height: 1.6;
+}
+.stop-chip.free { background: #dcfce7; color: #166534; }
+.stop-chip.paid { background: #fef3c7; color: #92400e; }
+.stop-chip.transport { background: #e0e7ff; color: #3730a3; }
+
+/* ─── Stop Map Button ─── */
+.stop-map-btn {
+  display: inline-flex; align-items: center; gap: 4px;
+  background: #6366f1; color: white !important; font-size: 0.72rem;
+  font-weight: 600; padding: 3px 10px; border-radius: 6px;
+  text-decoration: none !important; white-space: nowrap;
+  transition: background 0.15s;
+}
+.stop-map-btn:hover { background: #4f46e5; color: white !important; }
+
+/* ─── Stop Details (expanded) ─── */
+.stop-details {
+  padding: 10px 14px; background: white;
+  font-size: 0.88rem; color: #334155;
+}
+.stop-details .stop-detail-row {
+  display: flex; gap: 8px; padding: 4px 0;
+  border-bottom: 1px solid #f1f5f9;
+  line-height: 1.5;
+}
+.stop-details .stop-detail-row:last-child { border-bottom: none; }
+.stop-detail-label {
+  font-weight: 600; color: #64748b;
+  min-width: 60px; flex-shrink: 0; font-size: 0.8rem;
+}
+.stop-detail-value { color: #334155; word-break: break-word; }
+.stop-detail-value a { color: #6366f1; text-decoration: underline; }
+.stop-extra-notes { margin-top: 6px; padding-top: 6px; border-top: 1px solid #e2e8f0; color: #475569; line-height: 1.6; }
+
+/* ─── Mobile sticky action bar ─── */
+@media (max-width: 768px) {
+  .mobile-action-bar {
+    position: sticky; bottom: 0; left: 0; right: 0;
+    z-index: 50;
+    background: white; border-top: 1px solid #e2e8f0;
+    padding: 10px 12px;
+    box-shadow: 0 -2px 12px rgba(0,0,0,0.08);
+  }
+  .mobile-action-bar .grid { gap: 6px !important; }
+  .mobile-action-bar .tool-btn { padding: 10px 8px; font-size: 0.78rem; }
+  .stop-header { font-size: 0.9rem; }
+  .day-highlights { margin-left: 10px; }
+}
+
+/* ─── PDF / Word overrides (print) ─── */
+@media print {
+  details.stop-card, details.schedule-section, details.reference-section {
+    display: block; border: none; box-shadow: none;
+  }
+  details.stop-card > summary.stop-header,
+  details.schedule-section > summary,
+  details.reference-section > summary { display: none; }
+  .stop-details { padding: 0; }
+  .day-highlights { display: none; }
+  .mobile-action-bar { display: none; }
+}
 </style>
 </head>
 <body>
@@ -441,10 +603,19 @@ details.cheap-tickets-section > summary::-webkit-details-marker { display: none;
 
     <textarea id="update-instruction" class="form-input mb-4 resize-none" rows="3" placeholder="Your specific instruction to update the itinerary..."></textarea>
 
-    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3" id="extra-tools-buttons">
       <button id="update-itinerary-btn" class="tool-btn" style="background: linear-gradient(135deg, #f59e0b, #d97706);">&#9998; Update Itinerary</button>
       <button id="packing-list-btn" class="tool-btn" style="background: linear-gradient(135deg, #22c55e, #16a34a);">&#127890; Packing List</button>
       <button id="fun-fact-btn" class="tool-btn" style="background: linear-gradient(135deg, #a855f7, #7c3aed);">&#128161; Fun Fact</button>
+    </div>
+  </div>
+
+  <!-- Mobile sticky action bar (cloned buttons on mobile) -->
+  <div class="mobile-action-bar hidden sm:hidden">
+    <div class="grid grid-cols-3 gap-3">
+      <button onclick="document.getElementById('update-itinerary-btn').click()" class="tool-btn" style="background: linear-gradient(135deg, #f59e0b, #d97706);">&#9998; Update</button>
+      <button onclick="document.getElementById('packing-list-btn').click()" class="tool-btn" style="background: linear-gradient(135deg, #22c55e, #16a34a);">&#127890; Pack</button>
+      <button onclick="document.getElementById('fun-fact-btn').click()" class="tool-btn" style="background: linear-gradient(135deg, #a855f7, #7c3aed);">&#128161; Fact</button>
     </div>
   </div>
 
@@ -804,11 +975,12 @@ ${ticketTipsInstruction}
   document.getElementById('results-title').textContent = `Your Trip: ${dest} (${days} days)`;
   const routeMapHtml = buildLongDistanceRouteMap(dest, longDistance);
   document.getElementById('content-display').innerHTML = routeMapHtml + linkifyUrls(marked.parse(processDailyRoutes(finalResult)));
-  makeCollapsibleDays();
+  restructureItinerary();
 
   document.getElementById('planning-view').classList.add('hidden');
   document.getElementById('results-view').classList.remove('hidden');
   document.getElementById('language-select').parentElement.style.display = 'none';
+  if (window.innerWidth <= 768) document.querySelector('.mobile-action-bar').classList.remove('hidden');
 });
 
 // API calls go through the server-side route — API key is stored securely in Vercel environment variables
@@ -911,42 +1083,331 @@ function linkifyUrls(html) {
   }).join('');
 }
 
-// Wrap day headings and cheap tickets section in collapsible <details> sections
-function makeCollapsibleDays() {
+// Restructure itinerary into layered Day Cards with collapsible Stop Cards
+function restructureItinerary() {
   const container = document.getElementById('content-display');
-  // Match day patterns in 6 languages: Day N, Tag N, Jour N, Día N, 第N天, N日目
   const dayPattern = /(Day\s+\d+|Tag\s+\d+|Jour\s+\d+|D[ií]a\s+\d+|第\d+天|\d+日目)/i;
   const cheapPattern = /(cheap tickets|günstige tickets|billetes baratos|billets pas chers|便宜票|安いチケット)/i;
+  const timeBlockPattern = /^(Morning|Afternoon|Evening|Vormittag|Nachmittag|Abend|Matin|Après-midi|Soir|Mañana|Tarde|Noche|午前|午後|夜|上午|下午|晚上)/i;
+  const timeIcons = { morning: '\u2600\uFE0F', afternoon: '\uD83C\uDF24\uFE0F', evening: '\uD83C\uDF19' };
+
+  function getTimeIcon(label) {
+    const l = label.toLowerCase();
+    if (/morning|vormittag|matin|mañana|午前|上午/.test(l)) return timeIcons.morning;
+    if (/afternoon|nachmittag|après-midi|tarde|午後|下午/.test(l)) return timeIcons.afternoon;
+    if (/evening|abend|soir|noche|夜|晚上/.test(l)) return timeIcons.evening;
+    return '\uD83D\uDD52';
+  }
+
+  function getTimeCategory(label) {
+    const l = label.toLowerCase();
+    if (/morning|vormittag|matin|mañana|午前|上午/.test(l)) return 'morning';
+    if (/afternoon|nachmittag|après-midi|tarde|午後|下午/.test(l)) return 'afternoon';
+    return 'evening';
+  }
+
+  // Get user-selected transport modes for chips
+  const transportChips = (tripData.localTransport || []).concat(tripData.longDistance || []);
+
+  function parseStopsFromElements(elements) {
+    const stops = [];
+    let current = null;
+
+    for (let i = 0; i < elements.length; i++) {
+      const el = elements[i];
+      if (el.nodeType !== 1) continue;
+
+      // Detect place name: <p> containing <strong>
+      if (el.tagName === 'P' && el.querySelector('strong')) {
+        if (current) stops.push(current);
+        const nameEl = el.querySelector('strong');
+        current = {
+          name: nameEl.textContent.trim(),
+          description: el.textContent.replace(nameEl.textContent, '').trim().replace(/^[:\-–—\s]+/, ''),
+          mapUrl: '', website: '', address: '', hours: '', fee: '', notes: [], extraEls: []
+        };
+        continue;
+      }
+
+      // Extract fields from <ul> following a place name
+      if (current && el.tagName === 'UL') {
+        const lis = el.querySelectorAll('li');
+        let consumed = false;
+        lis.forEach(li => {
+          const text = li.textContent.trim();
+          const html = li.innerHTML;
+          if (/^map:/i.test(text)) {
+            const a = li.querySelector('a');
+            current.mapUrl = a ? a.href : text.replace(/^map:\s*/i, '');
+            consumed = true;
+          } else if (/^website:/i.test(text)) {
+            const a = li.querySelector('a');
+            current.website = a ? a.outerHTML : text.replace(/^website:\s*/i, '');
+            consumed = true;
+          } else if (/^address:/i.test(text)) {
+            current.address = text.replace(/^address:\s*/i, '');
+            consumed = true;
+          } else if (/^(hours?|open|opening):/i.test(text)) {
+            current.hours = text.replace(/^(hours?|open|opening):\s*/i, '');
+            consumed = true;
+          } else if (/^(fee|price|cost|admission|entry):/i.test(text)) {
+            current.fee = text.replace(/^(fee|price|cost|admission|entry):\s*/i, '');
+            consumed = true;
+          } else {
+            current.notes.push(html);
+          }
+        });
+        if (consumed) continue;
+      }
+
+      // Additional description paragraphs
+      if (current && el.tagName === 'P' && !el.querySelector('strong')) {
+        current.notes.push(el.innerHTML);
+        continue;
+      }
+
+      // Anything else not matching goes to extraEls
+      if (current) {
+        current.extraEls.push(el);
+      }
+    }
+    if (current) stops.push(current);
+    return stops;
+  }
+
+  function buildStopCard(stop) {
+    const details = document.createElement('details');
+    details.className = 'stop-card';
+
+    const summary = document.createElement('summary');
+    summary.className = 'stop-header';
+
+    const left = document.createElement('div');
+    left.className = 'stop-header-left';
+    const nameSpan = document.createElement('div');
+    nameSpan.className = 'stop-name';
+    nameSpan.textContent = stop.name;
+    left.appendChild(nameSpan);
+
+    if (stop.description) {
+      const desc = document.createElement('div');
+      desc.className = 'stop-desc-preview';
+      desc.textContent = stop.description.length > 90 ? stop.description.slice(0, 90) + '…' : stop.description;
+      left.appendChild(desc);
+    }
+
+    // Chips
+    const chips = document.createElement('div');
+    chips.className = 'stop-chips';
+    if (stop.fee) {
+      const chip = document.createElement('span');
+      chip.className = 'stop-chip ' + (/free|gratuit|gratis|kostenlos|無料|免费/i.test(stop.fee) ? 'free' : 'paid');
+      chip.textContent = /free|gratuit|gratis|kostenlos|無料|免费/i.test(stop.fee) ? 'Free' : 'Paid';
+      chips.appendChild(chip);
+    }
+    if (transportChips.length > 0) {
+      const chip = document.createElement('span');
+      chip.className = 'stop-chip transport';
+      chip.textContent = transportChips[0];
+      chips.appendChild(chip);
+    }
+    left.appendChild(chips);
+
+    const right = document.createElement('div');
+    right.className = 'stop-header-right';
+    if (stop.mapUrl) {
+      const mapBtn = document.createElement('a');
+      mapBtn.className = 'stop-map-btn';
+      mapBtn.href = stop.mapUrl;
+      mapBtn.target = '_blank';
+      mapBtn.rel = 'noopener noreferrer';
+      mapBtn.innerHTML = '\uD83D\uDDFA\uFE0F Map';
+      right.appendChild(mapBtn);
+    }
+    right.innerHTML += '<span class="day-chevron" style="margin-left:2px;">\u25B6</span>';
+
+    summary.appendChild(left);
+    summary.appendChild(right);
+
+    // Details body
+    const body = document.createElement('div');
+    body.className = 'stop-details';
+    if (stop.address) body.innerHTML += '<div class="stop-detail-row"><span class="stop-detail-label">Address</span><span class="stop-detail-value">' + stop.address + '</span></div>';
+    if (stop.hours) body.innerHTML += '<div class="stop-detail-row"><span class="stop-detail-label">Hours</span><span class="stop-detail-value">' + stop.hours + '</span></div>';
+    if (stop.fee) body.innerHTML += '<div class="stop-detail-row"><span class="stop-detail-label">Fee</span><span class="stop-detail-value">' + stop.fee + '</span></div>';
+    if (stop.website) body.innerHTML += '<div class="stop-detail-row"><span class="stop-detail-label">Website</span><span class="stop-detail-value">' + stop.website + '</span></div>';
+    if (stop.notes.length > 0) body.innerHTML += '<div class="stop-extra-notes">' + stop.notes.join(' ') + '</div>';
+
+    details.appendChild(summary);
+    details.appendChild(body);
+    return details;
+  }
+
+  // --- Main processing ---
   const h2s = Array.from(container.querySelectorAll('h2')).filter(h2 => dayPattern.test(h2.textContent.trim()));
 
   h2s.forEach((h2, idx) => {
     const siblings = [];
     let next = h2.nextSibling;
     while (next) {
-      // Stop at any h2 (next day, cheap tickets, travel tips, etc.)
       if (next.nodeType === 1 && next.tagName === 'H2') break;
       siblings.push(next);
       next = next.nextSibling;
     }
 
+    // Extract route-map-link if present
+    let routeMapEl = null;
+    const elSiblings = siblings.filter(s => s.nodeType === 1);
+    for (let i = 0; i < elSiblings.length; i++) {
+      if (elSiblings[i].tagName === 'A' && elSiblings[i].classList.contains('route-map-link')) {
+        routeMapEl = elSiblings[i];
+        break;
+      }
+      if (elSiblings[i].querySelector && elSiblings[i].querySelector('.route-map-link')) {
+        routeMapEl = elSiblings[i].querySelector('.route-map-link');
+        break;
+      }
+    }
+
+    // Find h3 time blocks
+    const h3s = elSiblings.filter(s => s.tagName === 'H3' && timeBlockPattern.test(s.textContent.trim()));
+
+    // Graceful fallback: if no time blocks found, render raw content
+    if (h3s.length === 0) {
+      const details = document.createElement('details');
+      details.className = 'day-section';
+      if (idx === 0) details.setAttribute('open', '');
+      const summary = document.createElement('summary');
+      summary.innerHTML = '<span class="day-chevron">\u25B6</span> <span class="day-heading-text">' + h2.textContent + '</span>';
+      const content = document.createElement('div');
+      content.className = 'day-content';
+      content.appendChild(h2.cloneNode(true));
+      siblings.forEach(s => content.appendChild(s));
+      details.appendChild(summary);
+      details.appendChild(content);
+      h2.replaceWith(details);
+      return;
+    }
+
+    // Parse time blocks and their stops
+    const timeBlocks = [];
+    h3s.forEach((h3, tIdx) => {
+      const blockEls = [];
+      let n = h3.nextSibling;
+      while (n) {
+        if (n.nodeType === 1 && (n.tagName === 'H3' || n.tagName === 'H2')) break;
+        blockEls.push(n);
+        n = n.nextSibling;
+      }
+      const stops = parseStopsFromElements(blockEls);
+      timeBlocks.push({ label: h3.textContent.trim(), stops, rawEls: stops.length === 0 ? blockEls : [] });
+    });
+
+    // Collect any reference elements (before first h3)
+    const referenceEls = [];
+    let ref = h2.nextSibling;
+    while (ref) {
+      if (ref === h3s[0]) break;
+      if (ref.nodeType === 1 && ref !== routeMapEl && !ref.classList?.contains('route-map-link')) {
+        referenceEls.push(ref);
+      }
+      ref = ref.nextSibling;
+    }
+
+    // Build highlight bullets for collapsed summary
+    const highlights = timeBlocks.map(tb => {
+      const icon = getTimeIcon(tb.label);
+      const names = tb.stops.slice(0, 3).map(s => s.name).join(', ');
+      return names ? icon + ' ' + names : '';
+    }).filter(Boolean);
+
+    // Build Day Card
     const details = document.createElement('details');
     details.className = 'day-section';
     if (idx === 0) details.setAttribute('open', '');
 
     const summary = document.createElement('summary');
-    summary.innerHTML = '<span class="day-chevron">\u25B6</span> <span class="day-heading-text">' + h2.textContent + '</span>';
+    let summaryHtml = '<span class="day-chevron">\u25B6</span> <span class="day-heading-text">' + h2.textContent + '</span>';
+    if (highlights.length > 0) {
+      summaryHtml += '<ul class="day-highlights">' + highlights.map(h => '<li>' + h + '</li>').join('') + '</ul>';
+    }
+    summary.innerHTML = summaryHtml;
 
     const content = document.createElement('div');
     content.className = 'day-content';
     content.appendChild(h2.cloneNode(true));
-    siblings.forEach(s => content.appendChild(s));
+
+    // Route map link
+    if (routeMapEl) {
+      const clone = routeMapEl.cloneNode(true);
+      content.appendChild(clone);
+    }
+
+    // Day overview
+    const overview = document.createElement('div');
+    overview.className = 'day-overview';
+    timeBlocks.forEach(tb => {
+      const icon = getTimeIcon(tb.label);
+      const names = tb.stops.map(s => s.name).join(' \u2192 ');
+      if (names) overview.innerHTML += '<span>' + icon + ' <strong>' + tb.label + ':</strong> ' + names + '</span>';
+    });
+    if (overview.innerHTML) content.appendChild(overview);
+
+    // Schedule accordion with time blocks and stop cards
+    const schedule = document.createElement('details');
+    schedule.className = 'schedule-section';
+    schedule.setAttribute('open', '');
+    const schedSummary = document.createElement('summary');
+    schedSummary.innerHTML = '<span class="day-chevron">\u25B6</span> \uD83D\uDDD3\uFE0F Schedule';
+    schedule.appendChild(schedSummary);
+    const schedContent = document.createElement('div');
+    schedContent.className = 'schedule-content';
+
+    timeBlocks.forEach(tb => {
+      const block = document.createElement('div');
+      block.className = 'time-block';
+      const label = document.createElement('div');
+      label.className = 'time-block-label';
+      label.innerHTML = getTimeIcon(tb.label) + ' ' + tb.label;
+      block.appendChild(label);
+
+      if (tb.stops.length > 0) {
+        tb.stops.forEach(stop => block.appendChild(buildStopCard(stop)));
+      } else {
+        // Fallback: render raw elements
+        tb.rawEls.forEach(el => {
+          if (el.nodeType === 1) block.appendChild(el.cloneNode(true));
+        });
+      }
+      schedContent.appendChild(block);
+    });
+    schedule.appendChild(schedContent);
+    content.appendChild(schedule);
+
+    // Reference accordion (extra content before first h3)
+    const nonEmptyRefs = referenceEls.filter(el => el.textContent && el.textContent.trim());
+    if (nonEmptyRefs.length > 0) {
+      const refSection = document.createElement('details');
+      refSection.className = 'reference-section';
+      const refSummary = document.createElement('summary');
+      refSummary.innerHTML = '<span class="day-chevron">\u25B6</span> \uD83D\uDCCB Additional Info';
+      refSection.appendChild(refSummary);
+      const refContent = document.createElement('div');
+      refContent.className = 'reference-content';
+      nonEmptyRefs.forEach(el => refContent.appendChild(el.cloneNode(true)));
+      refSection.appendChild(refContent);
+      content.appendChild(refSection);
+    }
 
     details.appendChild(summary);
     details.appendChild(content);
+
+    // Remove original siblings
+    siblings.forEach(s => { if (s.parentNode) s.parentNode.removeChild(s); });
     h2.replaceWith(details);
   });
 
-  // Make cheap tickets section collapsible (amber theme)
+  // Make cheap tickets section collapsible (amber theme) — unchanged
   const cheapH2 = Array.from(container.querySelectorAll('h2')).find(h2 =>
     !h2.closest('.day-content') && cheapPattern.test(h2.textContent)
   );
@@ -958,18 +1419,14 @@ function makeCollapsibleDays() {
       siblings.push(next);
       next = next.nextSibling;
     }
-
     const details = document.createElement('details');
     details.className = 'cheap-tickets-section';
-
     const summary = document.createElement('summary');
     summary.innerHTML = '<span class="day-chevron">\u25B6</span> <span class="day-heading-text">&#128176; ' + cheapH2.textContent + '</span>';
-
     const content = document.createElement('div');
     content.className = 'day-content';
     content.appendChild(cheapH2.cloneNode(true));
     siblings.forEach(s => content.appendChild(s));
-
     details.appendChild(summary);
     details.appendChild(content);
     cheapH2.replaceWith(details);
@@ -980,6 +1437,7 @@ document.getElementById('back-button').addEventListener('click', () => {
   document.getElementById('results-view').classList.add('hidden');
   document.getElementById('planning-view').classList.remove('hidden');
   document.getElementById('language-select').parentElement.style.display = '';
+  document.querySelector('.mobile-action-bar').classList.add('hidden');
 });
 
 // Download menu toggle
@@ -1053,6 +1511,15 @@ document.getElementById('download-pdf').addEventListener('click', () => {
         details.day-section > summary, details.cheap-tickets-section > summary { display: none; }
         details.day-section .day-content, details.cheap-tickets-section .day-content { padding: 0; }
         details.day-section .day-content h2, details.cheap-tickets-section .day-content h2 { display: block; }
+        details.stop-card, details.schedule-section, details.reference-section { display: block; border: none; box-shadow: none; }
+        details.stop-card > summary.stop-header { display: none; }
+        details.schedule-section > summary, details.reference-section > summary { display: none; }
+        .stop-details { padding: 4px 0; }
+        .day-highlights { display: none; }
+        .day-overview { display: none; }
+        .stop-chips { display: none; }
+        .stop-map-btn { display: inline; color: #4f46e5 !important; background: none; padding: 0; font-size: 0.85rem; text-decoration: underline; }
+        .mobile-action-bar { position: static; box-shadow: none; border: none; }
       </style>
     </head>
     <body>
@@ -1117,7 +1584,7 @@ Replace spaces with + in each place name. Include the city name. Separate stops 
   if (result) {
     tripData.itinerary = result;
     document.getElementById('content-display').innerHTML = linkifyUrls(marked.parse(processDailyRoutes(result)));
-    makeCollapsibleDays();
+    restructureItinerary();
     document.getElementById('update-instruction').value = '';
   }
 });
