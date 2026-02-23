@@ -348,7 +348,7 @@ details.reference-section > .reference-content { padding: 8px 14px 14px; }
   display: flex; gap: 5px; flex-wrap: wrap; align-items: center;
   margin-top: 6px;
 }
-.stop-map-btn, .stop-web-btn, .stop-details-btn {
+.stop-map-btn, .stop-web-btn {
   display: inline-flex; align-items: center; gap: 4px;
   font-size: 0.75rem; font-weight: 600;
   padding: 4px 12px; border-radius: 6px;
@@ -365,23 +365,6 @@ details.reference-section > .reference-content { padding: 8px 14px 14px; }
   border: 1px solid #e2e8f0;
 }
 .stop-web-btn:hover { background: #e2e8f0; color: #1e293b !important; }
-.stop-details-btn {
-  background: #f1f5f9; color: #334155 !important;
-  border: 1px solid #e2e8f0; font: inherit;
-  font-size: 0.75rem; font-weight: 600;
-}
-.stop-details-btn:hover { background: #e2e8f0; color: #1e293b !important; }
-.stop-details-btn:focus-visible {
-  outline: 2px solid #6366f1; outline-offset: -2px;
-}
-.stop-card.open .stop-details-btn {
-  background: #eef2ff; border-color: #c7d2fe; color: #4338ca !important;
-}
-.stop-details-btn .details-chevron {
-  display: inline-block; font-size: 0.6rem;
-  transition: transform 0.2s ease;
-}
-.stop-card.open .stop-details-btn .details-chevron { transform: rotate(90deg); }
 
 /* ─── Stop Details (expanded) ─── */
 .stop-details {
@@ -1252,20 +1235,21 @@ function restructureItinerary() {
     // 1-sentence description, max 90 chars
     const fullDesc = stop.description || '';
     const { short: shortDesc, truncated } = truncateToFirstSentence(fullDesc, 90);
+    const hasDetails = stop.address || stop.hours || stop.fee || (truncated && fullDesc) || stop.notes.length > 0;
+
     if (shortDesc) {
       const descDiv = document.createElement('div');
       descDiv.className = 'stop-desc-preview';
       descDiv.textContent = shortDesc;
-      if (truncated) {
+      if (truncated && hasDetails) {
         const more = document.createElement('a');
         more.href = '#';
         more.className = 'stop-read-more';
+        more.setAttribute('role', 'button');
+        more.setAttribute('aria-expanded', 'false');
+        more.setAttribute('aria-controls', id);
+        more.id = id + '-toggle';
         more.textContent = 'Read more\u2026';
-        more.addEventListener('click', function(e) {
-          e.preventDefault();
-          const btn = card.querySelector('.stop-details-btn');
-          if (btn) btn.click();
-        });
         descDiv.appendChild(more);
       }
       left.appendChild(descDiv);
@@ -1281,7 +1265,6 @@ function restructureItinerary() {
       chip.textContent = isFree ? 'Free' : 'Paid';
       chips.appendChild(chip);
     }
-    // Show up to 2 transport mode chips
     const modes = transportChips.slice(0, 2);
     modes.forEach(mode => {
       const chip = document.createElement('span');
@@ -1291,7 +1274,7 @@ function restructureItinerary() {
     });
     if (chips.children.length > 0) left.appendChild(chips);
 
-    // Action buttons row (Map + Website) — inside left so they wrap on mobile
+    // Action buttons row (Map + Website)
     const actions = document.createElement('div');
     actions.className = 'stop-actions';
     if (stop.mapUrl) {
@@ -1301,11 +1284,9 @@ function restructureItinerary() {
       mapBtn.target = '_blank';
       mapBtn.rel = 'noopener noreferrer';
       mapBtn.textContent = '\uD83D\uDDFA\uFE0F View on Google Maps';
-      mapBtn.addEventListener('click', function(e) { e.stopPropagation(); });
       actions.appendChild(mapBtn);
     }
     if (stop.website) {
-      // Extract href from anchor HTML or use raw text
       const tmpDiv = document.createElement('div');
       tmpDiv.innerHTML = stop.website;
       const existingA = tmpDiv.querySelector('a');
@@ -1315,26 +1296,23 @@ function restructureItinerary() {
       webBtn.target = '_blank';
       webBtn.rel = 'noopener noreferrer';
       webBtn.textContent = '\uD83C\uDF10 Website';
-      webBtn.addEventListener('click', function(e) { e.stopPropagation(); });
-      // Only show if it's a real link, not "Search online..."
       if (existingA || stop.website.startsWith('http')) {
         actions.appendChild(webBtn);
       }
     }
-
-    // "Details" toggle button — only show if there's something to expand
-    const hasDetails = stop.address || stop.hours || stop.fee || (truncated && fullDesc) || stop.notes.length > 0;
-    if (hasDetails) {
-      const detailsBtn = document.createElement('button');
-      detailsBtn.className = 'stop-details-btn';
-      detailsBtn.setAttribute('type', 'button');
-      detailsBtn.setAttribute('aria-expanded', 'false');
-      detailsBtn.setAttribute('aria-controls', id);
-      detailsBtn.id = id + '-btn';
-      detailsBtn.innerHTML = '<span class="details-chevron">\u25B6</span> Details';
-      actions.appendChild(detailsBtn);
+    // Show "Details" link only when there's no "Read more..." to toggle
+    if (hasDetails && !truncated) {
+      const detailsLink = document.createElement('a');
+      detailsLink.href = '#';
+      detailsLink.className = 'stop-read-more';
+      detailsLink.setAttribute('role', 'button');
+      detailsLink.setAttribute('aria-expanded', 'false');
+      detailsLink.setAttribute('aria-controls', id);
+      detailsLink.id = id + '-toggle';
+      detailsLink.textContent = '\u25B6 Details';
+      actions.appendChild(detailsLink);
     }
-    left.appendChild(actions);
+    if (actions.children.length > 0) left.appendChild(actions);
 
     header.appendChild(left);
 
@@ -1343,7 +1321,7 @@ function restructureItinerary() {
     panel.className = 'stop-details';
     panel.id = id;
     panel.setAttribute('role', 'region');
-    if (hasDetails) panel.setAttribute('aria-labelledby', id + '-btn');
+    if (hasDetails) panel.setAttribute('aria-labelledby', id + '-toggle');
 
     if (stop.address) panel.innerHTML += '<div class="stop-detail-row"><span class="stop-detail-label">Address</span><span class="stop-detail-value">' + stop.address + '</span></div>';
     if (stop.hours) panel.innerHTML += '<div class="stop-detail-row"><span class="stop-detail-label">Hours</span><span class="stop-detail-value">' + stop.hours + '</span></div>';
@@ -1357,13 +1335,17 @@ function restructureItinerary() {
     card.appendChild(header);
     card.appendChild(panel);
 
-    // Toggle logic — only on the Details button
+    // Toggle logic — on "Read more..." or "Details" link
     if (hasDetails) {
-      const detailsBtn = card.querySelector('.stop-details-btn');
-      detailsBtn.addEventListener('click', function() {
-        const expanded = card.classList.toggle('open');
-        detailsBtn.setAttribute('aria-expanded', String(expanded));
-      });
+      const toggle = card.querySelector('.stop-read-more');
+      if (toggle) {
+        toggle.addEventListener('click', function(e) {
+          e.preventDefault();
+          const expanded = card.classList.toggle('open');
+          toggle.setAttribute('aria-expanded', String(expanded));
+          toggle.textContent = expanded ? 'Show less' : (truncated ? 'Read more\u2026' : '\u25B6 Details');
+        });
+      }
     }
 
     return card;
