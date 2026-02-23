@@ -316,16 +316,6 @@ details.reference-section > .reference-content { padding: 8px 14px 14px; }
 .stop-card .stop-header {
   display: flex; align-items: flex-start; gap: 10px;
   padding: 10px 14px; background: white;
-  transition: background 0.15s;
-  width: 100%; border: none; cursor: pointer;
-  text-align: left; font: inherit;
-  -webkit-tap-highlight-color: transparent;
-  min-height: 44px;
-}
-.stop-card .stop-header:hover { background: #f8fafc; }
-.stop-card.open .stop-header { background: #f0f4ff; border-bottom: 1px solid #e2e8f0; }
-.stop-card .stop-header:focus-visible {
-  outline: 2px solid #6366f1; outline-offset: -2px; border-radius: 10px 10px 0 0;
 }
 .stop-header .stop-name {
   font-weight: 700; font-size: 0.95rem; color: #1e293b;
@@ -336,15 +326,6 @@ details.reference-section > .reference-content { padding: 8px 14px 14px; }
   line-height: 1.4; margin-top: 2px;
 }
 .stop-header .stop-header-left { flex: 1; min-width: 0; }
-.stop-header .stop-header-right {
-  display: flex; align-items: center; gap: 6px;
-  flex-shrink: 0; padding-top: 2px;
-}
-.stop-chevron {
-  display: inline-block; font-size: 0.7rem; color: #94a3b8;
-  transition: transform 0.2s ease;
-}
-.stop-card.open .stop-chevron { transform: rotate(90deg); }
 
 /* ─── Stop Chips ─── */
 .stop-chips { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 4px; }
@@ -357,16 +338,18 @@ details.reference-section > .reference-content { padding: 8px 14px 14px; }
 .stop-chip.paid { background: #fef3c7; color: #92400e; }
 .stop-chip.transport { background: #e0e7ff; color: #3730a3; }
 
-/* ─── Stop Action Buttons (Map + Website) ─── */
+/* ─── Stop Action Buttons (Map + Website + Details) ─── */
 .stop-actions {
   display: flex; gap: 5px; flex-wrap: wrap; align-items: center;
+  margin-top: 6px;
 }
-.stop-map-btn, .stop-web-btn {
+.stop-map-btn, .stop-web-btn, .stop-details-btn {
   display: inline-flex; align-items: center; gap: 4px;
   font-size: 0.75rem; font-weight: 600;
   padding: 4px 12px; border-radius: 6px;
   text-decoration: none !important; white-space: nowrap;
   transition: all 0.15s; min-height: 28px;
+  cursor: pointer;
 }
 .stop-map-btn {
   background: #6366f1; color: white !important;
@@ -377,6 +360,23 @@ details.reference-section > .reference-content { padding: 8px 14px 14px; }
   border: 1px solid #e2e8f0;
 }
 .stop-web-btn:hover { background: #e2e8f0; color: #1e293b !important; }
+.stop-details-btn {
+  background: #f1f5f9; color: #334155 !important;
+  border: 1px solid #e2e8f0; font: inherit;
+  font-size: 0.75rem; font-weight: 600;
+}
+.stop-details-btn:hover { background: #e2e8f0; color: #1e293b !important; }
+.stop-details-btn:focus-visible {
+  outline: 2px solid #6366f1; outline-offset: -2px;
+}
+.stop-card.open .stop-details-btn {
+  background: #eef2ff; border-color: #c7d2fe; color: #4338ca !important;
+}
+.stop-details-btn .details-chevron {
+  display: inline-block; font-size: 0.6rem;
+  transition: transform 0.2s ease;
+}
+.stop-card.open .stop-details-btn .details-chevron { transform: rotate(90deg); }
 
 /* ─── Stop Details (expanded) ─── */
 .stop-details {
@@ -417,8 +417,9 @@ details.reference-section > .reference-content { padding: 8px 14px 14px; }
 /* ─── PDF / Word overrides (print) ─── */
 @media print {
   .stop-card { border: none; box-shadow: none; }
-  .stop-card .stop-header { display: none; }
   .stop-card .stop-details { display: block !important; padding: 0; }
+  .stop-actions { display: none; }
+  .stop-chips { display: none; }
   details.schedule-section, details.reference-section {
     display: block; border: none; box-shadow: none;
   }
@@ -426,7 +427,6 @@ details.reference-section > .reference-content { padding: 8px 14px 14px; }
   details.reference-section > summary { display: none; }
   .day-highlights { display: none; }
   .day-overview { display: none; }
-  .stop-chips { display: none; }
   .mobile-action-bar { display: none; }
 }
 </style>
@@ -1222,14 +1222,10 @@ function restructureItinerary() {
     const id = 'stop-panel-' + (++stopCardCounter);
     const card = document.createElement('div');
     card.className = 'stop-card';
-    card.setAttribute('role', 'group');
 
-    // --- Toggle button (collapsed header) ---
-    const btn = document.createElement('button');
-    btn.className = 'stop-header';
-    btn.setAttribute('type', 'button');
-    btn.setAttribute('aria-expanded', 'false');
-    btn.setAttribute('aria-controls', id);
+    // --- Header (static, not a toggle) ---
+    const header = document.createElement('div');
+    header.className = 'stop-header';
 
     const left = document.createElement('div');
     left.className = 'stop-header-left';
@@ -1305,45 +1301,50 @@ function restructureItinerary() {
         actions.appendChild(webBtn);
       }
     }
-    if (actions.children.length > 0) left.appendChild(actions);
 
-    const right = document.createElement('div');
-    right.className = 'stop-header-right';
-    const chevron = document.createElement('span');
-    chevron.className = 'stop-chevron';
-    chevron.textContent = '\u25B6';
-    chevron.setAttribute('aria-hidden', 'true');
-    right.appendChild(chevron);
+    // "Details" toggle button — only show if there's something to expand
+    const hasDetails = stop.address || stop.hours || stop.fee || (truncated && fullDesc) || stop.notes.length > 0;
+    if (hasDetails) {
+      const detailsBtn = document.createElement('button');
+      detailsBtn.className = 'stop-details-btn';
+      detailsBtn.setAttribute('type', 'button');
+      detailsBtn.setAttribute('aria-expanded', 'false');
+      detailsBtn.setAttribute('aria-controls', id);
+      detailsBtn.id = id + '-btn';
+      detailsBtn.innerHTML = '<span class="details-chevron">\u25B6</span> Details';
+      actions.appendChild(detailsBtn);
+    }
+    left.appendChild(actions);
 
-    btn.appendChild(left);
-    btn.appendChild(right);
+    header.appendChild(left);
 
-    // --- Detail panel (expanded content) ---
+    // --- Detail panel (hidden by default) ---
     const panel = document.createElement('div');
     panel.className = 'stop-details';
     panel.id = id;
     panel.setAttribute('role', 'region');
-    panel.setAttribute('aria-labelledby', id + '-btn');
-    btn.id = id + '-btn';
+    if (hasDetails) panel.setAttribute('aria-labelledby', id + '-btn');
 
     if (stop.address) panel.innerHTML += '<div class="stop-detail-row"><span class="stop-detail-label">Address</span><span class="stop-detail-value">' + stop.address + '</span></div>';
     if (stop.hours) panel.innerHTML += '<div class="stop-detail-row"><span class="stop-detail-label">Hours</span><span class="stop-detail-value">' + stop.hours + '</span></div>';
     if (stop.fee) panel.innerHTML += '<div class="stop-detail-row"><span class="stop-detail-label">Fee</span><span class="stop-detail-value">' + stop.fee + '</span></div>';
     if (stop.website) panel.innerHTML += '<div class="stop-detail-row"><span class="stop-detail-label">Website</span><span class="stop-detail-value">' + stop.website + '</span></div>';
-    // Full description in expanded view if it was truncated
     if (truncated && fullDesc) {
       panel.innerHTML += '<div class="stop-extra-notes">' + fullDesc + '</div>';
     }
     if (stop.notes.length > 0) panel.innerHTML += '<div class="stop-extra-notes">' + stop.notes.join(' ') + '</div>';
 
-    card.appendChild(btn);
+    card.appendChild(header);
     card.appendChild(panel);
 
-    // Toggle logic
-    btn.addEventListener('click', function() {
-      const expanded = card.classList.toggle('open');
-      btn.setAttribute('aria-expanded', String(expanded));
-    });
+    // Toggle logic — only on the Details button
+    if (hasDetails) {
+      const detailsBtn = card.querySelector('.stop-details-btn');
+      detailsBtn.addEventListener('click', function() {
+        const expanded = card.classList.toggle('open');
+        detailsBtn.setAttribute('aria-expanded', String(expanded));
+      });
+    }
 
     return card;
   }
@@ -1617,14 +1618,13 @@ document.getElementById('download-pdf').addEventListener('click', () => {
         details.day-section .day-content, details.cheap-tickets-section .day-content { padding: 0; }
         details.day-section .day-content h2, details.cheap-tickets-section .day-content h2 { display: block; }
         .stop-card { border: none; box-shadow: none; }
-        .stop-card .stop-header { display: none; }
         .stop-card .stop-details { display: block !important; padding: 4px 0; }
+        .stop-actions { display: none; }
+        .stop-chips { display: none; }
         details.schedule-section, details.reference-section { display: block; border: none; box-shadow: none; }
         details.schedule-section > summary, details.reference-section > summary { display: none; }
         .day-highlights { display: none; }
         .day-overview { display: none; }
-        .stop-chips { display: none; }
-        .stop-map-btn, .stop-web-btn { display: inline; color: #4f46e5 !important; background: none; padding: 0; font-size: 0.85rem; text-decoration: underline; border: none; }
         .mobile-action-bar { position: static; box-shadow: none; border: none; }
       </style>
     </head>
