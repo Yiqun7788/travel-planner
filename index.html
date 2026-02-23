@@ -325,6 +325,11 @@ details.reference-section > .reference-content { padding: 8px 14px 14px; }
   font-size: 0.82rem; color: #64748b;
   line-height: 1.4; margin-top: 2px;
 }
+.stop-read-more {
+  color: #6366f1; font-weight: 500; margin-left: 4px;
+  cursor: pointer; text-decoration: none;
+}
+.stop-read-more:hover { text-decoration: underline; }
 .stop-header .stop-header-left { flex: 1; min-width: 0; }
 
 /* ─── Stop Chips ─── */
@@ -332,7 +337,7 @@ details.reference-section > .reference-content { padding: 8px 14px 14px; }
 .stop-chip {
   display: inline-block; padding: 2px 8px;
   border-radius: 999px; font-size: 0.7rem; font-weight: 600;
-  line-height: 1.5;
+  line-height: 1.5; cursor: default; user-select: none;
 }
 .stop-chip.free { background: #dcfce7; color: #166534; }
 .stop-chip.paid { background: #fef3c7; color: #92400e; }
@@ -1252,9 +1257,15 @@ function restructureItinerary() {
       descDiv.className = 'stop-desc-preview';
       descDiv.textContent = shortDesc;
       if (truncated) {
-        const more = document.createElement('span');
-        more.style.cssText = 'color:#6366f1;font-weight:500;margin-left:4px;';
+        const more = document.createElement('a');
+        more.href = '#';
+        more.className = 'stop-read-more';
         more.textContent = 'Read more\u2026';
+        more.addEventListener('click', function(e) {
+          e.preventDefault();
+          const btn = card.querySelector('.stop-details-btn');
+          if (btn) btn.click();
+        });
         descDiv.appendChild(more);
       }
       left.appendChild(descDiv);
