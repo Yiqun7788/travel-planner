@@ -306,42 +306,52 @@ details.reference-section > summary::-webkit-details-marker { display: none; }
 details.reference-section > .reference-content { padding: 8px 14px 14px; }
 
 /* ─── Stop Card ─── */
-details.stop-card {
+.stop-card {
   border: 1px solid #e2e8f0; border-radius: 10px;
   margin: 6px 0; overflow: hidden;
   transition: box-shadow 0.15s ease;
+  background: white;
 }
-details.stop-card[open] { box-shadow: 0 1px 6px rgba(0,0,0,0.06); }
-details.stop-card > summary.stop-header {
-  list-style: none; cursor: pointer;
+.stop-card.open { box-shadow: 0 1px 8px rgba(0,0,0,0.07); }
+.stop-card .stop-header {
   display: flex; align-items: flex-start; gap: 10px;
-  padding: 10px 12px; background: white;
-  user-select: none; transition: background 0.15s;
-  flex-wrap: wrap;
+  padding: 10px 14px; background: white;
+  transition: background 0.15s;
+  width: 100%; border: none; cursor: pointer;
+  text-align: left; font: inherit;
+  -webkit-tap-highlight-color: transparent;
+  min-height: 44px;
 }
-details.stop-card > summary.stop-header:hover { background: #f8fafc; }
-details.stop-card[open] > summary.stop-header { background: #f0f4ff; border-bottom: 1px solid #e2e8f0; }
-details.stop-card > summary.stop-header::-webkit-details-marker { display: none; }
+.stop-card .stop-header:hover { background: #f8fafc; }
+.stop-card.open .stop-header { background: #f0f4ff; border-bottom: 1px solid #e2e8f0; }
+.stop-card .stop-header:focus-visible {
+  outline: 2px solid #6366f1; outline-offset: -2px; border-radius: 10px 10px 0 0;
+}
 .stop-header .stop-name {
   font-weight: 700; font-size: 0.95rem; color: #1e293b;
+  line-height: 1.3;
 }
 .stop-header .stop-desc-preview {
   font-size: 0.82rem; color: #64748b;
-  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-  max-width: 100%;
+  line-height: 1.4; margin-top: 2px;
 }
 .stop-header .stop-header-left { flex: 1; min-width: 0; }
 .stop-header .stop-header-right {
   display: flex; align-items: center; gap: 6px;
-  flex-shrink: 0;
+  flex-shrink: 0; padding-top: 2px;
 }
+.stop-chevron {
+  display: inline-block; font-size: 0.7rem; color: #94a3b8;
+  transition: transform 0.2s ease;
+}
+.stop-card.open .stop-chevron { transform: rotate(90deg); }
 
 /* ─── Stop Chips ─── */
-.stop-chips { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 2px; }
+.stop-chips { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 4px; }
 .stop-chip {
-  display: inline-block; padding: 1px 8px;
+  display: inline-block; padding: 2px 8px;
   border-radius: 999px; font-size: 0.7rem; font-weight: 600;
-  line-height: 1.6;
+  line-height: 1.5;
 }
 .stop-chip.free { background: #dcfce7; color: #166534; }
 .stop-chip.paid { background: #fef3c7; color: #92400e; }
@@ -350,31 +360,33 @@ details.stop-card > summary.stop-header::-webkit-details-marker { display: none;
 /* ─── Stop Map Button ─── */
 .stop-map-btn {
   display: inline-flex; align-items: center; gap: 4px;
-  background: #6366f1; color: white !important; font-size: 0.72rem;
-  font-weight: 600; padding: 3px 10px; border-radius: 6px;
+  background: #6366f1; color: white !important; font-size: 0.75rem;
+  font-weight: 600; padding: 4px 12px; border-radius: 6px;
   text-decoration: none !important; white-space: nowrap;
-  transition: background 0.15s;
+  transition: background 0.15s; min-height: 28px;
 }
 .stop-map-btn:hover { background: #4f46e5; color: white !important; }
 
 /* ─── Stop Details (expanded) ─── */
 .stop-details {
-  padding: 10px 14px; background: white;
+  padding: 12px 14px; background: white;
   font-size: 0.88rem; color: #334155;
+  display: none;
 }
+.stop-card.open .stop-details { display: block; }
 .stop-details .stop-detail-row {
-  display: flex; gap: 8px; padding: 4px 0;
+  display: flex; gap: 8px; padding: 5px 0;
   border-bottom: 1px solid #f1f5f9;
   line-height: 1.5;
 }
 .stop-details .stop-detail-row:last-child { border-bottom: none; }
 .stop-detail-label {
   font-weight: 600; color: #64748b;
-  min-width: 60px; flex-shrink: 0; font-size: 0.8rem;
+  min-width: 64px; flex-shrink: 0; font-size: 0.8rem;
 }
 .stop-detail-value { color: #334155; word-break: break-word; }
 .stop-detail-value a { color: #6366f1; text-decoration: underline; }
-.stop-extra-notes { margin-top: 6px; padding-top: 6px; border-top: 1px solid #e2e8f0; color: #475569; line-height: 1.6; }
+.stop-extra-notes { margin-top: 8px; padding-top: 8px; border-top: 1px solid #e2e8f0; color: #475569; line-height: 1.6; }
 
 /* ─── Mobile sticky action bar ─── */
 @media (max-width: 768px) {
@@ -387,20 +399,23 @@ details.stop-card > summary.stop-header::-webkit-details-marker { display: none;
   }
   .mobile-action-bar .grid { gap: 6px !important; }
   .mobile-action-bar .tool-btn { padding: 10px 8px; font-size: 0.78rem; }
-  .stop-header { font-size: 0.9rem; }
+  .stop-card .stop-header { font-size: 0.9rem; padding: 12px; }
   .day-highlights { margin-left: 10px; }
 }
 
 /* ─── PDF / Word overrides (print) ─── */
 @media print {
-  details.stop-card, details.schedule-section, details.reference-section {
+  .stop-card { border: none; box-shadow: none; }
+  .stop-card .stop-header { display: none; }
+  .stop-card .stop-details { display: block !important; padding: 0; }
+  details.schedule-section, details.reference-section {
     display: block; border: none; box-shadow: none;
   }
-  details.stop-card > summary.stop-header,
   details.schedule-section > summary,
   details.reference-section > summary { display: none; }
-  .stop-details { padding: 0; }
   .day-highlights { display: none; }
+  .day-overview { display: none; }
+  .stop-chips { display: none; }
   .mobile-action-bar { display: none; }
 }
 </style>
@@ -1085,6 +1100,7 @@ function linkifyUrls(html) {
 
 // Restructure itinerary into layered Day Cards with collapsible Stop Cards
 function restructureItinerary() {
+  let stopCardCounter = 0;
   const container = document.getElementById('content-display');
   const dayPattern = /(Day\s+\d+|Tag\s+\d+|Jour\s+\d+|D[ií]a\s+\d+|第\d+天|\d+日目)/i;
   const cheapPattern = /(cheap tickets|günstige tickets|billetes baratos|billets pas chers|便宜票|安いチケット)/i;
@@ -1175,43 +1191,78 @@ function restructureItinerary() {
     return stops;
   }
 
-  function buildStopCard(stop) {
-    const details = document.createElement('details');
-    details.className = 'stop-card';
+  function truncateToFirstSentence(text, max) {
+    if (!text) return { short: '', truncated: false };
+    // Split on sentence-ending punctuation followed by space or end
+    const match = text.match(/^[^.!?。！？]*[.!?。！？]/);
+    const firstSentence = match ? match[0].trim() : text;
+    if (firstSentence.length <= max) return { short: firstSentence, truncated: firstSentence.length < text.length };
+    return { short: firstSentence.slice(0, max).replace(/\s+\S*$/, '') + '...', truncated: true };
+  }
 
-    const summary = document.createElement('summary');
-    summary.className = 'stop-header';
+  // Map transport values to short display labels
+  const transportLabelMap = {
+    'Walking': 'Walk', 'Subway/Metro': 'Metro', 'Bus': 'Bus', 'Tram': 'Tram',
+    'Ferry': 'Ferry', 'Bike (Local)': 'Bike', 'Train': 'Train', 'Car': 'Car',
+    'Air': 'Air', 'Bike': 'Bike', 'Long-Distance Bus': 'Bus', 'Boat': 'Boat'
+  };
+
+  function buildStopCard(stop) {
+    const id = 'stop-panel-' + (++stopCardCounter);
+    const card = document.createElement('div');
+    card.className = 'stop-card';
+    card.setAttribute('role', 'group');
+
+    // --- Toggle button (collapsed header) ---
+    const btn = document.createElement('button');
+    btn.className = 'stop-header';
+    btn.setAttribute('type', 'button');
+    btn.setAttribute('aria-expanded', 'false');
+    btn.setAttribute('aria-controls', id);
 
     const left = document.createElement('div');
     left.className = 'stop-header-left';
-    const nameSpan = document.createElement('div');
-    nameSpan.className = 'stop-name';
-    nameSpan.textContent = stop.name;
-    left.appendChild(nameSpan);
 
-    if (stop.description) {
-      const desc = document.createElement('div');
-      desc.className = 'stop-desc-preview';
-      desc.textContent = stop.description.length > 90 ? stop.description.slice(0, 90) + '…' : stop.description;
-      left.appendChild(desc);
+    const nameDiv = document.createElement('div');
+    nameDiv.className = 'stop-name';
+    nameDiv.textContent = stop.name;
+    left.appendChild(nameDiv);
+
+    // 1-sentence description, max 90 chars
+    const fullDesc = stop.description || '';
+    const { short: shortDesc, truncated } = truncateToFirstSentence(fullDesc, 90);
+    if (shortDesc) {
+      const descDiv = document.createElement('div');
+      descDiv.className = 'stop-desc-preview';
+      descDiv.textContent = shortDesc;
+      if (truncated) {
+        const more = document.createElement('span');
+        more.style.cssText = 'color:#6366f1;font-weight:500;margin-left:4px;';
+        more.textContent = 'Read more\u2026';
+        descDiv.appendChild(more);
+      }
+      left.appendChild(descDiv);
     }
 
     // Chips
     const chips = document.createElement('div');
     chips.className = 'stop-chips';
     if (stop.fee) {
+      const isFree = /free|gratuit|gratis|kostenlos|無料|免费/i.test(stop.fee);
       const chip = document.createElement('span');
-      chip.className = 'stop-chip ' + (/free|gratuit|gratis|kostenlos|無料|免费/i.test(stop.fee) ? 'free' : 'paid');
-      chip.textContent = /free|gratuit|gratis|kostenlos|無料|免费/i.test(stop.fee) ? 'Free' : 'Paid';
+      chip.className = 'stop-chip ' + (isFree ? 'free' : 'paid');
+      chip.textContent = isFree ? 'Free' : 'Paid';
       chips.appendChild(chip);
     }
-    if (transportChips.length > 0) {
+    // Show up to 2 transport mode chips
+    const modes = transportChips.slice(0, 2);
+    modes.forEach(mode => {
       const chip = document.createElement('span');
       chip.className = 'stop-chip transport';
-      chip.textContent = transportChips[0];
+      chip.textContent = transportLabelMap[mode] || mode;
       chips.appendChild(chip);
-    }
-    left.appendChild(chips);
+    });
+    if (chips.children.length > 0) left.appendChild(chips);
 
     const right = document.createElement('div');
     right.className = 'stop-header-right';
@@ -1221,26 +1272,48 @@ function restructureItinerary() {
       mapBtn.href = stop.mapUrl;
       mapBtn.target = '_blank';
       mapBtn.rel = 'noopener noreferrer';
-      mapBtn.innerHTML = '\uD83D\uDDFA\uFE0F Map';
+      mapBtn.textContent = '\uD83D\uDDFA\uFE0F View on Google Maps';
+      // Prevent card toggle when clicking map link
+      mapBtn.addEventListener('click', function(e) { e.stopPropagation(); });
       right.appendChild(mapBtn);
     }
-    right.innerHTML += '<span class="day-chevron" style="margin-left:2px;">\u25B6</span>';
+    const chevron = document.createElement('span');
+    chevron.className = 'stop-chevron';
+    chevron.textContent = '\u25B6';
+    chevron.setAttribute('aria-hidden', 'true');
+    right.appendChild(chevron);
 
-    summary.appendChild(left);
-    summary.appendChild(right);
+    btn.appendChild(left);
+    btn.appendChild(right);
 
-    // Details body
-    const body = document.createElement('div');
-    body.className = 'stop-details';
-    if (stop.address) body.innerHTML += '<div class="stop-detail-row"><span class="stop-detail-label">Address</span><span class="stop-detail-value">' + stop.address + '</span></div>';
-    if (stop.hours) body.innerHTML += '<div class="stop-detail-row"><span class="stop-detail-label">Hours</span><span class="stop-detail-value">' + stop.hours + '</span></div>';
-    if (stop.fee) body.innerHTML += '<div class="stop-detail-row"><span class="stop-detail-label">Fee</span><span class="stop-detail-value">' + stop.fee + '</span></div>';
-    if (stop.website) body.innerHTML += '<div class="stop-detail-row"><span class="stop-detail-label">Website</span><span class="stop-detail-value">' + stop.website + '</span></div>';
-    if (stop.notes.length > 0) body.innerHTML += '<div class="stop-extra-notes">' + stop.notes.join(' ') + '</div>';
+    // --- Detail panel (expanded content) ---
+    const panel = document.createElement('div');
+    panel.className = 'stop-details';
+    panel.id = id;
+    panel.setAttribute('role', 'region');
+    panel.setAttribute('aria-labelledby', id + '-btn');
+    btn.id = id + '-btn';
 
-    details.appendChild(summary);
-    details.appendChild(body);
-    return details;
+    if (stop.address) panel.innerHTML += '<div class="stop-detail-row"><span class="stop-detail-label">Address</span><span class="stop-detail-value">' + stop.address + '</span></div>';
+    if (stop.hours) panel.innerHTML += '<div class="stop-detail-row"><span class="stop-detail-label">Hours</span><span class="stop-detail-value">' + stop.hours + '</span></div>';
+    if (stop.fee) panel.innerHTML += '<div class="stop-detail-row"><span class="stop-detail-label">Fee</span><span class="stop-detail-value">' + stop.fee + '</span></div>';
+    if (stop.website) panel.innerHTML += '<div class="stop-detail-row"><span class="stop-detail-label">Website</span><span class="stop-detail-value">' + stop.website + '</span></div>';
+    // Full description in expanded view if it was truncated
+    if (truncated && fullDesc) {
+      panel.innerHTML += '<div class="stop-extra-notes">' + fullDesc + '</div>';
+    }
+    if (stop.notes.length > 0) panel.innerHTML += '<div class="stop-extra-notes">' + stop.notes.join(' ') + '</div>';
+
+    card.appendChild(btn);
+    card.appendChild(panel);
+
+    // Toggle logic
+    btn.addEventListener('click', function() {
+      const expanded = card.classList.toggle('open');
+      btn.setAttribute('aria-expanded', String(expanded));
+    });
+
+    return card;
   }
 
   // --- Main processing ---
@@ -1511,10 +1584,11 @@ document.getElementById('download-pdf').addEventListener('click', () => {
         details.day-section > summary, details.cheap-tickets-section > summary { display: none; }
         details.day-section .day-content, details.cheap-tickets-section .day-content { padding: 0; }
         details.day-section .day-content h2, details.cheap-tickets-section .day-content h2 { display: block; }
-        details.stop-card, details.schedule-section, details.reference-section { display: block; border: none; box-shadow: none; }
-        details.stop-card > summary.stop-header { display: none; }
+        .stop-card { border: none; box-shadow: none; }
+        .stop-card .stop-header { display: none; }
+        .stop-card .stop-details { display: block !important; padding: 4px 0; }
+        details.schedule-section, details.reference-section { display: block; border: none; box-shadow: none; }
         details.schedule-section > summary, details.reference-section > summary { display: none; }
-        .stop-details { padding: 4px 0; }
         .day-highlights { display: none; }
         .day-overview { display: none; }
         .stop-chips { display: none; }
