@@ -357,15 +357,26 @@ details.reference-section > .reference-content { padding: 8px 14px 14px; }
 .stop-chip.paid { background: #fef3c7; color: #92400e; }
 .stop-chip.transport { background: #e0e7ff; color: #3730a3; }
 
-/* ─── Stop Map Button ─── */
-.stop-map-btn {
+/* ─── Stop Action Buttons (Map + Website) ─── */
+.stop-actions {
+  display: flex; gap: 5px; flex-wrap: wrap; align-items: center;
+}
+.stop-map-btn, .stop-web-btn {
   display: inline-flex; align-items: center; gap: 4px;
-  background: #6366f1; color: white !important; font-size: 0.75rem;
-  font-weight: 600; padding: 4px 12px; border-radius: 6px;
+  font-size: 0.75rem; font-weight: 600;
+  padding: 4px 12px; border-radius: 6px;
   text-decoration: none !important; white-space: nowrap;
-  transition: background 0.15s; min-height: 28px;
+  transition: all 0.15s; min-height: 28px;
+}
+.stop-map-btn {
+  background: #6366f1; color: white !important;
 }
 .stop-map-btn:hover { background: #4f46e5; color: white !important; }
+.stop-web-btn {
+  background: #f1f5f9; color: #334155 !important;
+  border: 1px solid #e2e8f0;
+}
+.stop-web-btn:hover { background: #e2e8f0; color: #1e293b !important; }
 
 /* ─── Stop Details (expanded) ─── */
 .stop-details {
@@ -1264,8 +1275,9 @@ function restructureItinerary() {
     });
     if (chips.children.length > 0) left.appendChild(chips);
 
-    const right = document.createElement('div');
-    right.className = 'stop-header-right';
+    // Action buttons row (Map + Website) — inside left so they wrap on mobile
+    const actions = document.createElement('div');
+    actions.className = 'stop-actions';
     if (stop.mapUrl) {
       const mapBtn = document.createElement('a');
       mapBtn.className = 'stop-map-btn';
@@ -1273,10 +1285,30 @@ function restructureItinerary() {
       mapBtn.target = '_blank';
       mapBtn.rel = 'noopener noreferrer';
       mapBtn.textContent = '\uD83D\uDDFA\uFE0F View on Google Maps';
-      // Prevent card toggle when clicking map link
       mapBtn.addEventListener('click', function(e) { e.stopPropagation(); });
-      right.appendChild(mapBtn);
+      actions.appendChild(mapBtn);
     }
+    if (stop.website) {
+      // Extract href from anchor HTML or use raw text
+      const tmpDiv = document.createElement('div');
+      tmpDiv.innerHTML = stop.website;
+      const existingA = tmpDiv.querySelector('a');
+      const webBtn = document.createElement('a');
+      webBtn.className = 'stop-web-btn';
+      webBtn.href = existingA ? existingA.href : (stop.website.startsWith('http') ? stop.website : '#');
+      webBtn.target = '_blank';
+      webBtn.rel = 'noopener noreferrer';
+      webBtn.textContent = '\uD83C\uDF10 Website';
+      webBtn.addEventListener('click', function(e) { e.stopPropagation(); });
+      // Only show if it's a real link, not "Search online..."
+      if (existingA || stop.website.startsWith('http')) {
+        actions.appendChild(webBtn);
+      }
+    }
+    if (actions.children.length > 0) left.appendChild(actions);
+
+    const right = document.createElement('div');
+    right.className = 'stop-header-right';
     const chevron = document.createElement('span');
     chevron.className = 'stop-chevron';
     chevron.textContent = '\u25B6';
@@ -1592,7 +1624,7 @@ document.getElementById('download-pdf').addEventListener('click', () => {
         .day-highlights { display: none; }
         .day-overview { display: none; }
         .stop-chips { display: none; }
-        .stop-map-btn { display: inline; color: #4f46e5 !important; background: none; padding: 0; font-size: 0.85rem; text-decoration: underline; }
+        .stop-map-btn, .stop-web-btn { display: inline; color: #4f46e5 !important; background: none; padding: 0; font-size: 0.85rem; text-decoration: underline; border: none; }
         .mobile-action-bar { position: static; box-shadow: none; border: none; }
       </style>
     </head>
