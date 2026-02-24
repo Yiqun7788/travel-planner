@@ -1258,20 +1258,23 @@ function restructureItinerary() {
     nameDiv.textContent = stop.name;
     left.appendChild(nameDiv);
 
-    // Build description from inline text + descriptive notes (exclude structured data)
+    // Build description: inline text + descriptive notes (exclude structured data)
     const structuredPattern = /^(map|website|address|hours?|open|opening|fee|price|cost|admission|entry):/i;
     const descNotes = stop.notes
       .map(html => { const tmp = document.createElement('span'); tmp.innerHTML = html; return tmp.textContent.trim(); })
       .filter(t => t && !structuredPattern.test(t));
     const fullDesc = [stop.description, ...descNotes].filter(Boolean).join(' ');
-    const { short: shortDesc, truncated } = truncateToFirstSentence(fullDesc, 90);
-    if (shortDesc) {
+    if (fullDesc) {
       const descId = id + '-desc';
       const descDiv = document.createElement('div');
       descDiv.className = 'stop-desc-preview';
-      if (truncated) {
+      // Truncate at 60 chars for preview; show "Read more..." if there's more
+      const previewLen = 60;
+      const needsTruncation = fullDesc.length > previewLen;
+      if (needsTruncation) {
+        const shortText = fullDesc.slice(0, previewLen).replace(/\s+\S*$/, '') + '...';
         const shortSpan = document.createElement('span');
-        shortSpan.textContent = shortDesc;
+        shortSpan.textContent = shortText;
         const fullSpan = document.createElement('span');
         fullSpan.className = 'stop-full-desc';
         fullSpan.id = descId;
@@ -1294,7 +1297,7 @@ function restructureItinerary() {
         descDiv.appendChild(fullSpan);
         descDiv.appendChild(more);
       } else {
-        descDiv.textContent = shortDesc;
+        descDiv.textContent = fullDesc;
       }
       left.appendChild(descDiv);
     }
