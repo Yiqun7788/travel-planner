@@ -1403,6 +1403,13 @@ function restructureItinerary() {
     const yy = String(d.getFullYear()).slice(-2);
     return ' \u2014 ' + dd + '/' + mm + '/' + yy + ', ' + daysOfWeek[d.getDay()];
   }
+  // Strip Gemini's date from heading, e.g. "Day 1: Friday, February 28, 2026 - Old Town" → "Day 1: Old Town"
+  function stripDateFromHeading(text) {
+    // Remove patterns like "Monday, January 1, 2026 - " or "Monday, January 1, 2026 – " or "Monday, January 1, 2026: "
+    return text.replace(/\s*(?:Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday),?\s+\w+\s+\d{1,2},?\s+\d{4}\s*[-–—:]\s*/i, ' ')
+              .replace(/\s*\d{1,2}\/\d{1,2}\/\d{2,4}\s*[-–—:,]?\s*/g, ' ')
+              .replace(/\s{2,}/g, ' ').trim();
+  }
 
   // --- Main processing ---
   const h2s = Array.from(container.querySelectorAll('h2')).filter(h2 => dayPattern.test(h2.textContent.trim()));
@@ -1444,7 +1451,7 @@ function restructureItinerary() {
         if (idx === 0) details.setAttribute('open', '');
         const summary = document.createElement('summary');
         const names = directStops.slice(0, 3).map(s => s.name).join(', ');
-        let sHtml = '<span class="day-chevron">\u25B6</span> <span class="day-heading-text">' + h2.textContent + getDayDateLabel(idx) + '</span>';
+        let sHtml = '<span class="day-chevron">\u25B6</span> <span class="day-heading-text">' + stripDateFromHeading(h2.textContent) + getDayDateLabel(idx) + '</span>';
         if (names) sHtml += '<ul class="day-highlights"><li>' + names + '</li></ul>';
         summary.innerHTML = sHtml;
         const content = document.createElement('div');
@@ -1464,7 +1471,7 @@ function restructureItinerary() {
       details.className = 'day-section';
       if (idx === 0) details.setAttribute('open', '');
       const summary = document.createElement('summary');
-      summary.innerHTML = '<span class="day-chevron">\u25B6</span> <span class="day-heading-text">' + h2.textContent + getDayDateLabel(idx) + '</span>';
+      summary.innerHTML = '<span class="day-chevron">\u25B6</span> <span class="day-heading-text">' + stripDateFromHeading(h2.textContent) + getDayDateLabel(idx) + '</span>';
       const content = document.createElement('div');
       content.className = 'day-content';
       content.appendChild(h2.cloneNode(true));
@@ -1513,7 +1520,7 @@ function restructureItinerary() {
     if (idx === 0) details.setAttribute('open', '');
 
     const summary = document.createElement('summary');
-    let summaryHtml = '<span class="day-chevron">\u25B6</span> <span class="day-heading-text">' + h2.textContent + getDayDateLabel(idx) + '</span>';
+    let summaryHtml = '<span class="day-chevron">\u25B6</span> <span class="day-heading-text">' + stripDateFromHeading(h2.textContent) + getDayDateLabel(idx) + '</span>';
     if (highlights.length > 0) {
       summaryHtml += '<ul class="day-highlights">' + highlights.map(h => '<li>' + h + '</li>').join('') + '</ul>';
     }
