@@ -328,8 +328,12 @@ details.reference-section > .reference-content { padding: 8px 14px 14px; }
 .stop-read-more {
   color: #6366f1; font-weight: 500; margin-left: 4px;
   cursor: pointer; text-decoration: none;
+  background: none; border: none; padding: 0;
+  font-size: inherit; font-family: inherit; line-height: inherit;
 }
 .stop-read-more:hover { text-decoration: underline; }
+.stop-full-desc { display: none; }
+.stop-full-desc.expanded { display: inline; }
 .stop-header .stop-header-left { flex: 1; min-width: 0; }
 
 /* ─── Stop Chips ─── */
@@ -423,6 +427,8 @@ details.reference-section > .reference-content { padding: 8px 14px 14px; }
 @media print {
   .stop-card { border: none; box-shadow: none; }
   .stop-card .stop-details { display: block !important; padding: 0; }
+  .stop-full-desc { display: inline !important; }
+  .stop-read-more { display: none; }
   .stop-actions { display: none; }
   .stop-chips { display: none; }
   details.schedule-section, details.reference-section {
@@ -1253,20 +1259,34 @@ function restructureItinerary() {
     const fullDesc = stop.description || '';
     const { short: shortDesc, truncated } = truncateToFirstSentence(fullDesc, 90);
     if (shortDesc) {
+      const descId = id + '-desc';
       const descDiv = document.createElement('div');
       descDiv.className = 'stop-desc-preview';
-      descDiv.textContent = shortDesc;
       if (truncated) {
-        const more = document.createElement('a');
-        more.href = '#';
+        const shortSpan = document.createElement('span');
+        shortSpan.textContent = shortDesc;
+        const fullSpan = document.createElement('span');
+        fullSpan.className = 'stop-full-desc';
+        fullSpan.id = descId;
+        fullSpan.textContent = fullDesc;
+        const more = document.createElement('button');
+        more.type = 'button';
         more.className = 'stop-read-more';
         more.textContent = 'Read more\u2026';
+        more.setAttribute('aria-expanded', 'false');
+        more.setAttribute('aria-controls', descId);
         more.addEventListener('click', function(e) {
-          e.preventDefault();
-          const btn = card.querySelector('.stop-details-btn');
-          if (btn) btn.click();
+          e.stopPropagation();
+          const isExpanded = fullSpan.classList.toggle('expanded');
+          shortSpan.style.display = isExpanded ? 'none' : '';
+          more.textContent = isExpanded ? 'Read less' : 'Read more\u2026';
+          more.setAttribute('aria-expanded', String(isExpanded));
         });
+        descDiv.appendChild(shortSpan);
+        descDiv.appendChild(fullSpan);
         descDiv.appendChild(more);
+      } else {
+        descDiv.textContent = shortDesc;
       }
       left.appendChild(descDiv);
     }
@@ -1323,7 +1343,7 @@ function restructureItinerary() {
     }
 
     // "Details" toggle button — only show if there's something to expand
-    const hasDetails = stop.address || stop.hours || stop.fee || (truncated && fullDesc) || stop.notes.length > 0;
+    const hasDetails = stop.address || stop.hours || stop.fee || stop.notes.length > 0;
     if (hasDetails) {
       const detailsBtn = document.createElement('button');
       detailsBtn.className = 'stop-details-btn';
@@ -1349,9 +1369,6 @@ function restructureItinerary() {
     if (stop.hours) panel.innerHTML += '<div class="stop-detail-row"><span class="stop-detail-label">Hours</span><span class="stop-detail-value">' + stop.hours + '</span></div>';
     if (stop.fee) panel.innerHTML += '<div class="stop-detail-row"><span class="stop-detail-label">Fee</span><span class="stop-detail-value">' + stop.fee + '</span></div>';
     if (stop.website) panel.innerHTML += '<div class="stop-detail-row"><span class="stop-detail-label">Website</span><span class="stop-detail-value">' + stop.website + '</span></div>';
-    if (truncated && fullDesc) {
-      panel.innerHTML += '<div class="stop-extra-notes">' + fullDesc + '</div>';
-    }
     if (stop.notes.length > 0) panel.innerHTML += '<div class="stop-extra-notes">' + stop.notes.join(' ') + '</div>';
 
     card.appendChild(header);
@@ -1664,6 +1681,8 @@ document.getElementById('download-pdf').addEventListener('click', () => {
         details.day-section .day-content h2, details.cheap-tickets-section .day-content h2 { display: block; }
         .stop-card { border: none; box-shadow: none; }
         .stop-card .stop-details { display: block !important; padding: 4px 0; }
+        .stop-full-desc { display: inline !important; }
+        .stop-read-more { display: none; }
         .stop-actions { display: none; }
         .stop-chips { display: none; }
         details.schedule-section, details.reference-section { display: block; border: none; box-shadow: none; }
