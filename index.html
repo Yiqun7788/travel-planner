@@ -1201,10 +1201,7 @@ function restructureItinerary() {
             current.fee = text.replace(/^(fee|price|cost|admission|entry):\s*/i, '');
             consumed = true;
           } else {
-            const noteText = li.textContent.trim();
-            if (noteText) {
-              current.description = current.description ? (current.description + ' ' + noteText) : noteText;
-            }
+            current.notes.push(html);
           }
         });
         if (consumed) continue;
@@ -1261,8 +1258,12 @@ function restructureItinerary() {
     nameDiv.textContent = stop.name;
     left.appendChild(nameDiv);
 
-    // 1-sentence description, max 90 chars
-    const fullDesc = stop.description || '';
+    // Build description from inline text + descriptive notes (exclude structured data)
+    const structuredPattern = /^(map|website|address|hours?|open|opening|fee|price|cost|admission|entry):/i;
+    const descNotes = stop.notes
+      .map(html => { const tmp = document.createElement('span'); tmp.innerHTML = html; return tmp.textContent.trim(); })
+      .filter(t => t && !structuredPattern.test(t));
+    const fullDesc = [stop.description, ...descNotes].filter(Boolean).join(' ');
     const { short: shortDesc, truncated } = truncateToFirstSentence(fullDesc, 90);
     if (shortDesc) {
       const descId = id + '-desc';
