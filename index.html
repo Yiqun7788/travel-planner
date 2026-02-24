@@ -1264,7 +1264,8 @@ function restructureItinerary() {
         more.textContent = 'Read more\u2026';
         more.addEventListener('click', function(e) {
           e.preventDefault();
-          card.classList.toggle('open');
+          const btn = card.querySelector('.stop-details-btn');
+          if (btn) btn.click();
         });
         descDiv.appendChild(more);
       }
@@ -1322,7 +1323,19 @@ function restructureItinerary() {
       }
     }
 
+    // "Details" toggle button in actions row — only show if there's something to expand
     const hasDetails = stop.address || stop.hours || stop.fee || (truncated && fullDesc) || stop.notes.length > 0;
+    if (hasDetails) {
+      const detailsBtn = document.createElement('button');
+      detailsBtn.className = 'stop-details-btn';
+      detailsBtn.setAttribute('data-details-toggle', '');
+      detailsBtn.setAttribute('type', 'button');
+      detailsBtn.setAttribute('aria-expanded', 'false');
+      detailsBtn.setAttribute('aria-controls', id);
+      detailsBtn.id = id + '-btn';
+      detailsBtn.innerHTML = '<span class="details-chevron">\u25B6</span> Details';
+      actions.appendChild(detailsBtn);
+    }
     left.appendChild(actions);
 
     header.appendChild(left);
@@ -1346,6 +1359,14 @@ function restructureItinerary() {
     card.appendChild(header);
     card.appendChild(panel);
 
+    // Toggle logic for Details button
+    if (hasDetails) {
+      const detailsBtn = card.querySelector('.stop-details-btn');
+      detailsBtn.addEventListener('click', function() {
+        const expanded = card.classList.toggle('open');
+        detailsBtn.setAttribute('aria-expanded', String(expanded));
+      });
+    }
 
     return card;
   }
@@ -1712,7 +1733,17 @@ document.addEventListener('click',function(e){
   if(!btn)return;
   e.preventDefault();
   var card=btn.closest('.stop-card');
-  if(card)card.classList.toggle('open');
+  if(!card)return;
+  var detailsBtn=card.querySelector('[data-details-toggle]');
+  if(detailsBtn)detailsBtn.click();
+});
+document.addEventListener('click',function(e){
+  var btn=e.target.closest('[data-details-toggle]');
+  if(!btn)return;
+  var card=btn.closest('.stop-card');
+  if(!card)return;
+  var expanded=card.classList.toggle('open');
+  btn.setAttribute('aria-expanded',String(expanded));
 });
 </scr` + `ipt>
 </body>
