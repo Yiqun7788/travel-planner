@@ -325,6 +325,11 @@ details.reference-section > .reference-content { padding: 8px 14px 14px; }
   font-size: 0.82rem; color: #64748b;
   line-height: 1.4; margin-top: 2px;
 }
+.stop-read-more {
+  color: #6366f1; font-weight: 500; margin-left: 4px;
+  cursor: pointer; text-decoration: none;
+}
+.stop-read-more:hover { text-decoration: underline; }
 .stop-header .stop-header-left { flex: 1; min-width: 0; }
 
 /* ─── Stop Chips ─── */
@@ -1251,6 +1256,18 @@ function restructureItinerary() {
       const descDiv = document.createElement('div');
       descDiv.className = 'stop-desc-preview';
       descDiv.textContent = shortDesc;
+      if (truncated) {
+        const more = document.createElement('a');
+        more.href = '#';
+        more.className = 'stop-read-more';
+        more.textContent = 'Read more\u2026';
+        more.addEventListener('click', function(e) {
+          e.preventDefault();
+          const btn = card.querySelector('.stop-details-btn');
+          if (btn) btn.click();
+        });
+        descDiv.appendChild(more);
+      }
       left.appendChild(descDiv);
     }
 
