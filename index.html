@@ -423,6 +423,8 @@ details.reference-section > .reference-content { padding: 8px 14px 14px; }
 @media print {
   .stop-card { border: none; box-shadow: none; }
   .stop-card .stop-details { display: block !important; padding: 0; }
+  .stop-full-desc { display: inline !important; }
+  .stop-read-more { display: none; }
   .stop-actions { display: none; }
   .stop-chips { display: none; }
   details.schedule-section, details.reference-section {
@@ -1253,21 +1255,35 @@ function restructureItinerary() {
     const fullDesc = stop.description || '';
     const { short: shortDesc, truncated } = truncateToFirstSentence(fullDesc, 90);
     if (shortDesc) {
+      const descId = id + '-desc';
       const descDiv = document.createElement('div');
       descDiv.className = 'stop-desc-preview';
-      descDiv.textContent = shortDesc;
       if (truncated) {
-        const more = document.createElement('a');
-        more.href = '#';
+        const shortSpan = document.createElement('span');
+        shortSpan.textContent = shortDesc;
+        const fullSpan = document.createElement('span');
+        fullSpan.className = 'stop-full-desc';
+        fullSpan.id = descId;
+        fullSpan.textContent = fullDesc;
+        const more = document.createElement('button');
+        more.type = 'button';
         more.className = 'stop-read-more';
         more.setAttribute('data-readmore-toggle', '');
+        more.setAttribute('aria-expanded', 'false');
+        more.setAttribute('aria-controls', descId);
         more.textContent = 'Read more\u2026';
         more.addEventListener('click', function(e) {
-          e.preventDefault();
-          const btn = card.querySelector('.stop-details-btn');
-          if (btn) btn.click();
+          e.stopPropagation();
+          const isExpanded = fullSpan.classList.toggle('expanded');
+          shortSpan.style.display = isExpanded ? 'none' : '';
+          more.textContent = isExpanded ? 'Read less' : 'Read more\u2026';
+          more.setAttribute('aria-expanded', String(isExpanded));
         });
+        descDiv.appendChild(shortSpan);
+        descDiv.appendChild(fullSpan);
         descDiv.appendChild(more);
+      } else {
+        descDiv.textContent = shortDesc;
       }
       left.appendChild(descDiv);
     }
@@ -1324,7 +1340,7 @@ function restructureItinerary() {
     }
 
     // "Details" toggle button in actions row — only show if there's something to expand
-    const hasDetails = stop.address || stop.hours || stop.fee || (truncated && fullDesc) || stop.notes.length > 0;
+    const hasDetails = stop.address || stop.hours || stop.fee || stop.notes.length > 0;
     if (hasDetails) {
       const detailsBtn = document.createElement('button');
       detailsBtn.className = 'stop-details-btn';
@@ -1351,9 +1367,6 @@ function restructureItinerary() {
     if (stop.hours) panel.innerHTML += '<div class="stop-detail-row"><span class="stop-detail-label">Hours</span><span class="stop-detail-value">' + stop.hours + '</span></div>';
     if (stop.fee) panel.innerHTML += '<div class="stop-detail-row"><span class="stop-detail-label">Fee</span><span class="stop-detail-value">' + stop.fee + '</span></div>';
     if (stop.website) panel.innerHTML += '<div class="stop-detail-row"><span class="stop-detail-label">Website</span><span class="stop-detail-value">' + stop.website + '</span></div>';
-    if (truncated && fullDesc) {
-      panel.innerHTML += '<div class="stop-extra-notes">' + fullDesc + '</div>';
-    }
     if (stop.notes.length > 0) panel.innerHTML += '<div class="stop-extra-notes">' + stop.notes.join(' ') + '</div>';
 
     card.appendChild(header);
@@ -1731,11 +1744,15 @@ ${bodyContent}
 document.addEventListener('click',function(e){
   var btn=e.target.closest('[data-readmore-toggle]');
   if(!btn)return;
-  e.preventDefault();
-  var card=btn.closest('.stop-card');
-  if(!card)return;
-  var detailsBtn=card.querySelector('[data-details-toggle]');
-  if(detailsBtn)detailsBtn.click();
+  e.stopPropagation();
+  var targetId=btn.getAttribute('aria-controls');
+  var fullEl=document.getElementById(targetId);
+  if(!fullEl)return;
+  var shortEl=fullEl.previousElementSibling;
+  var isExpanded=fullEl.classList.toggle('expanded');
+  if(shortEl)shortEl.style.display=isExpanded?'none':'';
+  btn.textContent=isExpanded?'Read less':'Read more\\u2026';
+  btn.setAttribute('aria-expanded',String(isExpanded));
 });
 document.addEventListener('click',function(e){
   var btn=e.target.closest('[data-details-toggle]');
@@ -1786,6 +1803,8 @@ document.getElementById('download-pdf').addEventListener('click', () => {
         details.day-section .day-content h2, details.cheap-tickets-section .day-content h2 { display: block; }
         .stop-card { border: none; box-shadow: none; }
         .stop-card .stop-details { display: block !important; padding: 4px 0; }
+        .stop-full-desc { display: inline !important; }
+        .stop-read-more { display: none; }
         .stop-actions { display: none; }
         .stop-chips { display: none; }
         details.schedule-section, details.reference-section { display: block; border: none; box-shadow: none; }
