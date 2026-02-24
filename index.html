@@ -1201,7 +1201,10 @@ function restructureItinerary() {
             current.fee = text.replace(/^(fee|price|cost|admission|entry):\s*/i, '');
             consumed = true;
           } else {
-            current.notes.push(html);
+            const noteText = li.textContent.trim();
+            if (noteText) {
+              current.description = current.description ? (current.description + ' ' + noteText) : noteText;
+            }
           }
         });
         if (consumed) continue;
