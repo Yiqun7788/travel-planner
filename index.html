@@ -1391,6 +1391,19 @@ function restructureItinerary() {
     return card;
   }
 
+  // --- Date label helper ---
+  const daysOfWeek = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  function getDayDateLabel(dayIndex) {
+    if (!tripData.startDate) return '';
+    const d = new Date(tripData.startDate);
+    if (isNaN(d.getTime())) return '';
+    d.setDate(d.getDate() + dayIndex);
+    const dd = String(d.getDate()).padStart(2, '0');
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const yy = String(d.getFullYear()).slice(-2);
+    return ' \u2014 ' + dd + '/' + mm + '/' + yy + ', ' + daysOfWeek[d.getDay()];
+  }
+
   // --- Main processing ---
   const h2s = Array.from(container.querySelectorAll('h2')).filter(h2 => dayPattern.test(h2.textContent.trim()));
 
@@ -1431,7 +1444,7 @@ function restructureItinerary() {
         if (idx === 0) details.setAttribute('open', '');
         const summary = document.createElement('summary');
         const names = directStops.slice(0, 3).map(s => s.name).join(', ');
-        let sHtml = '<span class="day-chevron">\u25B6</span> <span class="day-heading-text">' + h2.textContent + '</span>';
+        let sHtml = '<span class="day-chevron">\u25B6</span> <span class="day-heading-text">' + h2.textContent + getDayDateLabel(idx) + '</span>';
         if (names) sHtml += '<ul class="day-highlights"><li>' + names + '</li></ul>';
         summary.innerHTML = sHtml;
         const content = document.createElement('div');
@@ -1451,7 +1464,7 @@ function restructureItinerary() {
       details.className = 'day-section';
       if (idx === 0) details.setAttribute('open', '');
       const summary = document.createElement('summary');
-      summary.innerHTML = '<span class="day-chevron">\u25B6</span> <span class="day-heading-text">' + h2.textContent + '</span>';
+      summary.innerHTML = '<span class="day-chevron">\u25B6</span> <span class="day-heading-text">' + h2.textContent + getDayDateLabel(idx) + '</span>';
       const content = document.createElement('div');
       content.className = 'day-content';
       content.appendChild(h2.cloneNode(true));
@@ -1500,7 +1513,7 @@ function restructureItinerary() {
     if (idx === 0) details.setAttribute('open', '');
 
     const summary = document.createElement('summary');
-    let summaryHtml = '<span class="day-chevron">\u25B6</span> <span class="day-heading-text">' + h2.textContent + '</span>';
+    let summaryHtml = '<span class="day-chevron">\u25B6</span> <span class="day-heading-text">' + h2.textContent + getDayDateLabel(idx) + '</span>';
     if (highlights.length > 0) {
       summaryHtml += '<ul class="day-highlights">' + highlights.map(h => '<li>' + h + '</li>').join('') + '</ul>';
     }
