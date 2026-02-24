@@ -623,6 +623,7 @@ details.reference-section > .reference-content { padding: 8px 14px 14px; }
           <div id="download-menu" class="hidden absolute right-0 mt-2 bg-white shadow-xl rounded-xl border border-slate-100 overflow-hidden z-10 min-w-[200px]">
             <button id="download-word" class="download-menu-item">&#128196; Download as Word (.docx)</button>
             <button id="download-pdf" class="download-menu-item">&#128462; Download as PDF</button>
+            <button id="download-html" class="download-menu-item">&#128187; Offline HTML (Clickable)</button>
           </div>
         </div>
         <button id="back-button" class="bg-white/20 backdrop-blur hover:bg-white/30 text-white px-4 py-2 rounded-lg font-semibold text-sm transition-all border border-white/30" data-i18n="back">&#8592; Back</button>
@@ -1272,6 +1273,7 @@ function restructureItinerary() {
         const more = document.createElement('button');
         more.type = 'button';
         more.className = 'stop-read-more';
+        more.setAttribute('data-readmore-toggle', '');
         more.textContent = 'Read more\u2026';
         more.setAttribute('aria-expanded', 'false');
         more.setAttribute('aria-controls', descId);
@@ -1347,6 +1349,7 @@ function restructureItinerary() {
     if (hasDetails) {
       const detailsBtn = document.createElement('button');
       detailsBtn.className = 'stop-details-btn';
+      detailsBtn.setAttribute('data-details-toggle', '');
       detailsBtn.setAttribute('type', 'button');
       detailsBtn.setAttribute('aria-expanded', 'false');
       detailsBtn.setAttribute('aria-controls', id);
@@ -1705,6 +1708,171 @@ document.getElementById('download-pdf').addEventListener('click', () => {
     printWindow.print();
     printWindow.close();
   };
+  document.getElementById('download-menu').classList.add('hidden');
+});
+
+// Download as Offline HTML (Clickable)
+document.getElementById('download-html').addEventListener('click', () => {
+  const contentEl = document.getElementById('content-display');
+  // Clone content and add day ids + back-to-top links
+  const clone = contentEl.cloneNode(true);
+  clone.querySelectorAll('details.day-section').forEach((day, i) => {
+    day.id = 'day-' + (i + 1);
+    // Add back-to-top link at end of day-content
+    const dayContent = day.querySelector('.day-content');
+    if (dayContent) {
+      const backLink = document.createElement('p');
+      backLink.style.cssText = 'text-align:right;margin-top:12px;';
+      backLink.innerHTML = '<a href="#top" style="color:#6366f1;font-size:0.85rem;text-decoration:none;">&#8593; Back to top</a>';
+      dayContent.appendChild(backLink);
+    }
+  });
+  // Build overview navigation
+  const daySections = clone.querySelectorAll('details.day-section');
+  let overviewHtml = '';
+  if (daySections.length > 0) {
+    overviewHtml = '<nav id="day-overview" style="margin-bottom:20px;padding:14px 18px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;"><strong style="display:block;margin-bottom:8px;color:#334155;">Jump to Day:</strong><ul style="list-style:none;padding:0;margin:0;display:flex;flex-wrap:wrap;gap:6px;">';
+    daySections.forEach((day, i) => {
+      const heading = day.querySelector('.day-heading-text');
+      const label = heading ? heading.textContent.trim() : ('Day ' + (i + 1));
+      overviewHtml += '<li><a href="#day-' + (i + 1) + '" style="display:inline-block;padding:6px 14px;background:#eef2ff;color:#4338ca;border-radius:8px;font-size:0.85rem;font-weight:600;text-decoration:none;">' + label + '</a></li>';
+    });
+    overviewHtml += '</ul></nav>';
+  }
+  // Clean up interactive state and remove app-only elements
+  clone.querySelectorAll('.stop-card.open').forEach(c => c.classList.remove('open'));
+  clone.querySelectorAll('.stop-full-desc.expanded').forEach(el => el.classList.remove('expanded'));
+  clone.querySelectorAll('.mobile-action-bar').forEach(el => el.remove());
+  // Serialize content
+  const bodyContent = clone.innerHTML;
+
+  const htmlFile = `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>${tripData.destination} Itinerary</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;max-width:860px;margin:0 auto;padding:20px;color:#334155;background:#fff;}
+h1{color:#2563eb;border-bottom:3px solid #2563eb;padding-bottom:10px;}
+a{color:#6366f1;}
+details.day-section{border:1.5px solid #e2e8f0;border-radius:14px;margin:1rem 0;overflow:hidden;}
+details.day-section[open]{box-shadow:0 2px 12px rgba(0,0,0,0.06);}
+details.day-section>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:10px;padding:14px 18px;background:linear-gradient(135deg,#f8fafc,#f1f5f9);font-weight:700;font-size:1.25rem;color:#334155;user-select:none;}
+details.day-section>summary:hover{background:linear-gradient(135deg,#f1f5f9,#e2e8f0);}
+details.day-section[open]>summary{background:linear-gradient(135deg,#eef2ff,#e0e7ff);border-bottom:1.5px solid #e2e8f0;}
+details.day-section>summary::-webkit-details-marker{display:none;}
+.day-chevron{display:inline-block;transition:transform 0.2s ease;font-size:0.75rem;color:#94a3b8;}
+details.day-section[open]>summary .day-chevron{transform:rotate(90deg);}
+.day-content{padding:4px 18px 18px;}
+.day-content h2{display:none;}
+.day-highlights{list-style:none;padding:0;margin:6px 0 0 28px;display:flex;flex-wrap:wrap;gap:6px 14px;font-size:0.82rem;color:#64748b;}
+.day-highlights li::before{content:'';display:inline-block;width:6px;height:6px;background:#94a3b8;border-radius:50%;margin-right:6px;vertical-align:middle;}
+.day-overview{display:flex;flex-wrap:wrap;gap:8px 18px;padding:10px 14px;margin-bottom:10px;background:#f8fafc;border-radius:10px;border:1px solid #e2e8f0;font-size:0.85rem;color:#475569;}
+.day-overview span{white-space:nowrap;}
+.time-block{margin-bottom:12px;}
+.time-block-label{display:flex;align-items:center;gap:6px;font-weight:700;font-size:1rem;color:#334155;margin:14px 0 8px;padding-bottom:4px;border-bottom:1.5px solid #e2e8f0;}
+details.schedule-section{border:1px solid #e2e8f0;border-radius:12px;margin:8px 0;overflow:hidden;}
+details.schedule-section>summary{list-style:none;cursor:pointer;padding:10px 14px;font-weight:600;font-size:0.95rem;color:#334155;background:#f8fafc;display:flex;align-items:center;gap:8px;user-select:none;}
+details.schedule-section>summary:hover{background:#f1f5f9;}
+details.schedule-section[open]>summary{background:#eef2ff;border-bottom:1px solid #e2e8f0;}
+details.schedule-section>summary::-webkit-details-marker{display:none;}
+details.schedule-section>.schedule-content{padding:8px 14px 14px;}
+details.reference-section{border:1px solid #e2e8f0;border-radius:12px;margin:8px 0;overflow:hidden;}
+details.reference-section>summary{list-style:none;cursor:pointer;padding:10px 14px;font-weight:600;font-size:0.95rem;color:#475569;background:#f8fafc;display:flex;align-items:center;gap:8px;user-select:none;}
+details.reference-section>summary:hover{background:#f1f5f9;}
+details.reference-section[open]>summary{background:#f1f5f9;border-bottom:1px solid #e2e8f0;}
+details.reference-section>summary::-webkit-details-marker{display:none;}
+details.reference-section>.reference-content{padding:8px 14px 14px;}
+details.cheap-tickets-section{border:2px solid #f59e0b;border-radius:14px;margin:2rem 0 1rem;overflow:hidden;}
+details.cheap-tickets-section[open]{box-shadow:0 2px 12px rgba(245,158,11,0.15);}
+details.cheap-tickets-section>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:10px;padding:14px 18px;background:linear-gradient(135deg,#fffbeb,#fef3c7);font-weight:700;font-size:1.25rem;color:#b45309;user-select:none;}
+details.cheap-tickets-section>summary:hover{background:linear-gradient(135deg,#fef3c7,#fde68a);}
+details.cheap-tickets-section[open]>summary{background:linear-gradient(135deg,#fef3c7,#fde68a);border-bottom:2px solid #f59e0b;}
+details.cheap-tickets-section>summary::-webkit-details-marker{display:none;}
+.stop-card{border:1px solid #e2e8f0;border-radius:10px;margin:6px 0;overflow:hidden;background:#fff;}
+.stop-card.open{box-shadow:0 1px 8px rgba(0,0,0,0.07);}
+.stop-card .stop-header{display:flex;align-items:flex-start;gap:10px;padding:10px 14px;background:#fff;}
+.stop-header .stop-name{font-weight:700;font-size:0.95rem;color:#1e293b;line-height:1.3;}
+.stop-header .stop-desc-preview{font-size:0.82rem;color:#64748b;line-height:1.4;margin-top:2px;}
+.stop-read-more{color:#6366f1;font-weight:500;margin-left:4px;cursor:pointer;text-decoration:none;background:none;border:none;padding:0;font-size:inherit;font-family:inherit;line-height:inherit;}
+.stop-read-more:hover{text-decoration:underline;}
+.stop-full-desc{display:none;}
+.stop-full-desc.expanded{display:inline;}
+.stop-header .stop-header-left{flex:1;min-width:0;}
+.stop-chips{display:flex;gap:4px;flex-wrap:wrap;margin-top:4px;}
+.stop-chip{display:inline-block;padding:2px 8px;border-radius:999px;font-size:0.7rem;font-weight:600;line-height:1.5;cursor:default;user-select:none;}
+.stop-chip.free{background:#dcfce7;color:#166534;}
+.stop-chip.paid{background:#fef3c7;color:#92400e;}
+.stop-chip.transport{background:#e0e7ff;color:#3730a3;}
+.stop-actions{display:flex;gap:5px;flex-wrap:wrap;align-items:center;margin-top:6px;}
+.stop-map-btn,.stop-web-btn,.stop-details-btn{display:inline-flex;align-items:center;gap:4px;font-size:0.75rem;font-weight:600;padding:4px 12px;border-radius:6px;text-decoration:none!important;white-space:nowrap;min-height:28px;cursor:pointer;}
+.stop-map-btn{background:#6366f1;color:#fff!important;}
+.stop-map-btn:hover{background:#4f46e5;color:#fff!important;}
+.stop-web-btn{background:#f1f5f9;color:#334155!important;border:1px solid #e2e8f0;}
+.stop-web-btn:hover{background:#e2e8f0;color:#1e293b!important;}
+.stop-details-btn{background:#f1f5f9;color:#334155!important;border:1px solid #e2e8f0;font-size:0.75rem;font-weight:600;}
+.stop-details-btn:hover{background:#e2e8f0;color:#1e293b!important;}
+.stop-card.open .stop-details-btn{background:#eef2ff;border-color:#c7d2fe;color:#4338ca!important;}
+.stop-details-btn .details-chevron{display:inline-block;font-size:0.6rem;transition:transform 0.2s ease;}
+.stop-card.open .stop-details-btn .details-chevron{transform:rotate(90deg);}
+.stop-details{padding:12px 14px;background:#fff;font-size:0.88rem;color:#334155;display:none;}
+.stop-card.open .stop-details{display:block;}
+.stop-details .stop-detail-row{display:flex;gap:8px;padding:5px 0;border-bottom:1px solid #f1f5f9;line-height:1.5;}
+.stop-details .stop-detail-row:last-child{border-bottom:none;}
+.stop-detail-label{font-weight:600;color:#64748b;min-width:64px;flex-shrink:0;font-size:0.8rem;}
+.stop-detail-value{color:#334155;word-break:break-word;}
+.stop-detail-value a{color:#6366f1;text-decoration:underline;}
+.stop-extra-notes{margin-top:8px;padding-top:8px;border-top:1px solid #e2e8f0;color:#475569;line-height:1.6;}
+.route-map-link{display:inline-block;background:#4f46e5;color:#fff!important;font-weight:600;padding:10px 18px;border-radius:8px;text-decoration:none;margin:8px 0;}
+.route-map-link:hover{background:#4338ca;}
+@media(max-width:768px){
+  .stop-card .stop-header{font-size:0.9rem;padding:12px;}
+  .day-highlights{margin-left:10px;}
+}
+</style>
+</head>
+<body id="top">
+<h1>${tripData.destination} &mdash; ${tripData.days}-Day Itinerary</h1>
+<p><strong>Dates:</strong> ${tripData.startDate} to ${tripData.endDate}</p>
+${overviewHtml}
+${bodyContent}
+<script>
+// Read more / Read less toggle
+document.addEventListener('click',function(e){
+  var btn=e.target.closest('[data-readmore-toggle]');
+  if(!btn)return;
+  e.stopPropagation();
+  var targetId=btn.getAttribute('aria-controls');
+  var fullEl=document.getElementById(targetId);
+  var shortEl=fullEl.previousElementSibling;
+  if(!fullEl)return;
+  var expanded=fullEl.classList.toggle('expanded');
+  if(shortEl)shortEl.style.display=expanded?'none':'';
+  btn.textContent=expanded?'Read less':'Read more\\u2026';
+  btn.setAttribute('aria-expanded',String(expanded));
+});
+// Details toggle (Address/Hours/Fee)
+document.addEventListener('click',function(e){
+  var btn=e.target.closest('[data-details-toggle]');
+  if(!btn)return;
+  var card=btn.closest('.stop-card');
+  if(!card)return;
+  var expanded=card.classList.toggle('open');
+  btn.setAttribute('aria-expanded',String(expanded));
+});
+</script>
+</body>
+</html>`;
+
+  const blob = new Blob([htmlFile], { type: 'text/html;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `${tripData.destination.replace(/\s+/g, '_')}_Itinerary.html`;
+  a.click();
+  URL.revokeObjectURL(url);
   document.getElementById('download-menu').classList.add('hidden');
 });
 
