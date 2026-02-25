@@ -297,22 +297,6 @@ details.schedule-section[open] > summary { background: #eef2ff; border-bottom: 1
 details.schedule-section > summary::-webkit-details-marker { display: none; }
 details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
 
-details.reference-section {
-  border: 1px solid #e2e8f0; border-radius: 12px;
-  margin: 8px 0; overflow: hidden;
-}
-details.reference-section > summary {
-  list-style: none; cursor: pointer;
-  padding: 10px 14px; font-weight: 600; font-size: 0.95rem;
-  color: #475569; background: #f8fafc;
-  display: flex; align-items: center; gap: 8px;
-  user-select: none;
-}
-details.reference-section > summary:hover { background: #f1f5f9; }
-details.reference-section[open] > summary { background: #f1f5f9; border-bottom: 1px solid #e2e8f0; }
-details.reference-section > summary::-webkit-details-marker { display: none; }
-details.reference-section > .reference-content { padding: 8px 14px 14px; }
-
 /* ─── Stop Card ─── */
 .stop-card {
   border: 1px solid #e2e8f0; border-radius: 10px;
@@ -439,11 +423,10 @@ details.reference-section > .reference-content { padding: 8px 14px 14px; }
   .stop-read-more { display: none; }
   .stop-actions { display: none; }
   .stop-chips { display: none; }
-  details.schedule-section, details.reference-section {
+  details.schedule-section {
     display: block; border: none; box-shadow: none;
   }
-  details.schedule-section > summary,
-  details.reference-section > summary { display: none; }
+  details.schedule-section > summary { display: none; }
   .day-highlights { display: none; }
   .day-overview { display: none; }
   .mobile-action-bar { display: none; }
@@ -1560,17 +1543,6 @@ function restructureItinerary() {
       timeBlocks.push({ label: h3.textContent.trim(), stops, rawEls: stops.length === 0 ? blockEls : [] });
     });
 
-    // Collect any reference elements (before first h3)
-    const referenceEls = [];
-    let ref = h2.nextSibling;
-    while (ref) {
-      if (ref === h3s[0]) break;
-      if (ref.nodeType === 1 && ref !== routeMapEl && !ref.classList?.contains('route-map-link')) {
-        referenceEls.push(ref);
-      }
-      ref = ref.nextSibling;
-    }
-
     // Build highlight bullets for collapsed summary
     const highlights = timeBlocks.map(tb => {
       const icon = getTimeIcon(tb.label);
@@ -1648,21 +1620,6 @@ function restructureItinerary() {
     });
     schedule.appendChild(schedContent);
     content.appendChild(schedule);
-
-    // Reference accordion (extra content before first h3)
-    const nonEmptyRefs = referenceEls.filter(el => el.textContent && el.textContent.trim());
-    if (nonEmptyRefs.length > 0) {
-      const refSection = document.createElement('details');
-      refSection.className = 'reference-section';
-      const refSummary = document.createElement('summary');
-      refSummary.innerHTML = '<span class="day-chevron">\u25B6</span> \uD83D\uDCCB Additional Info';
-      refSection.appendChild(refSummary);
-      const refContent = document.createElement('div');
-      refContent.className = 'reference-content';
-      nonEmptyRefs.forEach(el => refContent.appendChild(el.cloneNode(true)));
-      refSection.appendChild(refContent);
-      content.appendChild(refSection);
-    }
 
     details.appendChild(summary);
     details.appendChild(content);
@@ -1780,12 +1737,6 @@ details.schedule-section>summary:hover{background:#f1f5f9;}
 details.schedule-section[open]>summary{background:#eef2ff;border-bottom:1px solid #e2e8f0;}
 details.schedule-section>summary::-webkit-details-marker{display:none;}
 details.schedule-section>.schedule-content{padding:8px 14px 14px;}
-details.reference-section{border:1px solid #e2e8f0;border-radius:12px;margin:8px 0;overflow:hidden;}
-details.reference-section>summary{list-style:none;cursor:pointer;padding:10px 14px;font-weight:600;font-size:0.95rem;color:#475569;background:#f8fafc;display:flex;align-items:center;gap:8px;user-select:none;}
-details.reference-section>summary:hover{background:#f1f5f9;}
-details.reference-section[open]>summary{background:#f1f5f9;border-bottom:1px solid #e2e8f0;}
-details.reference-section>summary::-webkit-details-marker{display:none;}
-details.reference-section>.reference-content{padding:8px 14px 14px;}
 details.cheap-tickets-section{border:2px solid #f59e0b;border-radius:14px;margin:2rem 0 1rem;overflow:hidden;}
 details.cheap-tickets-section[open]{box-shadow:0 2px 12px rgba(245,158,11,0.15);}
 details.cheap-tickets-section>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:10px;padding:14px 18px;background:linear-gradient(135deg,#fffbeb,#fef3c7);font-weight:700;font-size:1.25rem;color:#b45309;user-select:none;}
@@ -1906,8 +1857,8 @@ document.getElementById('download-pdf').addEventListener('click', () => {
         .stop-read-more { display: none; }
         .stop-actions { display: none; }
         .stop-chips { display: none; }
-        details.schedule-section, details.reference-section { display: block; border: none; box-shadow: none; }
-        details.schedule-section > summary, details.reference-section > summary { display: none; }
+        details.schedule-section { display: block; border: none; box-shadow: none; }
+        details.schedule-section > summary { display: none; }
         .day-highlights { display: none; }
         .day-overview { display: none; }
         .mobile-action-bar { position: static; box-shadow: none; border: none; }
