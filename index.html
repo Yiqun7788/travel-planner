@@ -1322,14 +1322,6 @@ function restructureItinerary() {
       }
       chips.appendChild(chip);
     }
-    // Show up to 2 transport mode chips
-    const modes = transportChips.slice(0, 2);
-    modes.forEach(mode => {
-      const chip = document.createElement('span');
-      chip.className = 'stop-chip transport';
-      chip.textContent = transportLabelMap[mode] || mode;
-      chips.appendChild(chip);
-    });
     if (chips.children.length > 0) left.appendChild(chips);
 
     // Action buttons row (Map + Website) — inside left so they wrap on mobile
@@ -1579,6 +1571,14 @@ function restructureItinerary() {
       const label = document.createElement('div');
       label.className = 'time-block-label';
       label.innerHTML = getTimeIcon(tb.label) + ' ' + tb.label;
+      // Show up to 2 transport mode chips on section header
+      const modes = transportChips.slice(0, 2);
+      modes.forEach(mode => {
+        const chip = document.createElement('span');
+        chip.className = 'stop-chip transport';
+        chip.textContent = transportLabelMap[mode] || mode;
+        label.appendChild(chip);
+      });
       block.appendChild(label);
 
       if (tb.stops.length > 0) {
