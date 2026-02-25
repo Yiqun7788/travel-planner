@@ -930,11 +930,13 @@ ${localTransport.length > 0 ? `Local transportation (within cities): ${localTran
 ${additionalInstructions ? `Additional instructions: ${additionalInstructions}` : ''}
 
 STRUCTURE - You MUST use this exact markdown heading structure:
-- Use ## for each day heading (e.g., "## Day 1: Historical London")
+- Use ## for each day heading (e.g., "## Day 1: Historical London"). Include the city name in the day heading when visiting multiple destinations.
+- Do NOT add separate city/destination headings (no # London or ## London). The city name goes in the ## Day heading only.
 - Under each day, group activities into time-of-day sections using ### headings (e.g., "### Morning", "### Afternoon", "### Evening"). You may add context to these headings (e.g., "### Morning: Museums & Markets", "### Lunch & Afternoon", "### Late Afternoon (Depart by 5:00 PM)").
 - Every day MUST have at least 2 time-of-day ### sub-sections.
 - List each place under the appropriate ### time section.
 - Do NOT list places directly under ## day headings without a ### time sub-section.
+- For multi-city trips, use: ## Day 1: City Name - Theme (e.g., "## Day 1: London - Royal History", "## Day 3: Chester - Medieval Walls"). NEVER use # or ## for standalone city names.
 
 IMPORTANT - For EVERY place, attraction, restaurant, and activity mentioned in the itinerary, you MUST include:
 1. A Google Maps link in this exact format: https://www.google.com/maps/search/?api=1&query=PLACE+NAME+CITY (replace spaces with +). ALWAYS provide this for every place.
@@ -1458,6 +1460,43 @@ function restructureItinerary() {
               .replace(/\s{2,}/g, ' ').trim();
   }
 
+  // --- Normalize headings for multi-destination ---
+  // If Gemini used city-level headings (# City or ## City) and pushed days to h3/h4,
+  // promote day headings to h2 and time blocks to h3 so the parser works.
+  const h2Days = Array.from(container.querySelectorAll('h2')).filter(h2 => dayPattern.test(h2.textContent.trim()));
+  if (h2Days.length === 0) {
+    // Check for day headings at h3 level (multi-destination with ## City headers)
+    const h3Days = Array.from(container.querySelectorAll('h3')).filter(h3 => dayPattern.test(h3.textContent.trim()));
+    if (h3Days.length > 0) {
+      // Remove standalone city h2 headings that aren't day headings
+      container.querySelectorAll('h2').forEach(h2 => {
+        if (!dayPattern.test(h2.textContent.trim()) && !cheapPattern.test(h2.textContent.trim())) {
+          h2.remove();
+        }
+      });
+      // Promote h3 day headings to h2
+      h3Days.forEach(h3 => {
+        const h2 = document.createElement('h2');
+        h2.innerHTML = h3.innerHTML;
+        h3.replaceWith(h2);
+      });
+      // Promote h4 time blocks to h3
+      container.querySelectorAll('h4').forEach(h4 => {
+        if (timeBlockPattern.test(h4.textContent.trim())) {
+          const h3 = document.createElement('h3');
+          h3.innerHTML = h4.innerHTML;
+          h4.replaceWith(h3);
+        }
+      });
+    }
+  }
+  // Also remove any standalone h1 city headings (# City) that Gemini may add
+  container.querySelectorAll('h1').forEach(h1 => {
+    if (!dayPattern.test(h1.textContent.trim())) {
+      h1.remove();
+    }
+  });
+
   // --- Main processing ---
   const h2s = Array.from(container.querySelectorAll('h2')).filter(h2 => dayPattern.test(h2.textContent.trim()));
 
@@ -1906,7 +1945,7 @@ For ${tripData.travelers} traveler(s), include: cost-saving options, ${tripData.
 
   const placeDetailsInstruction = `
 
-STRUCTURE: You MUST use ## for day headings (e.g., "## Day 1: Title") and ### for time-of-day sections (e.g., "### Morning", "### Afternoon", "### Evening"). Every day MUST have at least 2 ### time sub-sections. List places under the appropriate ### section, never directly under ## headings.
+STRUCTURE: You MUST use ## for day headings (e.g., "## Day 1: Title") and ### for time-of-day sections (e.g., "### Morning", "### Afternoon", "### Evening"). Every day MUST have at least 2 ### time sub-sections. List places under the appropriate ### section, never directly under ## headings. Do NOT add separate city headings — include the city name in the ## Day heading (e.g., "## Day 3: Chester - Medieval Walls").
 
 IMPORTANT: For EVERY place, attraction, restaurant, and activity in the updated itinerary, include:
 1. A Google Maps link: https://www.google.com/maps/search/?api=1&query=PLACE+NAME+CITY (replace spaces with +). ALWAYS provide this.
