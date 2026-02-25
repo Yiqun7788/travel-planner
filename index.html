@@ -1692,6 +1692,37 @@ function restructureItinerary() {
     details.appendChild(content);
     cheapH2.replaceWith(details);
   }
+
+  // --- Ultimate fallback: no day headings found at all ---
+  // If restructuring produced no day-section cards, parse the entire container for stops
+  if (!container.querySelector('.day-section')) {
+    const allEls = Array.from(container.children);
+    // Try to find any h2/h3 that could serve as day-like groupings
+    // First, try parsing all elements for stops
+    const allStops = parseStopsFromElements(allEls);
+    if (allStops.length > 0) {
+      const details = document.createElement('details');
+      details.className = 'day-section';
+      details.setAttribute('open', '');
+      const summary = document.createElement('summary');
+      const names = allStops.slice(0, 3).map(s => s.name).join(', ');
+      let sHtml = '<span class="day-chevron">\u25B6</span> <span class="day-heading-text">Itinerary</span>';
+      if (names) sHtml += '<ul class="day-highlights"><li>' + names + '</li></ul>';
+      summary.innerHTML = sHtml;
+      const content = document.createElement('div');
+      content.className = 'day-content';
+
+      // Look for route map link
+      const routeLink = container.querySelector('.route-map-link');
+      if (routeLink) content.appendChild(routeLink.cloneNode(true));
+
+      allStops.forEach(stop => content.appendChild(buildStopCard(stop)));
+      details.appendChild(summary);
+      details.appendChild(content);
+      container.innerHTML = '';
+      container.appendChild(details);
+    }
+  }
 }
 
 document.getElementById('back-button').addEventListener('click', () => {
