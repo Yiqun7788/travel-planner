@@ -83,13 +83,21 @@ body { font-family: 'Inter', system-ui, sans-serif; background: #f1f5f9; }
   justify-content: center; align-items: center;
   z-index: 1000; gap: 20px;
 }
-.spinner {
-  width: 56px; height: 56px;
-  border: 4px solid #e2e8f0;
-  border-top-color: #6366f1;
-  border-right-color: #0ea5e9;
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite, pulse-glow 2s ease-in-out infinite;
+.progress-wrapper {
+  width: min(320px, 80vw); text-align: center;
+}
+.progress-bar-track {
+  width: 100%; height: 12px; background: #e2e8f0;
+  border-radius: 6px; overflow: hidden;
+}
+.progress-bar-fill {
+  height: 100%; width: 0%; border-radius: 6px;
+  background: linear-gradient(90deg, #0ea5e9, #6366f1);
+  transition: width 0.3s ease;
+}
+.progress-pct {
+  font-size: 0.95rem; font-weight: 700; color: #334155;
+  margin-top: 8px; font-variant-numeric: tabular-nums;
 }
 
 /* Gradient button */
@@ -446,8 +454,11 @@ details.reference-section > .reference-content { padding: 8px 14px 14px; }
 
 <!-- Loading Overlay -->
 <div id="loading-overlay">
-  <div class="spinner"></div>
-  <p class="text-sm font-medium text-slate-500 tracking-wide">Generating your itinerary...</p>
+  <div class="progress-wrapper">
+    <div class="progress-bar-track"><div id="progress-bar-fill" class="progress-bar-fill"></div></div>
+    <div id="progress-pct" class="progress-pct">0%</div>
+  </div>
+  <p id="loading-text" class="text-sm font-medium text-slate-500 tracking-wide">Generating your itinerary...</p>
 </div>
 
 <!-- Error Banner -->
@@ -807,6 +818,43 @@ document.getElementById('language-select').addEventListener('change', (e) => {
   updateLanguage(currentLang);
 });
 
+// --- Progress bar helper ---
+let _progressTimer = null;
+function startProgress(label) {
+  const fill = document.getElementById('progress-bar-fill');
+  const pct = document.getElementById('progress-pct');
+  const text = document.getElementById('loading-text');
+  text.textContent = label || 'Generating your itinerary...';
+  let value = 0;
+  fill.style.width = '0%';
+  pct.textContent = '0%';
+  document.getElementById('loading-overlay').style.display = 'flex';
+
+  // Fast to 20%, then slow creep toward 85%
+  clearInterval(_progressTimer);
+  _progressTimer = setInterval(() => {
+    if (value < 20) value += 2;
+    else if (value < 50) value += 0.5;
+    else if (value < 70) value += 0.3;
+    else if (value < 85) value += 0.1;
+    value = Math.min(value, 85);
+    fill.style.width = Math.round(value) + '%';
+    pct.textContent = Math.round(value) + '%';
+  }, 200);
+}
+function finishProgress() {
+  clearInterval(_progressTimer);
+  const fill = document.getElementById('progress-bar-fill');
+  const pct = document.getElementById('progress-pct');
+  fill.style.width = '100%';
+  pct.textContent = '100%';
+  setTimeout(() => {
+    document.getElementById('loading-overlay').style.display = 'none';
+    fill.style.width = '0%';
+    pct.textContent = '0%';
+  }, 400);
+}
+
 document.getElementById('generate-button').addEventListener('click', async () => {
   const dest = document.getElementById('destination').value.trim();
   const start = document.getElementById('start-date').value;
@@ -830,7 +878,7 @@ document.getElementById('generate-button').addEventListener('click', async () =>
     return;
   }
 
-  document.getElementById('loading-overlay').style.display = 'flex';
+  startProgress('Generating your itinerary...');
 
   const days = Math.floor((new Date(end) - new Date(start)) / (1000*3600*24)) + 1;
   const pace = document.querySelector('input[name="pace"]:checked').value;
@@ -941,7 +989,7 @@ ${ticketTipsInstruction}
 
   const result = await callGemini(prompt);
 
-  document.getElementById('loading-overlay').style.display = 'none';
+  finishProgress();
 
   let finalResult = result;
 
@@ -1889,7 +1937,7 @@ document.getElementById('update-itinerary-btn').addEventListener('click', async 
     return;
   }
 
-  document.getElementById('loading-overlay').style.display = 'flex';
+  startProgress('Updating your itinerary...');
 
   // Check if cheap tickets checkbox is still selected and transportation was chosen
   const wantsCheapTickets = document.getElementById('cheap-tickets-checkbox').checked;
@@ -1927,7 +1975,7 @@ Replace spaces with + in each place name. Include the city name. Separate stops 
   const prompt = `Based on this itinerary:\n\n${tripData.itinerary}\n\nPlease update it with this instruction: ${instruction}${placeDetailsInstruction}${ticketTipsInstruction}`;
   const result = await callGemini(prompt);
 
-  document.getElementById('loading-overlay').style.display = 'none';
+  finishProgress();
 
   if (result) {
     tripData.itinerary = result;
@@ -1938,7 +1986,7 @@ Replace spaces with + in each place name. Include the city name. Separate stops 
 });
 
 document.getElementById('packing-list-btn').addEventListener('click', async () => {
-  document.getElementById('loading-overlay').style.display = 'flex';
+  startProgress('Generating packing list...');
 
   const prompt = `Generate a comprehensive packing list for a ${tripData.days}-day trip to ${tripData.destination} from ${tripData.startDate} to ${tripData.endDate}.
 
@@ -1948,7 +1996,7 @@ Also consider the activities mentioned in the itinerary and provide specific rec
 
   const result = await callGemini(prompt);
 
-  document.getElementById('loading-overlay').style.display = 'none';
+  finishProgress();
 
   if (result) {
     document.getElementById('content-display').innerHTML += '<details class="day-section" open><summary><span class="day-chevron">\u25B6</span> <span class="day-heading-text">&#127890; Packing List</span></summary><div class="day-content"><h2>Packing List</h2>' + linkifyUrls(marked.parse(result)) + '</div></details>';
@@ -1961,12 +2009,12 @@ document.getElementById('fun-fact-btn').addEventListener('click', async () => {
     return;
   }
 
-  document.getElementById('loading-overlay').style.display = 'flex';
+  startProgress('Loading fun fact...');
 
   const prompt = `Share one interesting and fun fact specifically about ${tripData.destination}. Make sure the fact is about ${tripData.destination} and not any other location.`;
   const result = await callGemini(prompt);
 
-  document.getElementById('loading-overlay').style.display = 'none';
+  finishProgress();
 
   if (result) {
     document.getElementById('content-display').innerHTML += '<details class="day-section" open><summary><span class="day-chevron">\u25B6</span> <span class="day-heading-text">&#128161; Fun Fact About ' + tripData.destination + '</span></summary><div class="day-content"><h2>Fun Fact About ' + tripData.destination + '</h2>' + linkifyUrls(marked.parse(result)) + '</div></details>';
