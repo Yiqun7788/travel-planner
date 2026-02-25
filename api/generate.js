@@ -39,7 +39,12 @@ module.exports = async function handler(req, res) {
     }
 
     const data = await response.json();
-    const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+    const parts = data.candidates?.[0]?.content?.parts || [];
+
+    // Gemini 2.5 Flash returns thinking parts (thought: true) before the actual content.
+    // Skip thinking parts and extract only the real output.
+    const contentParts = parts.filter(p => !p.thought);
+    const text = contentParts.map(p => p.text || '').join('') || parts.map(p => p.text || '').join('');
 
     if (!text) {
       return res.status(500).json({ error: 'No text in Gemini response.' });
