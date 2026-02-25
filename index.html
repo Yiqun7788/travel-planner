@@ -265,11 +265,13 @@ details.cheap-tickets-section > summary::-webkit-details-marker { display: none;
 
 /* ─── Time Block ─── */
 .time-block { margin-bottom: 12px; }
+.time-block + .time-block { margin-top: 20px; }
 .time-block-label {
-  display: flex; align-items: center; gap: 6px;
-  font-weight: 700; font-size: 1rem; color: #334155;
-  margin: 14px 0 8px; padding-bottom: 4px;
-  border-bottom: 1.5px solid #e2e8f0;
+  display: flex; align-items: center; flex-wrap: wrap; gap: 6px;
+  font-weight: 700; font-size: 1.08rem; color: #1e293b;
+  margin: 0 0 8px; padding: 8px 12px;
+  background: #eef2ff; border-left: 4px solid #6366f1;
+  border-radius: 0 8px 8px 0;
 }
 
 /* ─── Schedule & Reference accordions ─── */
@@ -1718,7 +1720,8 @@ details.day-section[open]>summary .day-chevron{transform:rotate(90deg);}
 .day-overview{display:flex;flex-wrap:wrap;gap:8px 18px;padding:10px 14px;margin-bottom:10px;background:#f8fafc;border-radius:10px;border:1px solid #e2e8f0;font-size:0.85rem;color:#475569;}
 .day-overview span{white-space:nowrap;}
 .time-block{margin-bottom:12px;}
-.time-block-label{display:flex;align-items:center;gap:6px;font-weight:700;font-size:1rem;color:#334155;margin:14px 0 8px;padding-bottom:4px;border-bottom:1.5px solid #e2e8f0;}
+.time-block+.time-block{margin-top:20px;}
+.time-block-label{display:flex;align-items:center;flex-wrap:wrap;gap:6px;font-weight:700;font-size:1.08rem;color:#1e293b;margin:0 0 8px;padding:8px 12px;background:#eef2ff;border-left:4px solid #6366f1;border-radius:0 8px 8px 0;}
 details.schedule-section{border:1px solid #e2e8f0;border-radius:12px;margin:8px 0;overflow:hidden;}
 details.schedule-section>summary{list-style:none;cursor:pointer;padding:10px 14px;font-weight:600;font-size:0.95rem;color:#334155;background:#f8fafc;display:flex;align-items:center;gap:8px;user-select:none;}
 details.schedule-section>summary:hover{background:#f1f5f9;}
