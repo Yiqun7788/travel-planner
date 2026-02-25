@@ -898,6 +898,13 @@ ${longDistance.length > 0 ? `Long-distance transportation (between cities/countr
 ${localTransport.length > 0 ? `Local transportation (within cities): ${localTransport.join(", ")}.` : ''}
 ${additionalInstructions ? `Additional instructions: ${additionalInstructions}` : ''}
 
+STRUCTURE - You MUST use this exact markdown heading structure:
+- Use ## for each day heading (e.g., "## Day 1: Historical London")
+- Under each day, group activities into time-of-day sections using ### headings (e.g., "### Morning", "### Afternoon", "### Evening"). You may add context to these headings (e.g., "### Morning: Museums & Markets", "### Lunch & Afternoon", "### Late Afternoon (Depart by 5:00 PM)").
+- Every day MUST have at least 2 time-of-day ### sub-sections.
+- List each place under the appropriate ### time section.
+- Do NOT list places directly under ## day headings without a ### time sub-section.
+
 IMPORTANT - For EVERY place, attraction, restaurant, and activity mentioned in the itinerary, you MUST include:
 1. A Google Maps link in this exact format: https://www.google.com/maps/search/?api=1&query=PLACE+NAME+CITY (replace spaces with +). ALWAYS provide this for every place.
 2. Official website: ONLY include a website if you are certain it is a real, well-known official domain (e.g., https://www.louvre.fr, https://www.nps.gov). Only use the homepage or main domain. Do NOT guess or make up any URLs. If you are not 100% sure the website exists, write "Website: Search online for latest info" instead.
@@ -1899,6 +1906,8 @@ For ${tripData.travelers} traveler(s), include: cost-saving options, ${tripData.
   }
 
   const placeDetailsInstruction = `
+
+STRUCTURE: You MUST use ## for day headings (e.g., "## Day 1: Title") and ### for time-of-day sections (e.g., "### Morning", "### Afternoon", "### Evening"). Every day MUST have at least 2 ### time sub-sections. List places under the appropriate ### section, never directly under ## headings.
 
 IMPORTANT: For EVERY place, attraction, restaurant, and activity in the updated itinerary, include:
 1. A Google Maps link: https://www.google.com/maps/search/?api=1&query=PLACE+NAME+CITY (replace spaces with +). ALWAYS provide this.
