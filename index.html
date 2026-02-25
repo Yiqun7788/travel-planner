@@ -1309,7 +1309,13 @@ function restructureItinerary() {
       const isFree = /free|gratuit|gratis|kostenlos|無料|免费/i.test(stop.fee);
       const chip = document.createElement('span');
       chip.className = 'stop-chip ' + (isFree ? 'free' : 'paid');
-      chip.textContent = isFree ? 'Free' : 'Paid';
+      if (isFree) {
+        chip.textContent = 'Free';
+      } else {
+        // Extract price like $25, $15-30, €10, CAD 20, etc.
+        const priceMatch = stop.fee.match(/[\$€£¥₩][\d,.]+(?:\s*[-–]\s*[\$€£¥₩]?[\d,.]+)?|(?:CAD|USD|EUR|GBP|JPY|AUD)\s*[\d,.]+(?:\s*[-–]\s*[\d,.]+)?/i);
+        chip.textContent = priceMatch ? priceMatch[0].trim() : '$';
+      }
       chips.appendChild(chip);
     }
     // Show up to 2 transport mode chips
