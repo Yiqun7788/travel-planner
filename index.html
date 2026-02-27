@@ -842,6 +842,7 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
 
     <!-- Generate Button -->
     <button type="button" id="generate-button" class="btn-primary" data-i18n="generate">Generate Itinerary</button>
+    <button type="button" id="return-to-itinerary-btn" class="btn-primary hidden" style="margin-top: 10px; background: linear-gradient(135deg, #64748b, #475569);" onclick="document.getElementById('planning-view').classList.add('hidden'); document.getElementById('results-view').classList.remove('hidden'); document.getElementById('language-select').parentElement.style.display='none'; if(window.innerWidth<=768) document.querySelector('.mobile-action-bar').classList.remove('hidden');">&#8592; Return to Itinerary</button>
 
   </form>
 </div>
@@ -1016,6 +1017,8 @@ document.addEventListener('keydown', function(e) {
     localStorage.removeItem('freeTierState');
     // Re-enable any disabled buttons
     document.querySelectorAll('.tool-btn-disabled').forEach(function(btn) { btn.classList.remove('tool-btn-disabled'); });
+    var genBtn = document.getElementById('generate-button');
+    genBtn.disabled = false; genBtn.style.opacity = ''; genBtn.style.cursor = '';
     console.log('[Dev] Free tier state reset');
     alert('Dev: Free tier state has been reset.');
   }
@@ -2097,6 +2100,14 @@ document.getElementById('back-button').addEventListener('click', () => {
   document.getElementById('planning-view').classList.remove('hidden');
   document.getElementById('language-select').parentElement.style.display = '';
   document.querySelector('.mobile-action-bar').classList.add('hidden');
+  // Show "Return to Itinerary" and gray out Generate if limit reached
+  document.getElementById('return-to-itinerary-btn').classList.remove('hidden');
+  if (getGenerationsToday() >= FREE_TIER.maxGenerationsPerDay) {
+    const genBtn = document.getElementById('generate-button');
+    genBtn.disabled = true;
+    genBtn.style.opacity = '0.45';
+    genBtn.style.cursor = 'not-allowed';
+  }
 });
 
 // Download menu toggle
