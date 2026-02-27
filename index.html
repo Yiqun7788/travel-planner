@@ -2327,6 +2327,13 @@ document.getElementById('update-itinerary-btn').addEventListener('click', async 
     return;
   }
 
+  // Free tier: block requests to extend beyond day limit
+  const dayExtendMatch = instruction.match(/(\d+)\s*(?:days?|nights?)/i);
+  if (dayExtendMatch && parseInt(dayExtendMatch[1]) > FREE_TIER.maxDays) {
+    showUpgradeModal('Day Limit', `The Free plan supports up to ${FREE_TIER.maxDays} days. Upgrade to extend your trip, or try a different update.`);
+    return;
+  }
+
   // Free tier: 1 update per itinerary
   if (getUpdatesThisItinerary() >= FREE_TIER.maxUpdatesPerItinerary) {
     showUpgradeModal('Update Limit Reached', 'Free plan allows 1 update per itinerary. Generate a new itinerary or upgrade for unlimited updates.');
@@ -2368,10 +2375,7 @@ Also at the VERY BEGINNING of each day (right after the day heading), include a 
 DailyRoute: Place+A+${tripData.destination.replace(/\s+/g, '+')}|Place+B+${tripData.destination.replace(/\s+/g, '+')}|Place+C+${tripData.destination.replace(/\s+/g, '+')}
 Replace spaces with + in each place name. Include the city name. Separate stops with | character. Arrange in optimal time-saving order.`;
 
-  // Free tier: enforce day limit on updates
-  const dayCapNotice = `\n\nIMPORTANT CONSTRAINT: The current plan is limited to a maximum of ${FREE_TIER.maxDays} days. Do NOT extend the itinerary beyond ${FREE_TIER.maxDays} days, even if the user asks for more. If the user requests more days, politely note at the top that the free plan supports up to ${FREE_TIER.maxDays} days, then provide the best ${FREE_TIER.maxDays}-day itinerary you can.`;
-
-  const prompt = `Based on this itinerary:\n\n${tripData.itinerary}\n\nPlease update it with this instruction: ${instruction}${dayCapNotice}${placeDetailsInstruction}${ticketTipsInstruction}`;
+  const prompt = `Based on this itinerary:\n\n${tripData.itinerary}\n\nPlease update it with this instruction: ${instruction}${placeDetailsInstruction}${ticketTipsInstruction}`;
   const result = await callGemini(prompt);
 
   finishProgress();
