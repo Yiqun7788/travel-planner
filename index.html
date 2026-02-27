@@ -2368,7 +2368,10 @@ Also at the VERY BEGINNING of each day (right after the day heading), include a 
 DailyRoute: Place+A+${tripData.destination.replace(/\s+/g, '+')}|Place+B+${tripData.destination.replace(/\s+/g, '+')}|Place+C+${tripData.destination.replace(/\s+/g, '+')}
 Replace spaces with + in each place name. Include the city name. Separate stops with | character. Arrange in optimal time-saving order.`;
 
-  const prompt = `Based on this itinerary:\n\n${tripData.itinerary}\n\nPlease update it with this instruction: ${instruction}${placeDetailsInstruction}${ticketTipsInstruction}`;
+  // Free tier: enforce day limit on updates
+  const dayCapNotice = `\n\nIMPORTANT CONSTRAINT: The current plan is limited to a maximum of ${FREE_TIER.maxDays} days. Do NOT extend the itinerary beyond ${FREE_TIER.maxDays} days, even if the user asks for more. If the user requests more days, politely note at the top that the free plan supports up to ${FREE_TIER.maxDays} days, then provide the best ${FREE_TIER.maxDays}-day itinerary you can.`;
+
+  const prompt = `Based on this itinerary:\n\n${tripData.itinerary}\n\nPlease update it with this instruction: ${instruction}${dayCapNotice}${placeDetailsInstruction}${ticketTipsInstruction}`;
   const result = await callGemini(prompt);
 
   finishProgress();
