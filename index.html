@@ -996,6 +996,20 @@ function showUpgradeModal(title, message) {
   document.getElementById('upgrade-modal-message').textContent = message;
   document.getElementById('upgrade-modal').classList.add('active');
 }
+// Free tier: detect premium feature keywords in freeform text
+function checkPremiumKeywords(text) {
+  const premiumPatterns = [
+    { pattern: /pack(ing)?\s*(list|check)/i, feature: 'Packing List', tier: 'Basic' },
+    { pattern: /fun\s*fact/i, feature: 'Fun Facts', tier: 'Prime' },
+    { pattern: /cheap\s*ticket/i, feature: 'Cheap Ticket Tips', tier: 'Basic' },
+    { pattern: /ticket\s*tip/i, feature: 'Cheap Ticket Tips', tier: 'Basic' },
+    { pattern: /budget\s*tip/i, feature: 'Budget Tips', tier: 'Basic' },
+  ];
+  for (const p of premiumPatterns) {
+    if (p.pattern.test(text)) return p;
+  }
+  return null;
+}
 function openPricingModal() {
   document.getElementById('pricing-modal').classList.add('active');
 }
@@ -1210,6 +1224,14 @@ document.getElementById('generate-button').addEventListener('click', async () =>
   }
   if (new Date(start) < new Date()) {
     alert(t.errorPastTime);
+    return;
+  }
+
+  // Free tier: block premium feature keywords in additional instructions
+  const additionalInstr = document.getElementById('additional-instructions').value.trim();
+  const premiumHitGen = checkPremiumKeywords(additionalInstr);
+  if (premiumHitGen) {
+    showUpgradeModal('Premium Feature', `${premiumHitGen.feature} is available on the ${premiumHitGen.tier} plan. Remove that request and try again, or upgrade.`);
     return;
   }
 
@@ -2344,6 +2366,13 @@ document.getElementById('update-itinerary-btn').addEventListener('click', async 
   const dayExtendMatch = instruction.match(/(\d+)\s*(?:days?|nights?)/i);
   if (dayExtendMatch && parseInt(dayExtendMatch[1]) > FREE_TIER.maxDays) {
     showUpgradeModal('Day Limit', `The Free plan supports up to ${FREE_TIER.maxDays} days. Upgrade to extend your trip, or try a different update.`);
+    return;
+  }
+
+  // Free tier: block premium feature keywords in update instruction
+  const premiumHitUpd = checkPremiumKeywords(instruction);
+  if (premiumHitUpd) {
+    showUpgradeModal('Premium Feature', `${premiumHitUpd.feature} is available on the ${premiumHitUpd.tier} plan. Try a different update, or upgrade.`);
     return;
   }
 
