@@ -863,9 +863,14 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
       <input id="other-interests" class="form-input mt-3" data-i18n-placeholder="otherInterests" placeholder="Other interests...">
     </div>
 
-    <!-- Cheap Tickets -->
+    <!-- Cheap Tickets (locked for free tier) -->
     <div>
-      <label class="option-card"><input type="checkbox" id="cheap-tickets-checkbox"> <span class="option-icon">&#128176;</span> <span data-i18n="cheapTickets">Tips to Buy Cheap Tickets</span></label>
+      <label class="option-card" style="opacity: 0.55; cursor: not-allowed;" onclick="event.preventDefault(); showUpgradeModal('Premium Feature', 'Tips to Buy Cheap Tickets is available on the Basic plan.');">
+        <input type="checkbox" id="cheap-tickets-checkbox" disabled style="pointer-events: none;">
+        <span class="option-icon">&#128274;</span>
+        <span data-i18n="cheapTickets">Tips to Buy Cheap Tickets</span>
+        <span class="tier-badge" style="background: rgba(0,0,0,0.1); color: #64748b;">&#128274; Basic</span>
+      </label>
     </div>
 
     <!-- Additional Instructions -->
