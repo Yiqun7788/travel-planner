@@ -250,6 +250,40 @@ details.cheap-tickets-section[open] > summary {
 }
 details.cheap-tickets-section > summary::-webkit-details-marker { display: none; }
 
+/* ─── Budget Summary section (green theme) ─── */
+details.budget-summary-section {
+  border: 2px solid #22c55e;
+  border-radius: 14px;
+  margin: 1rem 0;
+  overflow: hidden;
+  transition: box-shadow 0.2s ease;
+}
+details.budget-summary-section[open] {
+  box-shadow: 0 2px 12px rgba(34,197,94,0.15);
+}
+details.budget-summary-section > summary {
+  list-style: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 18px;
+  background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+  font-weight: 700;
+  font-size: 1.25rem;
+  color: #166534;
+  user-select: none;
+  transition: background 0.15s ease;
+}
+details.budget-summary-section > summary:hover {
+  background: linear-gradient(135deg, #dcfce7, #bbf7d0);
+}
+details.budget-summary-section[open] > summary {
+  background: linear-gradient(135deg, #dcfce7, #bbf7d0);
+  border-bottom: 2px solid #22c55e;
+}
+details.budget-summary-section > summary::-webkit-details-marker { display: none; }
+
 /* ─── Day Highlights (collapsed summary) ─── */
 .day-highlights {
   list-style: none; padding: 0; margin: 6px 0 0 28px;
@@ -1310,7 +1344,7 @@ Write the response in ${langMap[currentLang]}.
 The traveler arrives at the first destination on ${new Date(start).toLocaleDateString('en-US')} at ${startTime} and departs to return home on ${new Date(end).toLocaleDateString('en-US')} at ${endTime}. Plan Day 1 starting from the arrival time and the last day ending by the departure time.
 Trip pace: ${pace}.
 Themes: ${interests.join(", ")}.
-${budget > 0 ? `Total budget: ${budget} ${currency} for ${travelers} traveler(s). Recommend restaurants, activities, and accommodations that fit within this budget. Show prices in ${currency} where possible.` : ''}
+${budget > 0 ? `Total budget: ${budget} ${currency} for ${travelers} traveler(s). Recommend restaurants, activities, and accommodations that fit within this budget. Show prices in ${currency} where possible. At the end of the itinerary (after all days), include a section with the EXACT heading: ## Budget Summary — Break down estimated costs by category (accommodation, food, transportation, activities, etc.) and show a total. Compare against the ${budget} ${currency} budget.` : ''}
 ${longDistance.length > 0 ? `Long-distance transportation (between cities/countries): ${longDistance.join(", ")}.` : ''}
 ${localTransport.length > 0 ? `Local transportation (within cities): ${localTransport.join(", ")}.` : ''}
 ${additionalInstructions ? `Additional instructions: ${additionalInstructions}` : ''}
@@ -1570,6 +1604,7 @@ function restructureItinerary() {
   const container = document.getElementById('content-display');
   const dayPattern = /(Day\s+\d+|Tag\s+\d+|Jour\s+\d+|D[ií]a\s+\d+|第\d+天|\d+日目)/i;
   const cheapPattern = /(cheap tickets|günstige tickets|billetes baratos|billets pas chers|便宜票|安いチケット)/i;
+  const budgetPattern = /(budget summary|budget breakdown|budget overview|estimated budget|cost summary|kostenübersicht|presupuesto|résumé du budget|预算|予算)/i;
   const timeBlockPattern = /^(early\s+morning|mid[- ]?morning|late\s+morning|morning|lunch|early\s+afternoon|mid[- ]?afternoon|late\s+afternoon|afternoon|early\s+evening|evening|night|dinner|brunch|breakfast|vormittag|nachmittag|abend|mittag|matin|après-midi|soir|midi|déjeuner|mañana|mediodía|tarde|noche|almuerzo|午前|午後|夜|昼|朝|上午|下午|晚上|中午)/i;
   const timeIcons = { morning: '\u2600\uFE0F', afternoon: '\uD83C\uDF24\uFE0F', evening: '\uD83C\uDF19' };
 
@@ -1928,7 +1963,7 @@ function restructureItinerary() {
     if (h3Days.length > 0) {
       // Remove standalone city h2 headings that aren't day headings
       container.querySelectorAll('h2').forEach(h2 => {
-        if (!dayPattern.test(h2.textContent.trim()) && !cheapPattern.test(h2.textContent.trim())) {
+        if (!dayPattern.test(h2.textContent.trim()) && !cheapPattern.test(h2.textContent.trim()) && !budgetPattern.test(h2.textContent.trim())) {
           h2.remove();
         }
       });
@@ -2149,6 +2184,31 @@ function restructureItinerary() {
     details.appendChild(summary);
     details.appendChild(content);
     cheapH2.replaceWith(details);
+  }
+
+  // Make budget summary section collapsible (green theme)
+  const budgetH2 = Array.from(container.querySelectorAll('h2')).find(h2 =>
+    !h2.closest('.day-content') && budgetPattern.test(h2.textContent)
+  );
+  if (budgetH2) {
+    const bSiblings = [];
+    let bNext = budgetH2.nextSibling;
+    while (bNext) {
+      if (bNext.nodeType === 1 && bNext.tagName === 'H2') break;
+      bSiblings.push(bNext);
+      bNext = bNext.nextSibling;
+    }
+    const bDetails = document.createElement('details');
+    bDetails.className = 'budget-summary-section';
+    const bSummary = document.createElement('summary');
+    bSummary.innerHTML = '<span class="day-chevron">\u25B6</span> <span class="day-heading-text">&#128176; ' + budgetH2.textContent + '</span>';
+    const bContent = document.createElement('div');
+    bContent.className = 'day-content';
+    bContent.appendChild(budgetH2.cloneNode(true));
+    bSiblings.forEach(s => bContent.appendChild(s));
+    bDetails.appendChild(bSummary);
+    bDetails.appendChild(bContent);
+    budgetH2.replaceWith(bDetails);
   }
 
   // --- Ultimate fallback: no day headings found at all ---
