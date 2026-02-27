@@ -1006,11 +1006,16 @@ document.addEventListener('click', function(e) {
   if (e.target.id === 'pricing-modal') closePricingModal();
   if (e.target.id === 'upgrade-modal') document.getElementById('upgrade-modal').classList.remove('active');
 });
-// Close modals on Escape key
+// Close modals on Escape key + hidden dev reset (Ctrl+Shift+L)
 document.addEventListener('keydown', function(e) {
   if (e.key === 'Escape') {
     closePricingModal();
     document.getElementById('upgrade-modal').classList.remove('active');
+  }
+  if (e.ctrlKey && e.shiftKey && e.key === 'L') {
+    localStorage.removeItem('freeTierState');
+    console.log('[Dev] Free tier state reset');
+    alert('Dev: Free tier state has been reset.');
   }
 });
 
