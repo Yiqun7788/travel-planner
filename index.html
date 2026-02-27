@@ -1694,35 +1694,124 @@ function restructureItinerary() {
         }
       }
 
-      // Extract fields from <ul> following a place name
-      if (current && el.tagName === 'UL') {
-        const lis = el.querySelectorAll('li');
-        let consumed = false;
-        lis.forEach(li => {
-          const text = li.textContent.trim();
-          const html = li.innerHTML;
-          if (/^map:/i.test(text)) {
-            const a = li.querySelector('a');
-            current.mapUrl = a ? a.href : text.replace(/^map:\s*/i, '');
-            consumed = true;
-          } else if (/^website:/i.test(text)) {
-            const a = li.querySelector('a');
-            current.website = a ? a.outerHTML : text.replace(/^website:\s*/i, '');
-            consumed = true;
-          } else if (/^address:/i.test(text)) {
-            current.address = text.replace(/^address:\s*/i, '');
-            consumed = true;
-          } else if (/^(hours?|open|opening):/i.test(text)) {
-            current.hours = text.replace(/^(hours?|open|opening):\s*/i, '');
-            consumed = true;
-          } else if (/^(fee|price|cost|admission|entry):/i.test(text)) {
-            current.fee = text.replace(/^(fee|price|cost|admission|entry):\s*/i, '');
-            consumed = true;
-          } else {
-            current.notes.push(html);
-          }
+      // Handle <ul> containing place-like <li> items (Gemini sometimes uses list format for activities)
+      if (el.tagName === 'UL') {
+        const topLis = Array.from(el.children).filter(c => c.tagName === 'LI');
+        // Check if any top-level <li> looks like a place (has <strong> or time prefix)
+        const hasPlaceLis = topLis.some(li => {
+          const firstStrong = li.querySelector(':scope > strong') || li.querySelector('strong');
+          if (firstStrong && !structuredLineRe.test(li.textContent.trim())) return true;
+          const liText = li.textContent.trim().split('\n')[0];
+          return timeStampPrefixRe.test(liText) && !structuredLineRe.test(liText);
         });
-        if (consumed) continue;
+
+        if (hasPlaceLis) {
+          topLis.forEach(li => {
+            const liText = li.textContent.trim();
+            const strong = li.querySelector('strong');
+
+            // Check if this <li> is a place entry
+            if (strong && !structuredLineRe.test(liText)) {
+              if (current) stops.push(current);
+              const rawName = strong.textContent.trim().replace(timeStampPrefixRe, '');
+              // Get description text after the strong, before any nested <ul>
+              let desc = '';
+              for (const node of li.childNodes) {
+                if (node === strong || (node.nodeType === 1 && node.querySelector && node.querySelector('strong') === strong)) continue;
+                if (node.nodeType === 1 && node.tagName === 'UL') break;
+                if (node.nodeType === 3) desc += node.textContent;
+                else if (node.nodeType === 1) desc += node.textContent;
+              }
+              desc = desc.trim().replace(/^[:\-–—\s]+/, '').replace(timeStampPrefixRe, '').replace(/^[:\-–—\s]+/, '');
+              current = { name: rawName, description: desc, mapUrl: '', website: '', address: '', hours: '', fee: '', notes: [], extraEls: [] };
+
+              // Process nested <ul> for structured data (Map, Website, etc.)
+              const nestedUl = li.querySelector(':scope > ul') || li.querySelector('ul');
+              if (nestedUl && current) {
+                Array.from(nestedUl.children).filter(c => c.tagName === 'LI').forEach(subLi => {
+                  const subText = subLi.textContent.trim();
+                  if (/^map:/i.test(subText)) {
+                    const a = subLi.querySelector('a');
+                    current.mapUrl = a ? a.href : subText.replace(/^map:\s*/i, '');
+                  } else if (/^website:/i.test(subText)) {
+                    const a = subLi.querySelector('a');
+                    current.website = a ? a.outerHTML : subText.replace(/^website:\s*/i, '');
+                  } else if (/^address:/i.test(subText)) {
+                    current.address = subText.replace(/^address:\s*/i, '');
+                  } else if (/^(hours?|open|opening):/i.test(subText)) {
+                    current.hours = subText.replace(/^(hours?|open|opening):\s*/i, '');
+                  } else if (/^(fee|price|cost|admission|entry):/i.test(subText)) {
+                    current.fee = subText.replace(/^(fee|price|cost|admission|entry):\s*/i, '');
+                  } else {
+                    current.notes.push(subLi.innerHTML);
+                  }
+                });
+              }
+            } else if (!strong && timeStampPrefixRe.test(liText) && !structuredLineRe.test(liText)) {
+              // Time-prefixed <li> without bold
+              if (current) stops.push(current);
+              const firstLine = liText.split('\n')[0];
+              const timeMatch = firstLine.match(/^(\d{1,2}:\d{2}\s*(?:AM|PM))\s*(?:[-–]\s*\d{1,2}:\d{2}\s*(?:AM|PM))?\s+(.+)/i);
+              if (timeMatch) {
+                const afterTime = timeMatch[2];
+                const dashParts = afterTime.split(/\s*[—–]\s*/);
+                current = { name: dashParts[0].trim().replace(/\.\s*$/, ''), description: dashParts.length > 1 ? dashParts.slice(1).join(' — ').trim() : '', mapUrl: '', website: '', address: '', hours: '', fee: '', notes: [], extraEls: [] };
+                // Process nested <ul>
+                const nestedUl = li.querySelector(':scope > ul') || li.querySelector('ul');
+                if (nestedUl && current) {
+                  Array.from(nestedUl.children).filter(c => c.tagName === 'LI').forEach(subLi => {
+                    const subText = subLi.textContent.trim();
+                    if (/^map:/i.test(subText)) { const a = subLi.querySelector('a'); current.mapUrl = a ? a.href : subText.replace(/^map:\s*/i, ''); }
+                    else if (/^website:/i.test(subText)) { const a = subLi.querySelector('a'); current.website = a ? a.outerHTML : subText.replace(/^website:\s*/i, ''); }
+                    else if (/^address:/i.test(subText)) { current.address = subText.replace(/^address:\s*/i, ''); }
+                    else if (/^(hours?|open|opening):/i.test(subText)) { current.hours = subText.replace(/^(hours?|open|opening):\s*/i, ''); }
+                    else if (/^(fee|price|cost|admission|entry):/i.test(subText)) { current.fee = subText.replace(/^(fee|price|cost|admission|entry):\s*/i, ''); }
+                    else { current.notes.push(subLi.innerHTML); }
+                  });
+                }
+              }
+            } else if (current && structuredLineRe.test(liText)) {
+              // Flat structured data <li> for current stop
+              if (/^map:/i.test(liText)) { const a = li.querySelector('a'); current.mapUrl = a ? a.href : liText.replace(/^map:\s*/i, ''); }
+              else if (/^website:/i.test(liText)) { const a = li.querySelector('a'); current.website = a ? a.outerHTML : liText.replace(/^website:\s*/i, ''); }
+              else if (/^address:/i.test(liText)) { current.address = liText.replace(/^address:\s*/i, ''); }
+              else if (/^(hours?|open|opening):/i.test(liText)) { current.hours = liText.replace(/^(hours?|open|opening):\s*/i, ''); }
+              else if (/^(fee|price|cost|admission|entry):/i.test(liText)) { current.fee = liText.replace(/^(fee|price|cost|admission|entry):\s*/i, ''); }
+            }
+          });
+          continue;
+        }
+
+        // Existing handler: extract structured data fields from <ul> following a place
+        if (current) {
+          const lis = el.querySelectorAll('li');
+          let consumed = false;
+          lis.forEach(li => {
+            const text = li.textContent.trim();
+            const html = li.innerHTML;
+            if (/^map:/i.test(text)) {
+              const a = li.querySelector('a');
+              current.mapUrl = a ? a.href : text.replace(/^map:\s*/i, '');
+              consumed = true;
+            } else if (/^website:/i.test(text)) {
+              const a = li.querySelector('a');
+              current.website = a ? a.outerHTML : text.replace(/^website:\s*/i, '');
+              consumed = true;
+            } else if (/^address:/i.test(text)) {
+              current.address = text.replace(/^address:\s*/i, '');
+              consumed = true;
+            } else if (/^(hours?|open|opening):/i.test(text)) {
+              current.hours = text.replace(/^(hours?|open|opening):\s*/i, '');
+              consumed = true;
+            } else if (/^(fee|price|cost|admission|entry):/i.test(text)) {
+              current.fee = text.replace(/^(fee|price|cost|admission|entry):\s*/i, '');
+              consumed = true;
+            } else {
+              current.notes.push(html);
+            }
+          });
+          if (consumed) continue;
+        }
       }
 
       // Extract structured data from <p> elements (Map:, Website:, Address:, Hours:, Fee:)
