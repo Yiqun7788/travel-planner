@@ -1102,8 +1102,19 @@ function updateEndDateMin() {
   const minVal = startInput.value || nowDt;
   endInput.setAttribute('min', minVal);
 
-  // Clear end date if its value is before the new min
+  // Free tier: set max to start + (maxDays - 1) days
+  if (startInput.value) {
+    const maxDate = new Date(startInput.value);
+    maxDate.setDate(maxDate.getDate() + FREE_TIER.maxDays - 1);
+    maxDate.setHours(23, 59);
+    endInput.setAttribute('max', formatDateTimeLocal(maxDate));
+  }
+
+  // Clear end date if its value is before the new min or after the max
   if (endInput.value && endInput.value < minVal) {
+    endInput.value = '';
+  }
+  if (endInput.value && endInput.max && endInput.value > endInput.max) {
     endInput.value = '';
   }
 }
