@@ -1166,10 +1166,11 @@ function toggleLongDistance() {
   const group = document.getElementById('long-distance-group');
   const helper = document.getElementById('long-distance-helper');
 
-  // Free tier: always hide long-distance (only 1 destination allowed)
-  section.style.display = 'none';
+  // Free tier: show section label but hide transport options
   group.querySelectorAll('input:checked').forEach(cb => cb.checked = false);
-  return;
+  group.classList.add('hidden');
+  helper.classList.remove('hidden');
+  section.style.opacity = '0.7';
 }
 
 document.getElementById('destination').addEventListener('input', toggleLongDistance);
