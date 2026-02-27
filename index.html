@@ -1014,6 +1014,8 @@ document.addEventListener('keydown', function(e) {
   }
   if (e.ctrlKey && e.shiftKey && e.key === 'L') {
     localStorage.removeItem('freeTierState');
+    // Re-enable any disabled buttons
+    document.querySelectorAll('.tool-btn-disabled').forEach(function(btn) { btn.classList.remove('tool-btn-disabled'); });
     console.log('[Dev] Free tier state reset');
     alert('Dev: Free tier state has been reset.');
   }
