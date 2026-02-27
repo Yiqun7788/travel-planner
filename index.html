@@ -1583,6 +1583,11 @@ function restructureItinerary() {
   // Get user-selected transport modes for chips
   const transportChips = (tripData.localTransport || []).concat(tripData.longDistance || []);
 
+  // Helper: strip leading time stamps like "10:30 AM - 12:30 PM " or "08:04 AM " from a name
+  const timeStampPrefixRe = /^\d{1,2}:\d{2}\s*(?:AM|PM)\s*(?:[-–]\s*\d{1,2}:\d{2}\s*(?:AM|PM))?\s*/i;
+  // Structured data line pattern (Map, Website, Address, Hours, Fee)
+  const structuredLineRe = /^(map|website|address|hours?|open|opening|fee|price|cost|admission|entry):/i;
+
   function parseStopsFromElements(elements) {
     const stops = [];
     let current = null;
@@ -1591,25 +1596,51 @@ function restructureItinerary() {
       const el = elements[i];
       if (el.nodeType !== 1) continue;
 
-      // Detect place name: <p> containing <strong>, or <h3>/<h4> as place heading
+      // Detect place name: <p> containing <strong>
       if (el.tagName === 'P' && el.querySelector('strong')) {
         if (current) stops.push(current);
         const nameEl = el.querySelector('strong');
+        // Strip time prefix from bold name (e.g. "10:30 AM - 12:30 PM St. Paul's Cathedral")
+        const rawName = nameEl.textContent.trim().replace(timeStampPrefixRe, '');
+        const remainder = el.textContent.replace(nameEl.textContent, '').trim().replace(/^[:\-–—\s]+/, '');
+        // Also strip time prefix from the remainder/description
+        const desc = remainder.replace(timeStampPrefixRe, '').replace(/^[:\-–—\s]+/, '');
         current = {
-          name: nameEl.textContent.trim(),
-          description: el.textContent.replace(nameEl.textContent, '').trim().replace(/^[:\-–—\s]+/, ''),
+          name: rawName,
+          description: desc,
           mapUrl: '', website: '', address: '', hours: '', fee: '', notes: [], extraEls: []
         };
         continue;
       }
+
+      // Detect place name: <h3>/<h4> that isn't a time-of-day label
       if ((el.tagName === 'H3' || el.tagName === 'H4') && !timeBlockPattern.test(el.textContent.trim())) {
         if (current) stops.push(current);
         current = {
-          name: el.textContent.trim().replace(/^[\d]+[\.\)]\s*/, ''),
+          name: el.textContent.trim().replace(/^[\d]+[\.\)]\s*/, '').replace(timeStampPrefixRe, ''),
           description: '',
           mapUrl: '', website: '', address: '', hours: '', fee: '', notes: [], extraEls: []
         };
         continue;
+      }
+
+      // Detect time-prefixed activities WITHOUT bold: "10:30 AM - 12:30 PM Place Name — Description"
+      if (el.tagName === 'P' && !el.querySelector('strong')) {
+        const pText = el.textContent.trim();
+        const timeMatch = pText.match(/^(\d{1,2}:\d{2}\s*(?:AM|PM))\s*(?:[-–]\s*\d{1,2}:\d{2}\s*(?:AM|PM))?\s+(.+)/i);
+        if (timeMatch && !structuredLineRe.test(pText)) {
+          if (current) stops.push(current);
+          const afterTime = timeMatch[2];
+          const dashParts = afterTime.split(/\s*[—–]\s*/);
+          const placeName = dashParts[0].trim().replace(/\.\s*$/, '');
+          const placeDesc = dashParts.length > 1 ? dashParts.slice(1).join(' — ').trim() : '';
+          current = {
+            name: placeName,
+            description: placeDesc,
+            mapUrl: '', website: '', address: '', hours: '', fee: '', notes: [], extraEls: []
+          };
+          continue;
+        }
       }
 
       // Extract fields from <ul> following a place name
@@ -1641,6 +1672,33 @@ function restructureItinerary() {
           }
         });
         if (consumed) continue;
+      }
+
+      // Extract structured data from <p> elements (Map:, Website:, Address:, Hours:, Fee:)
+      if (current && el.tagName === 'P' && !el.querySelector('strong')) {
+        const pText = el.textContent.trim();
+        if (/^map:/i.test(pText)) {
+          const a = el.querySelector('a');
+          current.mapUrl = a ? a.href : pText.replace(/^map:\s*/i, '');
+          continue;
+        }
+        if (/^website:/i.test(pText)) {
+          const a = el.querySelector('a');
+          current.website = a ? a.outerHTML : pText.replace(/^website:\s*/i, '');
+          continue;
+        }
+        if (/^address:/i.test(pText)) {
+          current.address = pText.replace(/^address:\s*/i, '');
+          continue;
+        }
+        if (/^(hours?|open|opening):/i.test(pText)) {
+          current.hours = pText.replace(/^(hours?|open|opening):\s*/i, '');
+          continue;
+        }
+        if (/^(fee|price|cost|admission|entry):/i.test(pText)) {
+          current.fee = pText.replace(/^(fee|price|cost|admission|entry):\s*/i, '');
+          continue;
+        }
       }
 
       // Additional description paragraphs — append to description
