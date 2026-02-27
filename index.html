@@ -735,13 +735,13 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
       <div>
         <label class="section-label" data-i18n="budget">Budget (Total)</label>
-        <input type="number" class="form-input" placeholder="5000">
+        <input type="number" id="budget-input" class="form-input" placeholder="5000">
       </div>
       <div>
         <label class="section-label" data-i18n="currency">Currency</label>
-        <select class="form-input">
-          <option>USD (US Dollar)</option><option>EUR (Euro)</option><option>GBP (British Pound)</option>
-          <option>JPY (Japanese Yen)</option><option>CNY (Chinese Yuan)</option><option>CAD (Canadian Dollar)</option>
+        <select id="currency-select" class="form-input">
+          <option value="USD">USD (US Dollar)</option><option value="EUR">EUR (Euro)</option><option value="GBP">GBP (British Pound)</option>
+          <option value="JPY">JPY (Japanese Yen)</option><option value="CNY">CNY (Chinese Yuan)</option><option value="CAD">CAD (Canadian Dollar)</option>
         </select>
       </div>
       <div>
@@ -1257,6 +1257,11 @@ document.getElementById('generate-button').addEventListener('click', async () =>
   const travelersInput = document.querySelector('[data-i18n="travelers"]').parentElement.querySelector('input');
   const travelers = parseInt(travelersInput.value) || 1;
 
+  // Get budget and currency
+  const budgetVal = document.getElementById('budget-input').value.trim();
+  const currency = document.getElementById('currency-select').value;
+  const budget = budgetVal ? parseInt(budgetVal) : 0;
+
   // Check if cheap tickets checkbox is selected
   const wantsCheapTickets = document.getElementById('cheap-tickets-checkbox').checked;
 
@@ -1305,6 +1310,7 @@ Write the response in ${langMap[currentLang]}.
 The traveler arrives at the first destination on ${new Date(start).toLocaleDateString('en-US')} at ${startTime} and departs to return home on ${new Date(end).toLocaleDateString('en-US')} at ${endTime}. Plan Day 1 starting from the arrival time and the last day ending by the departure time.
 Trip pace: ${pace}.
 Themes: ${interests.join(", ")}.
+${budget > 0 ? `Total budget: ${budget} ${currency} for ${travelers} traveler(s). Recommend restaurants, activities, and accommodations that fit within this budget. Show prices in ${currency} where possible.` : ''}
 ${longDistance.length > 0 ? `Long-distance transportation (between cities/countries): ${longDistance.join(", ")}.` : ''}
 ${localTransport.length > 0 ? `Local transportation (within cities): ${localTransport.join(", ")}.` : ''}
 ${additionalInstructions ? `Additional instructions: ${additionalInstructions}` : ''}
@@ -1432,6 +1438,8 @@ ${ticketTipsInstruction}
   tripData.localTransport = localTransport;
   tripData.travelers = travelers;
   tripData.interests = interests;
+  tripData.budget = budget;
+  tripData.currency = currency;
 
   // Free tier: track generation + reset update counter
   incrementGenerations();
