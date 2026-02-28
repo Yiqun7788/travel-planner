@@ -1,0 +1,35 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dir /s \"C:\\\\Users\\\\user\\\\Desktop\\\\travel-planner-main\")",
+      "Bash(where:*)",
+      "Bash(git init:*)",
+      "Bash(git remote add:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git config:*)",
+      "Bash(git branch:*)",
+      "Bash(git push:*)",
+      "Bash(git pull:*)",
+      "Bash(git revert:*)",
+      "Bash(npx vercel:*)",
+      "Bash(npm install:*)",
+      "Bash(echo:*)",
+      "Bash(git fetch:*)",
+      "Bash(vercel --version:*)",
+      "Bash(powershell.exe -Command \"where.exe node; where.exe npm\")",
+      "WebFetch(domain:vercel.com)",
+      "WebSearch",
+      "Bash(git reset:*)",
+      "WebFetch(domain:travel-planner-gamma-five.vercel.app)",
+      "WebFetch(domain:travel-planner-joys-projects-cc32b4b2.vercel.app)",
+      "WebFetch(domain:travel-planner-5vchtbxjr-joys-projects-cc32b4b2.vercel.app)",
+      "WebFetch(domain:travel-planner-livid-two.vercel.app)",
+      "Bash(vercel pull:*)",
+      "Bash(vercel login:*)",
+      "Bash(printf:*)",
+      "Bash(curl:*)",
+      "Bash(vercel:*)"
+    ]
+  }
+}

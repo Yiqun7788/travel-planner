@@ -2577,26 +2577,79 @@ document.getElementById('download-pdf').addEventListener('click', () => {
   document.getElementById('download-menu').classList.add('hidden');
 });
 
+// Read current planning page inputs and detect changes vs tripData
+function readPlanningInputs() {
+  const dest = document.getElementById('destination').value.trim();
+  const start = document.getElementById('start-date').value;
+  const end = document.getElementById('end-date').value;
+  const days = (start && end) ? Math.floor((new Date(end) - new Date(start)) / (1000*3600*24)) + 1 : 0;
+  const interests = [...document.querySelectorAll('#checkbox-group input:checked')].map(i => i.value);
+  const other = document.getElementById('other-interests').value;
+  if (other) interests.push(other);
+  const longDistance = [...document.querySelectorAll('#long-distance-group input:checked')].map(cb => cb.value);
+  const localTransport = [...document.querySelectorAll('#local-transport-group input:checked')].map(cb => cb.value);
+  const transportation = [...longDistance, ...localTransport];
+  const travelersInput = document.querySelector('[data-i18n="travelers"]').parentElement.querySelector('input');
+  const travelers = parseInt(travelersInput.value) || 1;
+  const budgetVal = document.getElementById('budget-input').value.trim();
+  const budget = budgetVal ? parseInt(budgetVal) : 0;
+  const currency = document.getElementById('currency-select').value;
+  return { destination: dest, days, startDate: start, endDate: end, interests, longDistance, localTransport, transportation, travelers, budget, currency };
+}
+
+function detectPlanningChanges(newInputs) {
+  const changes = [];
+  if (newInputs.destination && newInputs.destination !== tripData.destination) changes.push(`destination changed from "${tripData.destination}" to "${newInputs.destination}"`);
+  if (newInputs.startDate && newInputs.startDate !== tripData.startDate) changes.push(`start date changed to ${newInputs.startDate}`);
+  if (newInputs.endDate && newInputs.endDate !== tripData.endDate) changes.push(`end date changed to ${newInputs.endDate}`);
+  if (newInputs.days && newInputs.days !== tripData.days) changes.push(`trip length changed from ${tripData.days} to ${newInputs.days} days`);
+  if (newInputs.travelers !== tripData.travelers) changes.push(`travelers changed from ${tripData.travelers} to ${newInputs.travelers}`);
+  if (newInputs.budget !== tripData.budget) changes.push(`budget changed from ${tripData.budget} to ${newInputs.budget} ${newInputs.currency}`);
+  if (newInputs.currency !== tripData.currency) changes.push(`currency changed to ${newInputs.currency}`);
+  const oldInterests = (tripData.interests || []).sort().join(',');
+  const newInterests = (newInputs.interests || []).sort().join(',');
+  if (newInterests !== oldInterests) changes.push(`interests changed to: ${newInputs.interests.join(', ')}`);
+  const oldTransport = (tripData.transportation || []).sort().join(',');
+  const newTransport = (newInputs.transportation || []).sort().join(',');
+  if (newTransport !== oldTransport) changes.push(`transportation changed to: ${newInputs.transportation.join(', ')}`);
+  return changes;
+}
+
 // Extra Tools functionality
 document.getElementById('update-itinerary-btn').addEventListener('click', async () => {
   const instruction = document.getElementById('update-instruction').value.trim();
-  if (!instruction) {
-    alert('Please enter an instruction to update the itinerary.');
+
+  // Read planning page and detect changes
+  const newInputs = readPlanningInputs();
+  const planningChanges = detectPlanningChanges(newInputs);
+
+  if (!instruction && planningChanges.length === 0) {
+    alert('Please enter an instruction or change your trip settings on the planning page to update the itinerary.');
     return;
   }
 
   // Free tier: block requests to extend beyond day limit
-  const dayExtendMatch = instruction.match(/(\d+)\s*(?:days?|nights?)/i);
-  if (dayExtendMatch && parseInt(dayExtendMatch[1]) > FREE_TIER.maxDays) {
-    showUpgradeModal('Day Limit', `The Free plan supports up to ${FREE_TIER.maxDays} days. Upgrade to extend your trip, or try a different update.`);
+  if (instruction) {
+    const dayExtendMatch = instruction.match(/(\d+)\s*(?:days?|nights?)/i);
+    if (dayExtendMatch && parseInt(dayExtendMatch[1]) > FREE_TIER.maxDays) {
+      showUpgradeModal('Day Limit', `The Free plan supports up to ${FREE_TIER.maxDays} days. Upgrade to extend your trip, or try a different update.`);
+      return;
+    }
+  }
+
+  // Also block if planning page dates exceed day limit
+  if (newInputs.days > FREE_TIER.maxDays) {
+    showUpgradeModal('Day Limit', `The Free plan supports up to ${FREE_TIER.maxDays} days. Upgrade to extend your trip.`);
     return;
   }
 
   // Free tier: block premium feature keywords in update instruction
-  const premiumHitUpd = checkPremiumKeywords(instruction);
-  if (premiumHitUpd) {
-    showUpgradeModal('Premium Feature', `${premiumHitUpd.feature} is available on the ${premiumHitUpd.tier} plan. Try a different update, or upgrade.`);
-    return;
+  if (instruction) {
+    const premiumHitUpd = checkPremiumKeywords(instruction);
+    if (premiumHitUpd) {
+      showUpgradeModal('Premium Feature', `${premiumHitUpd.feature} is available on the ${premiumHitUpd.tier} plan. Try a different update, or upgrade.`);
+      return;
+    }
   }
 
   // Free tier: 1 update per itinerary
@@ -2605,7 +2658,33 @@ document.getElementById('update-itinerary-btn').addEventListener('click', async 
     return;
   }
 
+  // Apply planning page changes to tripData
+  if (planningChanges.length > 0) {
+    tripData.destination = newInputs.destination;
+    tripData.days = newInputs.days;
+    tripData.startDate = newInputs.startDate;
+    tripData.endDate = newInputs.endDate;
+    tripData.interests = newInputs.interests;
+    tripData.longDistance = newInputs.longDistance;
+    tripData.localTransport = newInputs.localTransport;
+    tripData.transportation = newInputs.transportation;
+    tripData.travelers = newInputs.travelers;
+    tripData.budget = newInputs.budget;
+    tripData.currency = newInputs.currency;
+    // Update header to reflect new destination/days
+    document.getElementById('results-title').textContent = `Your Trip: ${tripData.destination} (${tripData.days} days)`;
+  }
+
   startProgress('Updating your itinerary...');
+
+  // Build the update instruction combining user text + planning changes
+  let fullInstruction = '';
+  if (planningChanges.length > 0) {
+    fullInstruction += 'The user has changed these trip settings: ' + planningChanges.join('; ') + '. Please adjust the itinerary accordingly.';
+  }
+  if (instruction) {
+    fullInstruction += (fullInstruction ? '\n\nAdditionally, the user requests: ' : '') + instruction;
+  }
 
   // Check if cheap tickets checkbox is still selected and transportation was chosen
   const wantsCheapTickets = document.getElementById('cheap-tickets-checkbox').checked;
@@ -2640,7 +2719,7 @@ Also at the VERY BEGINNING of each day (right after the day heading), include a 
 DailyRoute: Place+A+${tripData.destination.replace(/\s+/g, '+')}|Place+B+${tripData.destination.replace(/\s+/g, '+')}|Place+C+${tripData.destination.replace(/\s+/g, '+')}
 Replace spaces with + in each place name. Include the city name. Separate stops with | character. Arrange in optimal time-saving order.`;
 
-  const prompt = `Based on this itinerary:\n\n${tripData.itinerary}\n\nPlease update it with this instruction: ${instruction}${placeDetailsInstruction}${ticketTipsInstruction}`;
+  const prompt = `Based on this itinerary:\n\n${tripData.itinerary}\n\nPlease update it with this instruction: ${fullInstruction}${placeDetailsInstruction}${ticketTipsInstruction}`;
   const result = await callGemini(prompt);
 
   finishProgress();
