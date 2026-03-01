@@ -617,6 +617,31 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
   background: rgba(255,255,255,0.35);
 }
 
+/* ─── Free tier info banner ─── */
+.free-tier-banner {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  background: #eff6ff; border: 1px solid #bfdbfe;
+  border-radius: 10px; padding: 10px 16px; margin-top: 12px;
+  font-size: 0.82rem; color: #1e40af; line-height: 1.4;
+}
+.free-tier-banner .banner-icon {
+  font-size: 1rem; flex-shrink: 0;
+}
+.free-tier-banner .banner-text {
+  flex: 1;
+}
+.free-tier-banner .banner-text strong {
+  font-weight: 700;
+}
+.free-tier-banner .banner-link {
+  color: #4f46e5; font-weight: 600; cursor: pointer;
+  text-decoration: underline; text-underline-offset: 2px;
+  background: none; border: none; font-size: 0.82rem; padding: 0;
+}
+.free-tier-banner .banner-link:hover {
+  color: #3730a3;
+}
+
 /* ─── View Plans link in upgrade modal ─── */
 .upgrade-view-plans {
   display: inline-block; margin-bottom: 16px;
@@ -754,6 +779,10 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
   <div class="px-6 sm:px-8 pt-8 pb-4">
     <h2 class="text-xl sm:text-2xl font-bold text-slate-800" data-i18n="planTitle">Plan Your Trip</h2>
     <p class="text-slate-500 text-sm mt-1" data-i18n="planSubtitle">Fill in the details below and let AI craft the perfect itinerary.</p>
+    <div class="free-tier-banner" id="free-tier-banner">
+      <span class="banner-icon">&#9432;</span>
+      <span class="banner-text"><strong>Free Plan</strong> — 1 destination, up to 3 days, 1 itinerary per day, 1 update per itinerary. <button class="banner-link" onclick="openPricingModal()">View Plans</button></span>
+    </div>
   </div>
 
   <form id="itinerary-form" class="px-6 sm:px-8 pb-8 space-y-7">
