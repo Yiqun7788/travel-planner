@@ -1035,7 +1035,9 @@ var tripData = {
   endDate: '',
   transportation: [],
   travelers: 1,
-  interests: []
+  interests: [],
+  pace: 'Medium',
+  additionalInstructions: ''
 };
 var selectedTravelMode = 'driving';
 
@@ -1534,6 +1536,8 @@ ${ticketTipsInstruction}
   tripData.interests = interests;
   tripData.budget = budget;
   tripData.currency = currency;
+  tripData.pace = pace;
+  tripData.additionalInstructions = document.getElementById('additional-instructions').value.trim();
 
   // Free tier: track generation + reset update counter
   incrementGenerations();
@@ -2646,7 +2650,9 @@ function readPlanningInputs() {
   const budgetVal = document.getElementById('budget-input').value.trim();
   const budget = budgetVal ? parseInt(budgetVal) : 0;
   const currency = document.getElementById('currency-select').value;
-  return { destination: dest, days, startDate: start, endDate: end, interests, longDistance, localTransport, transportation, travelers, budget, currency };
+  const pace = document.querySelector('input[name="pace"]:checked').value;
+  const additionalInstructions = document.getElementById('additional-instructions').value.trim();
+  return { destination: dest, days, startDate: start, endDate: end, interests, longDistance, localTransport, transportation, travelers, budget, currency, pace, additionalInstructions };
 }
 
 function detectPlanningChanges(newInputs) {
@@ -2664,6 +2670,8 @@ function detectPlanningChanges(newInputs) {
   const oldTransport = (tripData.transportation || []).sort().join(',');
   const newTransport = (newInputs.transportation || []).sort().join(',');
   if (newTransport !== oldTransport) changes.push(`transportation changed to: ${newInputs.transportation.join(', ')}`);
+  if (newInputs.pace && newInputs.pace !== tripData.pace) changes.push(`pace changed from ${tripData.pace} to ${newInputs.pace}`);
+  if ((newInputs.additionalInstructions || '') !== (tripData.additionalInstructions || '')) changes.push(`additional instructions changed`);
   return changes;
 }
 
@@ -2723,6 +2731,8 @@ document.getElementById('update-itinerary-btn').addEventListener('click', async 
     tripData.travelers = newInputs.travelers;
     tripData.budget = newInputs.budget;
     tripData.currency = newInputs.currency;
+    tripData.pace = newInputs.pace;
+    tripData.additionalInstructions = newInputs.additionalInstructions;
     // Update header to reflect new destination/days
     document.getElementById('results-title').textContent = `Your Trip: ${tripData.destination} (${tripData.days} days)`;
   }
