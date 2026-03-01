@@ -786,7 +786,7 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
     <p class="text-slate-500 text-sm mt-1" data-i18n="planSubtitle">Fill in the details below and let AI craft the perfect itinerary.</p>
     <div class="free-tier-banner" id="free-tier-banner">
       <span class="banner-icon">&#9432;</span>
-      <span class="banner-text"><strong>Free Plan</strong> — 1 destination, up to 3 days, 1 itinerary per day, 1 update per itinerary. <button class="banner-link" onclick="openPricingModal()">View Plans</button></span>
+      <span class="banner-text"><strong>Free Plan</strong> — 1 destination, up to 3 days, 1 itinerary per month, 1 update per itinerary. <button class="banner-link" onclick="openPricingModal()">View Plans</button></span>
     </div>
   </div>
 
@@ -1040,7 +1040,7 @@ var tripData = {
 var selectedTravelMode = 'driving';
 
 // ─── Free Tier ───
-const FREE_TIER = { maxDays: 3, maxGenerationsPerDay: 1, maxUpdatesPerItinerary: 1 };
+const FREE_TIER = { maxDays: 3, maxGenerationsPerMonth: 1, maxUpdatesPerItinerary: 1 };
 
 function getFreeTierState() {
   try { return JSON.parse(localStorage.getItem('freeTierState') || '{}'); } catch { return {}; }
@@ -1048,20 +1048,20 @@ function getFreeTierState() {
 function saveFreeTierState(state) {
   localStorage.setItem('freeTierState', JSON.stringify(state));
 }
-function getTodayKey() {
+function getMonthKey() {
   const d = new Date();
-  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0');
 }
-function getGenerationsToday() {
+function getGenerationsThisMonth() {
   const s = getFreeTierState();
-  const today = getTodayKey();
-  return (s.generations && s.generations[today]) || 0;
+  const month = getMonthKey();
+  return (s.generations && s.generations[month]) || 0;
 }
 function incrementGenerations() {
   const s = getFreeTierState();
-  const today = getTodayKey();
+  const month = getMonthKey();
   if (!s.generations) s.generations = {};
-  s.generations[today] = (s.generations[today] || 0) + 1;
+  s.generations[month] = (s.generations[month] || 0) + 1;
   saveFreeTierState(s);
 }
 function getUpdatesThisItinerary() {
@@ -1325,9 +1325,9 @@ document.getElementById('generate-button').addEventListener('click', async () =>
     return;
   }
 
-  // Free tier: 1 generation per day
-  if (getGenerationsToday() >= FREE_TIER.maxGenerationsPerDay) {
-    showUpgradeModal('Daily Limit Reached', 'Free plan allows 1 itinerary per day. Come back tomorrow or upgrade for unlimited generations.');
+  // Free tier: 1 generation per month
+  if (getGenerationsThisMonth() >= FREE_TIER.maxGenerationsPerMonth) {
+    showUpgradeModal('Monthly Limit Reached', 'Free plan allows 1 itinerary per month. Come back next month or upgrade for unlimited generations.');
     return;
   }
 
@@ -2399,7 +2399,7 @@ document.getElementById('back-button').addEventListener('click', () => {
   document.querySelector('.mobile-action-bar').classList.add('hidden');
   // Show "Return to Itinerary" and gray out Generate if limit reached
   document.getElementById('return-to-itinerary-btn').classList.remove('hidden');
-  if (getGenerationsToday() >= FREE_TIER.maxGenerationsPerDay) {
+  if (getGenerationsThisMonth() >= FREE_TIER.maxGenerationsPerMonth) {
     const genBtn = document.getElementById('generate-button');
     genBtn.disabled = true;
     genBtn.style.opacity = '0.45';

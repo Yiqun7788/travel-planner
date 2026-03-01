@@ -1,3 +1,21 @@
+// ─── IP-Based Rate Limiting ───
+const rateLimitMap = new Map();
+const RATE_LIMIT_MAX = 3; // per IP per month (generous for shared IPs)
+
+function getRateLimitKey(ip) {
+  const now = new Date();
+  const month = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+  return `${ip}:${month}`;
+}
+
+function cleanOldEntries() {
+  const now = new Date();
+  const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+  for (const [k] of rateLimitMap) {
+    if (!k.endsWith(currentMonth)) rateLimitMap.delete(k);
+  }
+}
+
 module.exports = async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
@@ -7,6 +25,16 @@ module.exports = async function handler(req, res) {
 
   if (!API_KEY) {
     return res.status(500).json({ error: 'API key not configured on server.' });
+  }
+
+  // Rate limit by IP
+  const ip = (req.headers['x-forwarded-for'] || req.headers['x-real-ip'] || 'unknown').split(',')[0].trim();
+  const key = getRateLimitKey(ip);
+  cleanOldEntries();
+  const count = rateLimitMap.get(key) || 0;
+
+  if (count >= RATE_LIMIT_MAX) {
+    return res.status(429).json({ error: 'Monthly limit reached. Please try again next month or upgrade for unlimited generations.' });
   }
 
   try {
@@ -49,6 +77,9 @@ module.exports = async function handler(req, res) {
     if (!text) {
       return res.status(500).json({ error: 'No text in Gemini response.' });
     }
+
+    // Increment rate limit counter after successful generation
+    rateLimitMap.set(key, count + 1);
 
     return res.status(200).json({ text });
 
