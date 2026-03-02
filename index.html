@@ -2003,7 +2003,7 @@ function restructureItinerary() {
   let stopCardCounter = 0;
   const container = document.getElementById('content-display');
   const dayPattern = /(Day\s+\d+|Tag\s+\d+|Jour\s+\d+|D[ií]a\s+\d+|第\d+天|\d+日目)/i;
-  const cheapPattern = /(cheap tickets|günstige tickets|billetes baratos|billets pas chers|便宜票|安いチケット)/i;
+  const cheapPattern = /(cheap tickets|ticket tips|günstige tickets|billetes baratos|billets pas chers|便宜票|安いチケット)/i;
   const budgetPattern = /(budget summary|budget breakdown|budget overview|estimated budget|cost summary|kostenübersicht|presupuesto|résumé du budget|预算|予算)/i;
   const timeBlockPattern = /^(early\s+morning|mid[- ]?morning|late\s+morning|morning|lunch|early\s+afternoon|mid[- ]?afternoon|late\s+afternoon|afternoon|early\s+evening|evening|night|dinner|brunch|breakfast|vormittag|nachmittag|abend|mittag|matin|après-midi|soir|midi|déjeuner|mañana|mediodía|tarde|noche|almuerzo|午前|午後|夜|昼|朝|上午|下午|晚上|中午)/i;
   const timeIcons = { morning: '\u2600\uFE0F', afternoon: '\uD83C\uDF24\uFE0F', evening: '\uD83C\uDF19' };
@@ -2650,7 +2650,17 @@ function restructureItinerary() {
     h2.replaceWith(details);
   });
 
-  // Make cheap tickets section collapsible (amber theme) — unchanged
+  // Promote H3 cheap-tickets heading to H2 (Gemini often nests it under Budget Summary)
+  const cheapH3 = Array.from(container.querySelectorAll('h3')).find(h3 =>
+    !h3.closest('.day-content') && cheapPattern.test(h3.textContent)
+  );
+  if (cheapH3) {
+    const promoted = document.createElement('h2');
+    promoted.textContent = cheapH3.textContent;
+    cheapH3.replaceWith(promoted);
+  }
+
+  // Make cheap tickets section collapsible (amber theme)
   const cheapH2 = Array.from(container.querySelectorAll('h2')).find(h2 =>
     !h2.closest('.day-content') && cheapPattern.test(h2.textContent)
   );
