@@ -1046,6 +1046,10 @@ var tripData = {
 };
 var selectedTravelMode = 'driving';
 
+function saveTripSession() {
+  try { sessionStorage.setItem('tripSession', JSON.stringify(tripData)); } catch {}
+}
+
 // ─── Free Tier ───
 const FREE_TIER = { maxDays: 3, maxGenerationsPerMonth: 1, maxUpdatesPerItinerary: 1 };
 
@@ -1593,6 +1597,7 @@ ${ticketTipsInstruction}
   tripData.currency = currency;
   tripData.pace = pace;
   tripData.additionalInstructions = document.getElementById('additional-instructions').value.trim();
+  saveTripSession();
 
   // Free tier: track generation (only on successful API response) + reset update counter
   if (result) incrementGenerations();
@@ -2868,6 +2873,7 @@ Replace spaces with + in each place name. Include the city name. Separate stops 
 
   if (result) {
     tripData.itinerary = result;
+    saveTripSession();
     document.getElementById('content-display').innerHTML = linkifyUrls(marked.parse(processDailyRoutes(result)));
     restructureItinerary();
     renderTripOverview();
@@ -2930,6 +2936,44 @@ document.getElementById('fun-fact-btn').addEventListener('click', async () => {
     document.getElementById('content-display').innerHTML += '<details class="day-section" open><summary><span class="day-chevron">\u25B6</span> <span class="day-heading-text">&#128161; Fun Fact About ' + tripData.destination + '</span></summary><div class="day-content"><h2>Fun Fact About ' + tripData.destination + '</h2>' + linkifyUrls(marked.parse(result)) + '</div></details>';
   }
 });
+
+// ─── Restore session on page load ───
+(function restoreSession() {
+  try {
+    const saved = sessionStorage.getItem('tripSession');
+    if (!saved) return;
+    const data = JSON.parse(saved);
+    if (!data.itinerary || !data.destination) return;
+    Object.assign(tripData, data);
+    document.getElementById('results-title').textContent = 'Your Trip: ' + tripData.destination + ' (' + tripData.days + ' days)';
+    const routeMapHtml = buildLongDistanceRouteMap(tripData.destination, tripData.longDistance || []);
+    document.getElementById('content-display').innerHTML = routeMapHtml + linkifyUrls(marked.parse(processDailyRoutes(tripData.itinerary)));
+    restructureItinerary();
+    renderTripOverview();
+    renderActiveInstructionsLabel();
+    document.getElementById('planning-view').classList.add('hidden');
+    document.getElementById('results-view').classList.remove('hidden');
+    document.getElementById('language-select').parentElement.style.display = 'none';
+    if (window.innerWidth <= 768) document.querySelector('.mobile-action-bar').classList.remove('hidden');
+    // Restore planning page fields so Back button shows correct values
+    document.getElementById('destination').value = tripData.destination;
+    document.getElementById('start-date').value = tripData.startDate || '';
+    document.getElementById('end-date').value = tripData.endDate || '';
+    if (tripData.pace) {
+      const paceRadio = document.querySelector('input[name="pace"][value="' + tripData.pace + '"]');
+      if (paceRadio) paceRadio.checked = true;
+    }
+    // Disable generate button if monthly limit reached
+    if (getGenerationsThisMonth() >= FREE_TIER.maxGenerationsPerMonth) {
+      var genBtn = document.getElementById('generate-button');
+      genBtn.disabled = true;
+      genBtn.style.opacity = '0.45';
+      genBtn.style.cursor = 'not-allowed';
+    }
+    // Show return-to-itinerary if user goes back
+    document.getElementById('return-to-itinerary-btn').classList.remove('hidden');
+  } catch {}
+})();
 </script>
 
 </body>
