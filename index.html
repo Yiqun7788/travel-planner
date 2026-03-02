@@ -2660,6 +2660,32 @@ function restructureItinerary() {
     cheapH3.replaceWith(promoted);
   }
 
+  // Make budget summary section collapsible (green theme)
+  // MUST run before cheap tickets so the promoted cheap H2 acts as a boundary
+  const budgetH2 = Array.from(container.querySelectorAll('h2')).find(h2 =>
+    !h2.closest('.day-content') && budgetPattern.test(h2.textContent)
+  );
+  if (budgetH2) {
+    const bSiblings = [];
+    let bNext = budgetH2.nextSibling;
+    while (bNext) {
+      if (bNext.nodeType === 1 && bNext.tagName === 'H2') break;
+      bSiblings.push(bNext);
+      bNext = bNext.nextSibling;
+    }
+    const bDetails = document.createElement('details');
+    bDetails.className = 'budget-summary-section';
+    const bSummary = document.createElement('summary');
+    bSummary.innerHTML = '<span class="day-chevron">\u25B6</span> <span class="day-heading-text">&#128176; ' + budgetH2.textContent + '</span>';
+    const bContent = document.createElement('div');
+    bContent.className = 'day-content';
+    bContent.appendChild(budgetH2.cloneNode(true));
+    bSiblings.forEach(s => bContent.appendChild(s));
+    bDetails.appendChild(bSummary);
+    bDetails.appendChild(bContent);
+    budgetH2.replaceWith(bDetails);
+  }
+
   // Make cheap tickets section collapsible (amber theme)
   const cheapH2 = Array.from(container.querySelectorAll('h2')).find(h2 =>
     !h2.closest('.day-content') && cheapPattern.test(h2.textContent)
@@ -2683,31 +2709,6 @@ function restructureItinerary() {
     details.appendChild(summary);
     details.appendChild(content);
     cheapH2.replaceWith(details);
-  }
-
-  // Make budget summary section collapsible (green theme)
-  const budgetH2 = Array.from(container.querySelectorAll('h2')).find(h2 =>
-    !h2.closest('.day-content') && budgetPattern.test(h2.textContent)
-  );
-  if (budgetH2) {
-    const bSiblings = [];
-    let bNext = budgetH2.nextSibling;
-    while (bNext) {
-      if (bNext.nodeType === 1 && bNext.tagName === 'H2') break;
-      bSiblings.push(bNext);
-      bNext = bNext.nextSibling;
-    }
-    const bDetails = document.createElement('details');
-    bDetails.className = 'budget-summary-section';
-    const bSummary = document.createElement('summary');
-    bSummary.innerHTML = '<span class="day-chevron">\u25B6</span> <span class="day-heading-text">&#128176; ' + budgetH2.textContent + '</span>';
-    const bContent = document.createElement('div');
-    bContent.className = 'day-content';
-    bContent.appendChild(budgetH2.cloneNode(true));
-    bSiblings.forEach(s => bContent.appendChild(s));
-    bDetails.appendChild(bSummary);
-    bDetails.appendChild(bContent);
-    budgetH2.replaceWith(bDetails);
   }
 
   // --- Ultimate fallback: no day headings found at all ---
