@@ -929,7 +929,7 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
 
     <!-- Generate Button -->
     <button type="button" id="generate-button" class="btn-primary" data-i18n="generate">Generate Itinerary</button>
-    <button type="button" id="return-to-itinerary-btn" class="btn-primary hidden" style="margin-top: 10px; background: linear-gradient(135deg, #64748b, #475569);" onclick="document.getElementById('planning-view').classList.add('hidden'); document.getElementById('results-view').classList.remove('hidden'); document.getElementById('language-select').parentElement.style.display='none'; if(window.innerWidth<=768) document.querySelector('.mobile-action-bar').classList.remove('hidden');">&#8592; Return to Itinerary</button>
+    <button type="button" id="return-to-itinerary-btn" class="btn-primary hidden" style="margin-top: 10px; background: linear-gradient(135deg, #64748b, #475569);" onclick="document.getElementById('planning-view').classList.add('hidden'); document.getElementById('results-view').classList.remove('hidden'); document.getElementById('language-select').parentElement.style.display='none'; if(window.innerWidth<=768) document.querySelector('.mobile-action-bar').classList.remove('hidden'); showPlanningChangesSummary();">&#8592; Return to Itinerary</button>
 
   </form>
 </div>
@@ -964,6 +964,7 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
     <h3 class="text-lg font-bold text-slate-800 mb-1">Extra Tools</h3>
     <p class="text-slate-500 text-sm mb-4">Refine your itinerary or explore more about your destination.</p>
 
+    <div id="planning-changes-summary" class="hidden" style="margin-bottom:12px; padding:10px 14px; background:linear-gradient(135deg,#fef3c7,#fde68a); border:1px solid #f59e0b; border-radius:10px; font-size:0.85rem; color:#92400e; line-height:1.5;"></div>
     <textarea id="update-instruction" class="form-input mb-4 resize-none" rows="3" placeholder="Your specific instruction to update the itinerary..."></textarea>
 
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-3" id="extra-tools-buttons">
@@ -2675,6 +2676,19 @@ function detectPlanningChanges(newInputs) {
   return changes;
 }
 
+function showPlanningChangesSummary() {
+  const box = document.getElementById('planning-changes-summary');
+  const newInputs = readPlanningInputs();
+  const changes = detectPlanningChanges(newInputs);
+  if (changes.length > 0) {
+    box.innerHTML = '<strong>Planning changes detected:</strong> ' + changes.join('; ') + '.';
+    box.classList.remove('hidden');
+  } else {
+    box.innerHTML = '';
+    box.classList.add('hidden');
+  }
+}
+
 // Extra Tools functionality
 document.getElementById('update-itinerary-btn').addEventListener('click', async () => {
   const instruction = document.getElementById('update-instruction').value.trim();
@@ -2791,6 +2805,8 @@ Replace spaces with + in each place name. Include the city name. Separate stops 
     document.getElementById('content-display').innerHTML = linkifyUrls(marked.parse(processDailyRoutes(result)));
     restructureItinerary();
     document.getElementById('update-instruction').value = '';
+    document.getElementById('planning-changes-summary').innerHTML = '';
+    document.getElementById('planning-changes-summary').classList.add('hidden');
 
     // Free tier: track update usage
     incrementUpdates();
