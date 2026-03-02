@@ -1714,7 +1714,8 @@ document.getElementById('generate-button').addEventListener('click', async () =>
     if (interests.length > 0) tipsParts += `\nInterests & Activities (${interests.join(", ")}): tips for saving on attraction tickets, museum passes, city passes that bundle activities, combo deals, free entry days, student/senior discounts, and online pre-booking discounts related to these interests.`;
     ticketTipsInstruction = `
 
-IMPORTANT: At the end of the itinerary, include a dedicated section using this EXACT heading: ## Tips to Buy Cheap Tickets
+IMPORTANT: After all day sections${budget > 0 ? ' and after the Budget Summary section' : ''}, include a SEPARATE standalone section using this EXACT heading: ## Tips to Buy Cheap Tickets
+This MUST be its own ## section — do NOT put it inside the Budget Summary or any other section.
 Include sub-sections for:
 ${tipsParts}
 
@@ -1737,7 +1738,7 @@ Trip pace: ${pace}.
 ${primaryInterests.length > 0 ? `Primary interests (focus the itinerary on these): ${primaryInterests.join(", ")}.` : ''}
 ${secondaryInterests.length > 0 ? `Secondary interests (include if possible): ${secondaryInterests.join(", ")}.` : ''}
 ${other ? `Other interests: ${other}.` : ''}
-${budget > 0 ? `Total budget: ${budget} ${currency} for ${travelers} traveler(s). Recommend restaurants, activities, and accommodations that fit within this budget. Show prices in ${currency} where possible. At the end of the itinerary (after all days), include a section with the EXACT heading: ## Budget Summary — Break down estimated costs by category (accommodation, food, transportation, activities, etc.) and show a total. Compare against the ${budget} ${currency} budget.` : ''}
+${budget > 0 ? `Total budget: ${budget} ${currency} for ${travelers} traveler(s). Recommend restaurants, activities, and accommodations that fit within this budget. Show prices in ${currency} where possible. At the end of the itinerary (after all days), include a section with the EXACT heading: ## Budget Summary — Break down estimated costs by category (accommodation, food, transportation, activities, etc.) and show a total. Compare against the ${budget} ${currency} budget. Do NOT include cheap ticket tips in this section.` : ''}
 ${longDistance.length > 0 ? `Long-distance transportation (between cities/countries): ${longDistance.join(", ")}.` : ''}
 ${localTransport.length > 0 ? `Local transportation (within cities): ${localTransport.join(", ")}.` : ''}
 ${additionalInstructions ? `Additional instructions: ${additionalInstructions}` : ''}
@@ -3122,7 +3123,7 @@ document.getElementById('update-itinerary-btn').addEventListener('click', async 
     if (tripData.interests && tripData.interests.length > 0) tipsParts += `\nInterests & Activities (${tripData.interests.join(", ")}): tips for saving on attraction tickets, museum passes, city passes, combo deals, free entry days, online pre-booking discounts.`;
     ticketTipsInstruction = `
 
-IMPORTANT: Keep or update the "## Tips to Buy Cheap Tickets" section at the end with sub-sections for:${tipsParts}
+IMPORTANT: Keep or update the "## Tips to Buy Cheap Tickets" as a SEPARATE standalone ## section at the end (NOT inside Budget Summary). Include sub-sections for:${tipsParts}
 For ${tripData.travelers} traveler(s), include: cost-saving options, ${tripData.travelers > 1 ? 'group discounts and family passes' : 'solo traveler tips'}, recommended websites, and activity/attraction savings.`;
   }
 
