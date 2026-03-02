@@ -704,7 +704,7 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
         <ul class="pricing-features">
           <li class="included">1 destination</li>
           <li class="included">3 day max trip</li>
-          <li class="included">1 generation/day</li>
+          <li class="included">1 generation/month</li>
           <li class="included">1 update/itinerary</li>
           <li class="included">PDF download</li>
           <li class="excluded">Offline HTML</li>
@@ -1384,9 +1384,13 @@ document.getElementById('generate-button').addEventListener('click', async () =>
     return;
   }
 
-  startProgress('Generating your itinerary...');
-
   const days = Math.floor((new Date(end) - new Date(start)) / (1000*3600*24)) + 1;
+  if (days > FREE_TIER.maxDays) {
+    showUpgradeModal('Day Limit', `The Free plan supports up to ${FREE_TIER.maxDays} days. Upgrade to extend your trip.`);
+    return;
+  }
+
+  startProgress('Generating your itinerary...');
   const pace = document.querySelector('input[name="pace"]:checked').value;
   const primaryInterests = [...document.querySelectorAll('#primary-interests input:checked')].map(i => i.value);
   const secondaryInterests = [...document.querySelectorAll('#secondary-interests input:checked')].map(i => i.value);
@@ -1590,8 +1594,8 @@ ${ticketTipsInstruction}
   tripData.pace = pace;
   tripData.additionalInstructions = document.getElementById('additional-instructions').value.trim();
 
-  // Free tier: track generation + reset update counter
-  incrementGenerations();
+  // Free tier: track generation (only on successful API response) + reset update counter
+  if (result) incrementGenerations();
   resetUpdatesForNewItinerary();
   // Re-enable update button for this new itinerary
   const updateBtn = document.getElementById('update-itinerary-btn');

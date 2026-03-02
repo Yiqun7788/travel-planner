@@ -16,9 +16,23 @@ function cleanOldEntries() {
   }
 }
 
+const ALLOWED_ORIGINS = [
+  'https://travel-planner-livid-two.vercel.app',
+  'http://localhost',
+  'http://127.0.0.1'
+];
+
 module.exports = async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
+  }
+
+  // Block requests not originating from the app
+  const origin = req.headers['origin'] || '';
+  const referer = req.headers['referer'] || '';
+  const isAllowed = ALLOWED_ORIGINS.some(o => origin.startsWith(o) || referer.startsWith(o));
+  if (!isAllowed) {
+    return res.status(403).json({ error: 'Forbidden.' });
   }
 
   const API_KEY = process.env.GEMINI_API_KEY;
