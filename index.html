@@ -956,6 +956,9 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
     </div>
   </div>
 
+  <!-- Trip Overview -->
+  <div id="trip-overview" class="day-overview hidden mx-6 sm:mx-8 mt-4"></div>
+
   <!-- Itinerary Content -->
   <div id="content-display" class="prose max-w-none px-6 sm:px-8 py-6"></div>
 
@@ -1081,6 +1084,39 @@ function resetUpdatesForNewItinerary() {
   s.currentItineraryUpdates = 0;
   saveFreeTierState(s);
 }
+function renderTripOverview() {
+  const box = document.getElementById('trip-overview');
+  const chips = [];
+  if (tripData.startDate && tripData.endDate) {
+    const fmt = d => { const p = d.split('-'); return p[1] + '/' + p[2]; };
+    chips.push('&#128197; ' + fmt(tripData.startDate) + ' – ' + fmt(tripData.endDate) + ' (' + tripData.days + ' days)');
+  }
+  if (tripData.travelers && tripData.travelers > 1) {
+    chips.push('&#128101; ' + tripData.travelers + ' travelers');
+  }
+  if (tripData.budget && tripData.budget > 0) {
+    chips.push('&#128176; ' + tripData.budget.toLocaleString() + ' ' + (tripData.currency || ''));
+  }
+  if (tripData.pace) {
+    chips.push('&#127939; ' + tripData.pace + ' pace');
+  }
+  if (tripData.interests && tripData.interests.length > 0) {
+    const shown = tripData.interests.slice(0, 4).join(', ');
+    const extra = tripData.interests.length > 4 ? ' +' + (tripData.interests.length - 4) + ' more' : '';
+    chips.push('&#127919; ' + shown + extra);
+  }
+  const transport = (tripData.localTransport || []).concat(tripData.longDistance || []);
+  if (transport.length > 0) {
+    chips.push('&#128651; ' + transport.join(', '));
+  }
+  if (chips.length > 0) {
+    box.innerHTML = chips.map(c => '<span>' + c + '</span>').join('');
+    box.classList.remove('hidden');
+  } else {
+    box.classList.add('hidden');
+  }
+}
+
 function showUpgradeModal(title, message) {
   document.getElementById('upgrade-modal-title').textContent = title;
   document.getElementById('upgrade-modal-message').textContent = message;
@@ -1556,6 +1592,7 @@ ${ticketTipsInstruction}
   const routeMapHtml = buildLongDistanceRouteMap(dest, longDistance);
   document.getElementById('content-display').innerHTML = routeMapHtml + linkifyUrls(marked.parse(processDailyRoutes(finalResult)));
   restructureItinerary();
+  renderTripOverview();
 
   document.getElementById('planning-view').classList.add('hidden');
   document.getElementById('results-view').classList.remove('hidden');
@@ -2804,6 +2841,7 @@ Replace spaces with + in each place name. Include the city name. Separate stops 
     tripData.itinerary = result;
     document.getElementById('content-display').innerHTML = linkifyUrls(marked.parse(processDailyRoutes(result)));
     restructureItinerary();
+    renderTripOverview();
     document.getElementById('update-instruction').value = '';
     document.getElementById('planning-changes-summary').innerHTML = '';
     document.getElementById('planning-changes-summary').classList.add('hidden');
