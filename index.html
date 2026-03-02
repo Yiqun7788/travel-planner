@@ -473,6 +473,24 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
   .mobile-action-bar { display: none; }
 }
 
+/* ─── Booking Cards ─── */
+.booking-card {
+  display: flex; flex-direction: column; align-items: center; text-align: center;
+  padding: 20px 16px; background: #fff; border-radius: 14px;
+  border: 1px solid #e2e8f0; text-decoration: none; color: inherit;
+  transition: all 0.2s ease; cursor: pointer;
+}
+.booking-card:hover { transform: translateY(-2px); box-shadow: 0 4px 16px rgba(0,0,0,0.08); border-color: #93c5fd; }
+.booking-card-icon { font-size: 1.8rem; margin-bottom: 8px; }
+.booking-card-title { font-weight: 700; font-size: 1rem; color: #1e293b; margin-bottom: 4px; }
+.booking-card-desc { font-size: 0.82rem; color: #64748b; margin-bottom: 12px; line-height: 1.3; }
+.booking-card-btn {
+  display: inline-block; padding: 6px 16px; background: linear-gradient(135deg, #3b82f6, #2563eb);
+  color: #fff; font-size: 0.78rem; font-weight: 600; border-radius: 8px;
+  transition: background 0.2s;
+}
+.booking-card:hover .booking-card-btn { background: linear-gradient(135deg, #2563eb, #1d4ed8); }
+
 /* ─── Free Tier: Locked / Upgrade styles ─── */
 .tool-btn-locked {
   opacity: 0.55; cursor: not-allowed; filter: grayscale(0.4); position: relative;
@@ -964,6 +982,33 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
   <!-- Itinerary Content -->
   <div id="content-display" class="prose max-w-none px-6 sm:px-8 py-6"></div>
 
+  <!-- Book Your Trip -->
+  <div id="booking-section" class="hidden mx-6 sm:mx-8 mb-6 p-6 bg-gradient-to-br from-sky-50 to-indigo-50 rounded-2xl border border-sky-200">
+    <h3 class="text-lg font-bold text-slate-800 mb-1">&#128203; Book Your Trip</h3>
+    <p id="booking-subtitle" class="text-slate-500 text-sm mb-4">Complete your trip with these trusted booking partners.</p>
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <a id="booking-hotels" class="booking-card" href="#" target="_blank" rel="noopener noreferrer">
+        <span class="booking-card-icon">&#127976;</span>
+        <span class="booking-card-title">Hotels</span>
+        <span class="booking-card-desc">Find deals near your stops</span>
+        <span class="booking-card-btn">Search on Booking.com</span>
+      </a>
+      <a id="booking-activities" class="booking-card" href="#" target="_blank" rel="noopener noreferrer">
+        <span class="booking-card-icon">&#127903;&#65039;</span>
+        <span class="booking-card-title">Activities</span>
+        <span class="booking-card-desc">Book tours & tickets</span>
+        <span class="booking-card-btn">Browse on GetYourGuide</span>
+      </a>
+      <a id="booking-flights" class="booking-card" href="#" target="_blank" rel="noopener noreferrer">
+        <span class="booking-card-icon">&#9992;&#65039;</span>
+        <span class="booking-card-title">Flights</span>
+        <span class="booking-card-desc">Compare flights</span>
+        <span class="booking-card-btn">Search on Skyscanner</span>
+      </a>
+    </div>
+    <p class="text-slate-400 text-xs mt-3" style="font-style:italic;">&#9432; We may earn a small commission at no extra cost to you.</p>
+  </div>
+
   <!-- Extra Tools -->
   <div class="mx-6 sm:mx-8 mb-8 p-6 bg-gradient-to-br from-slate-50 to-slate-100 rounded-2xl border border-slate-200">
     <h3 class="text-lg font-bold text-slate-800 mb-1">Extra Tools</h3>
@@ -1091,6 +1136,19 @@ function resetUpdatesForNewItinerary() {
   s.currentItineraryUpdates = 0;
   saveFreeTierState(s);
 }
+function renderBookingSection() {
+  const section = document.getElementById('booking-section');
+  const dest = tripData.destination;
+  if (!dest) { section.classList.add('hidden'); return; }
+  const encoded = encodeURIComponent(dest);
+  // TODO: Replace these placeholder URLs with your real affiliate links
+  document.getElementById('booking-hotels').href = 'https://www.booking.com/searchresults.html?ss=' + encoded;
+  document.getElementById('booking-activities').href = 'https://www.getyourguide.com/s/?q=' + encoded;
+  document.getElementById('booking-flights').href = 'https://www.skyscanner.com/transport/flights/?query=' + encoded;
+  document.getElementById('booking-subtitle').textContent = 'Complete your ' + dest + ' trip with these trusted booking partners.';
+  section.classList.remove('hidden');
+}
+
 function renderTripOverview() {
   const box = document.getElementById('trip-overview');
   const chips = [];
@@ -1619,6 +1677,7 @@ ${ticketTipsInstruction}
   restructureItinerary();
   renderTripOverview();
   renderActiveInstructionsLabel();
+  renderBookingSection();
 
   document.getElementById('planning-view').classList.add('hidden');
   document.getElementById('results-view').classList.remove('hidden');
@@ -2879,7 +2938,8 @@ Replace spaces with + in each place name. Include the city name. Separate stops 
     document.getElementById('content-display').innerHTML = linkifyUrls(marked.parse(processDailyRoutes(result)));
     restructureItinerary();
     renderTripOverview();
-  renderActiveInstructionsLabel();
+    renderActiveInstructionsLabel();
+    renderBookingSection();
     document.getElementById('update-instruction').value = '';
     document.getElementById('planning-changes-summary').innerHTML = '';
     document.getElementById('planning-changes-summary').classList.add('hidden');
@@ -2953,6 +3013,7 @@ document.getElementById('fun-fact-btn').addEventListener('click', async () => {
     restructureItinerary();
     renderTripOverview();
     renderActiveInstructionsLabel();
+    renderBookingSection();
     document.getElementById('planning-view').classList.add('hidden');
     document.getElementById('results-view').classList.remove('hidden');
     document.getElementById('language-select').parentElement.style.display = 'none';
