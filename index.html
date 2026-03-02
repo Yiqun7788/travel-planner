@@ -1436,7 +1436,7 @@ document.getElementById('generate-button').addEventListener('click', async () =>
   selectedTravelMode = travelMode;
 
   // Build ticket tips instruction if checkbox is selected and transportation is chosen
-  let ticketTipsInstruction = '';
+  let ticketTipsInstruction = '\n\nDo NOT include any section about cheap tickets, ticket tips, or transportation booking advice.';
   if (wantsCheapTickets && transportation.length > 0) {
     let tipsParts = '';
     if (longDistance.length > 0) tipsParts += `\nLong-Distance Transportation (${longDistance.join(", ")}): tips for booking between cities/countries, advance purchase discounts, rail passes, budget airlines, coach services like FlixBus, etc.`;
@@ -2836,7 +2836,7 @@ document.getElementById('update-itinerary-btn').addEventListener('click', async 
 
   // Check if cheap tickets checkbox is still selected and transportation was chosen
   const wantsCheapTickets = document.getElementById('cheap-tickets-checkbox').checked;
-  let ticketTipsInstruction = '';
+  let ticketTipsInstruction = '\n\nDo NOT include any section about cheap tickets, ticket tips, or transportation booking advice.';
   if (wantsCheapTickets && tripData.transportation && tripData.transportation.length > 0) {
     let tipsParts = '';
     if (tripData.longDistance && tripData.longDistance.length > 0) tipsParts += `\nLong-Distance Transportation (${tripData.longDistance.join(", ")}): tips for booking between cities/countries.`;
