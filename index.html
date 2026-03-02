@@ -1021,7 +1021,7 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-3" id="extra-tools-buttons">
       <button id="update-itinerary-btn" class="tool-btn" style="background: linear-gradient(135deg, #f59e0b, #d97706);">&#9998; Update Itinerary</button>
       <button id="packing-list-btn" class="tool-btn tool-btn-locked" style="background: linear-gradient(135deg, #22c55e, #16a34a);">&#128274; Packing List <span class="tier-badge">&#128274; Basic</span></button>
-      <button id="fun-fact-btn" class="tool-btn tool-btn-locked" style="background: linear-gradient(135deg, #a855f7, #7c3aed);">&#128274; Fun Fact <span class="tier-badge">&#128274; Basic</span></button>
+      <button id="fun-fact-btn" class="tool-btn tool-btn-locked" style="background: linear-gradient(135deg, #a855f7, #7c3aed);">&#128274; Fun Fact <span class="tier-badge">&#128274; Prime</span></button>
     </div>
   </div>
 
@@ -1097,8 +1097,21 @@ function saveTripSession() {
   try { sessionStorage.setItem('tripSession', JSON.stringify(tripData)); } catch {}
 }
 
-// ─── Free Tier ───
-const FREE_TIER = { maxDays: 3, maxGenerationsPerMonth: 1, maxUpdatesPerItinerary: 1 };
+// ─── Tier System ───
+const TIER_LIMITS = {
+  free:  { maxDays:3, maxDestinations:1, maxGenerations:1, generationPeriod:'month', maxUpdatesPerItinerary:1, offlineHtml:false, packingList:false, cheapTickets:false, funFacts:false },
+  basic: { maxDays:10, maxDestinations:3, maxGenerations:5, generationPeriod:'day', maxUpdatesPerItinerary:5, offlineHtml:true, packingList:true, cheapTickets:true, funFacts:false },
+  prime: { maxDays:Infinity, maxDestinations:Infinity, maxGenerations:Infinity, generationPeriod:'day', maxUpdatesPerItinerary:Infinity, offlineHtml:true, packingList:true, cheapTickets:true, funFacts:true },
+};
+function getUserTier() {
+  return localStorage.getItem('userTier') || 'free';
+}
+function setUserTier(tier) {
+  localStorage.setItem('userTier', tier);
+}
+function getTierLimits() {
+  return TIER_LIMITS[getUserTier()];
+}
 
 function getFreeTierState() {
   try { return JSON.parse(localStorage.getItem('freeTierState') || '{}'); } catch { return {}; }
@@ -1106,20 +1119,27 @@ function getFreeTierState() {
 function saveFreeTierState(state) {
   localStorage.setItem('freeTierState', JSON.stringify(state));
 }
+function getDayKey() {
+  const d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
 function getMonthKey() {
   const d = new Date();
   return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0');
 }
-function getGenerationsThisMonth() {
+function getPeriodKey() {
+  return getTierLimits().generationPeriod === 'day' ? getDayKey() : getMonthKey();
+}
+function getGenerationsThisPeriod() {
   const s = getFreeTierState();
-  const month = getMonthKey();
-  return (s.generations && s.generations[month]) || 0;
+  const key = getPeriodKey();
+  return (s.generations && s.generations[key]) || 0;
 }
 function incrementGenerations() {
   const s = getFreeTierState();
-  const month = getMonthKey();
+  const key = getPeriodKey();
   if (!s.generations) s.generations = {};
-  s.generations[month] = (s.generations[month] || 0) + 1;
+  s.generations[key] = (s.generations[key] || 0) + 1;
   saveFreeTierState(s);
 }
 function getUpdatesThisItinerary() {
@@ -1136,6 +1156,154 @@ function resetUpdatesForNewItinerary() {
   s.currentItineraryUpdates = 0;
   saveFreeTierState(s);
 }
+
+function applyTierUI() {
+  const tier = getUserTier();
+  const limits = getTierLimits();
+  const tierLabel = tier.charAt(0).toUpperCase() + tier.slice(1);
+
+  // ─── Header badge ───
+  const badge = document.getElementById('header-tier-badge');
+  if (badge) badge.textContent = tierLabel + ' Plan';
+
+  // ─── Banner text ───
+  const banner = document.getElementById('free-tier-banner');
+  if (banner) {
+    const bannerText = banner.querySelector('.banner-text');
+    if (bannerText) {
+      if (tier === 'free') {
+        bannerText.innerHTML = '<strong>Free Plan</strong> \u2014 1 destination, up to 3 days, 1 itinerary per month, 1 update per itinerary. <button class="banner-link" onclick="openPricingModal()">View Plans</button>';
+      } else if (tier === 'basic') {
+        bannerText.innerHTML = '<strong>Basic Plan</strong> \u2014 Up to 3 destinations, 10 day trips, 5 itineraries per day, 5 updates per itinerary. <button class="banner-link" onclick="openPricingModal()">View Plans</button>';
+      } else {
+        bannerText.innerHTML = '<strong>Prime Plan</strong> \u2014 Unlimited destinations, trip length, generations, and updates. <button class="banner-link" onclick="openPricingModal()">View Plans</button>';
+      }
+    }
+  }
+
+  // ─── Destination tooltip ───
+  const destTip = document.getElementById('dest-tooltip');
+  if (destTip) {
+    if (tier === 'free') destTip.innerHTML = '&#128274; Free plan supports a single destination only.';
+    else if (tier === 'basic') destTip.innerHTML = '&#128274; Basic plan supports up to 3 destinations.';
+    else destTip.innerHTML = 'Unlimited destinations on Prime.';
+  }
+
+  // ─── Cheap Tickets checkbox ───
+  const cheapLabel = document.getElementById('cheap-tickets-checkbox')?.closest('label');
+  const cheapCheckbox = document.getElementById('cheap-tickets-checkbox');
+  if (cheapLabel && cheapCheckbox) {
+    if (limits.cheapTickets) {
+      cheapLabel.style.opacity = ''; cheapLabel.style.cursor = '';
+      cheapLabel.removeAttribute('onclick');
+      cheapCheckbox.disabled = false; cheapCheckbox.style.pointerEvents = '';
+      const tierBadge = cheapLabel.querySelector('.tier-badge');
+      if (tierBadge) tierBadge.style.display = 'none';
+      const lockIcon = cheapLabel.querySelector('.option-icon');
+      if (lockIcon) lockIcon.textContent = '\uD83C\uDFAB';
+    } else {
+      cheapLabel.style.opacity = '0.55'; cheapLabel.style.cursor = 'not-allowed';
+      cheapLabel.setAttribute('onclick', "event.preventDefault(); showUpgradeModal('Cheap Ticket Tips', 'Get <strong>money-saving tips</strong> for booking transport, attraction passes, and activity discounts \u2014 tailored to your selected transportation and interests.<br><br><em>Available on the Basic plan.</em>');");
+      cheapCheckbox.disabled = true; cheapCheckbox.style.pointerEvents = 'none';
+      const tierBadge = cheapLabel.querySelector('.tier-badge');
+      if (tierBadge) tierBadge.style.display = '';
+      const lockIcon = cheapLabel.querySelector('.option-icon');
+      if (lockIcon) lockIcon.textContent = '\uD83D\uDD12';
+    }
+  }
+
+  // ─── Packing List button ───
+  const packBtn = document.getElementById('packing-list-btn');
+  if (packBtn) {
+    if (limits.packingList) {
+      packBtn.classList.remove('tool-btn-locked');
+      packBtn.innerHTML = '&#127890; Packing List';
+    } else {
+      packBtn.classList.add('tool-btn-locked');
+      packBtn.innerHTML = '&#128274; Packing List <span class="tier-badge">&#128274; Basic</span>';
+    }
+  }
+
+  // ─── Fun Fact button ───
+  const funBtn = document.getElementById('fun-fact-btn');
+  if (funBtn) {
+    if (limits.funFacts) {
+      funBtn.classList.remove('tool-btn-locked');
+      funBtn.innerHTML = '&#128161; Fun Fact';
+    } else {
+      funBtn.classList.add('tool-btn-locked');
+      funBtn.innerHTML = '&#128274; Fun Fact <span class="tier-badge">&#128274; Prime</span>';
+    }
+  }
+
+  // ─── Offline HTML button ───
+  const htmlBtn = document.getElementById('download-html');
+  if (htmlBtn) {
+    if (limits.offlineHtml) {
+      htmlBtn.classList.remove('download-menu-item-locked');
+      htmlBtn.innerHTML = '&#128196; Offline HTML (Clickable)';
+    } else {
+      htmlBtn.classList.add('download-menu-item-locked');
+      htmlBtn.innerHTML = '&#128274; Offline HTML (Clickable) <span class="tier-badge" style="color:#64748b;background:rgba(0,0,0,0.08);">&#128274; Basic</span>';
+    }
+  }
+
+  // ─── Mobile bar buttons ───
+  const mobileBar = document.querySelector('.mobile-action-bar');
+  if (mobileBar) {
+    const mobileBtns = mobileBar.querySelectorAll('.tool-btn');
+    mobileBtns.forEach(btn => {
+      if (btn.textContent.includes('Pack')) {
+        if (limits.packingList) { btn.classList.remove('tool-btn-locked'); btn.innerHTML = '&#127890; Pack'; }
+        else { btn.classList.add('tool-btn-locked'); btn.innerHTML = '&#128274; Pack'; }
+      }
+      if (btn.textContent.includes('Fact')) {
+        if (limits.funFacts) { btn.classList.remove('tool-btn-locked'); btn.innerHTML = '&#128161; Fact'; }
+        else { btn.classList.add('tool-btn-locked'); btn.innerHTML = '&#128274; Fact'; }
+      }
+    });
+  }
+
+  // ─── Pricing modal: move "Current Plan" indicator ───
+  const pricingTiers = document.querySelectorAll('.pricing-tier');
+  const tierIndex = { free: 0, basic: 1, prime: 2 };
+  pricingTiers.forEach((el, i) => {
+    const btn = el.querySelector('.pricing-btn');
+    if (!btn) return;
+    if (i === tierIndex[tier]) {
+      btn.className = 'pricing-btn pricing-btn-current';
+      btn.disabled = true;
+      btn.textContent = 'Current Plan';
+      btn.removeAttribute('onclick');
+    } else {
+      btn.className = 'pricing-btn pricing-btn-upgrade';
+      btn.disabled = false;
+      btn.textContent = 'Upgrade';
+      btn.setAttribute('onclick', "alert('Coming soon!')");
+    }
+  });
+
+  // ─── Update date constraints ───
+  updateEndDateMin();
+  toggleLongDistance();
+
+  // ─── Re-check generate button state ───
+  const genBtn = document.getElementById('generate-button');
+  if (getGenerationsThisPeriod() >= limits.maxGenerations) {
+    genBtn.disabled = true; genBtn.style.opacity = '0.45'; genBtn.style.cursor = 'not-allowed';
+  } else {
+    genBtn.disabled = false; genBtn.style.opacity = ''; genBtn.style.cursor = '';
+  }
+
+  // ─── Re-check update button state ───
+  const updateBtn = document.getElementById('update-itinerary-btn');
+  if (getUpdatesThisItinerary() >= limits.maxUpdatesPerItinerary) {
+    updateBtn.classList.add('tool-btn-disabled');
+  } else {
+    updateBtn.classList.remove('tool-btn-disabled');
+  }
+}
+
 function renderBookingSection() {
   const section = document.getElementById('booking-section');
   const dest = tripData.destination;
@@ -1200,17 +1368,18 @@ function showUpgradeModal(title, message) {
   document.getElementById('upgrade-modal-message').innerHTML = message;
   document.getElementById('upgrade-modal').classList.add('active');
 }
-// Free tier: detect premium feature keywords in freeform text
+// Tier: detect premium feature keywords in freeform text (only blocks features the user's tier doesn't have)
 function checkPremiumKeywords(text) {
+  const limits = getTierLimits();
   const premiumPatterns = [
-    { pattern: /pack(ing)?\s*(list|check)/i, feature: 'Packing List', tier: 'Basic' },
-    { pattern: /fun\s*fact/i, feature: 'Fun Facts', tier: 'Prime' },
-    { pattern: /cheap\s*ticket/i, feature: 'Cheap Ticket Tips', tier: 'Basic' },
-    { pattern: /ticket\s*tip/i, feature: 'Cheap Ticket Tips', tier: 'Basic' },
-    { pattern: /budget\s*tip/i, feature: 'Budget Tips', tier: 'Basic' },
+    { pattern: /pack(ing)?\s*(list|check)/i, feature: 'Packing List', tier: 'Basic', allowed: limits.packingList },
+    { pattern: /fun\s*fact/i, feature: 'Fun Facts', tier: 'Prime', allowed: limits.funFacts },
+    { pattern: /cheap\s*ticket/i, feature: 'Cheap Ticket Tips', tier: 'Basic', allowed: limits.cheapTickets },
+    { pattern: /ticket\s*tip/i, feature: 'Cheap Ticket Tips', tier: 'Basic', allowed: limits.cheapTickets },
+    { pattern: /budget\s*tip/i, feature: 'Budget Tips', tier: 'Basic', allowed: limits.cheapTickets },
   ];
   for (const p of premiumPatterns) {
-    if (p.pattern.test(text)) return p;
+    if (p.pattern.test(text) && !p.allowed) return p;
   }
   return null;
 }
@@ -1225,20 +1394,20 @@ document.addEventListener('click', function(e) {
   if (e.target.id === 'pricing-modal') closePricingModal();
   if (e.target.id === 'upgrade-modal') document.getElementById('upgrade-modal').classList.remove('active');
 });
-// Close modals on Escape key + hidden dev reset (Ctrl+Shift+L)
+// Close modals on Escape key + dev tier toggle (Ctrl+Shift+L)
 document.addEventListener('keydown', function(e) {
   if (e.key === 'Escape') {
     closePricingModal();
     document.getElementById('upgrade-modal').classList.remove('active');
   }
   if (e.ctrlKey && e.shiftKey && e.key === 'L') {
+    const cycle = { free: 'basic', basic: 'prime', prime: 'free' };
+    const next = cycle[getUserTier()] || 'free';
+    setUserTier(next);
     localStorage.removeItem('freeTierState');
-    // Re-enable any disabled buttons
-    document.querySelectorAll('.tool-btn-disabled').forEach(function(btn) { btn.classList.remove('tool-btn-disabled'); });
-    var genBtn = document.getElementById('generate-button');
-    genBtn.disabled = false; genBtn.style.opacity = ''; genBtn.style.cursor = '';
-    console.log('[Dev] Free tier state reset');
-    alert('Dev: Free tier state has been reset.');
+    applyTierUI();
+    console.log('[Dev] Tier switched to:', next.toUpperCase());
+    alert('Dev: Tier switched to ' + next.toUpperCase());
   }
 });
 
@@ -1272,12 +1441,17 @@ function updateEndDateMin() {
   const minVal = startInput.value || nowDt;
   endInput.setAttribute('min', minVal);
 
-  // Free tier: set max to start + (maxDays - 1) days
+  // Tier: set max end date based on tier maxDays
   if (startInput.value) {
-    const maxDate = new Date(startInput.value);
-    maxDate.setDate(maxDate.getDate() + FREE_TIER.maxDays - 1);
-    maxDate.setHours(23, 59);
-    endInput.setAttribute('max', formatDateTimeLocal(maxDate));
+    const maxDays = getTierLimits().maxDays;
+    if (maxDays === Infinity) {
+      endInput.removeAttribute('max');
+    } else {
+      const maxDate = new Date(startInput.value);
+      maxDate.setDate(maxDate.getDate() + maxDays - 1);
+      maxDate.setHours(23, 59);
+      endInput.setAttribute('max', formatDateTimeLocal(maxDate));
+    }
   }
 
   // Clear end date if its value is before the new min or after the max
@@ -1310,17 +1484,19 @@ document.getElementById('start-date').addEventListener('change', function() {
   updateEndDateMin();
 });
 
-// Free tier: enforce 3-day max trip length
+// Tier: enforce max trip length
 function enforceMaxTripDays() {
+  const maxDays = getTierLimits().maxDays;
+  if (maxDays === Infinity) return; // prime: no cap
   const startInput = document.getElementById('start-date');
   const endInput = document.getElementById('end-date');
   if (!startInput.value || !endInput.value) return;
   const startD = new Date(startInput.value);
   const endD = new Date(endInput.value);
   const diffDays = Math.floor((endD - startD) / (1000 * 3600 * 24));
-  if (diffDays >= FREE_TIER.maxDays) {
+  if (diffDays >= maxDays) {
     const capped = new Date(startD);
-    capped.setDate(capped.getDate() + FREE_TIER.maxDays - 1);
+    capped.setDate(capped.getDate() + maxDays - 1);
     capped.setHours(endD.getHours(), endD.getMinutes());
     endInput.value = formatDateTimeLocal(capped);
     const warn = document.getElementById('date-range-warning');
@@ -1346,26 +1522,51 @@ function toggleLongDistance() {
   const section = document.getElementById('long-distance-section');
   const group = document.getElementById('long-distance-group');
   const helper = document.getElementById('long-distance-helper');
+  const destCount = getDestinationCount(document.getElementById('destination').value);
+  const limits = getTierLimits();
 
-  // Free tier: show section label but hide transport options
-  group.querySelectorAll('input:checked').forEach(cb => cb.checked = false);
-  group.classList.add('hidden');
-  helper.classList.remove('hidden');
-  section.style.opacity = '0.7';
+  if (limits.maxDestinations > 1 && destCount > 1) {
+    // Multi-destination on paid tier: show transport options
+    group.classList.remove('hidden');
+    helper.classList.add('hidden');
+    section.style.opacity = '1';
+  } else {
+    // Single destination or free tier: hide transport options
+    group.querySelectorAll('input:checked').forEach(cb => cb.checked = false);
+    group.classList.add('hidden');
+    helper.classList.remove('hidden');
+    section.style.opacity = '0.7';
+  }
 }
 
 document.getElementById('destination').addEventListener('input', toggleLongDistance);
 // Run on page load to set initial state
 toggleLongDistance();
+// Apply tier UI on page load
+applyTierUI();
 
-// Free tier: block multiple destinations (commas, semicolons)
+// Tier: enforce destination limit (commas, semicolons)
 document.getElementById('destination').addEventListener('input', function() {
+  const limits = getTierLimits();
+  if (limits.maxDestinations === Infinity) return; // prime: no limit
   if (/[,;\u3001]/.test(this.value)) {
-    this.value = this.value.replace(/[,;\u3001]/g, '');
-    const tip = document.getElementById('dest-tooltip');
-    tip.classList.add('visible');
-    clearTimeout(tip._hideTimer);
-    tip._hideTimer = setTimeout(() => tip.classList.remove('visible'), 3000);
+    const count = getDestinationCount(this.value);
+    if (count > limits.maxDestinations) {
+      // Strip the last separator to keep within limit
+      const parts = this.value.split(/([,;\u3001])/);
+      let kept = '', destsSoFar = 0;
+      for (let i = 0; i < parts.length; i++) {
+        if (/[,;\u3001]/.test(parts[i])) { kept += parts[i]; continue; }
+        if (parts[i].trim().length > 0) destsSoFar++;
+        if (destsSoFar > limits.maxDestinations) break;
+        kept += parts[i];
+      }
+      this.value = kept;
+      const tip = document.getElementById('dest-tooltip');
+      tip.classList.add('visible');
+      clearTimeout(tip._hideTimer);
+      tip._hideTimer = setTimeout(() => tip.classList.remove('visible'), 3000);
+    }
   }
 });
 
@@ -1421,6 +1622,12 @@ document.getElementById('generate-button').addEventListener('click', async () =>
     alert(t.errorDestination);
     return;
   }
+  // Tier: validate destination count
+  const destCount = getDestinationCount(dest);
+  if (destCount > getTierLimits().maxDestinations) {
+    showUpgradeModal('Destination Limit', `Your plan supports up to <strong>${getTierLimits().maxDestinations} destination${getTierLimits().maxDestinations > 1 ? 's' : ''}</strong>.<br><br>Upgrade for more destinations.`);
+    return;
+  }
   if (!start || !end) {
     alert(t.errorDates);
     return;
@@ -1434,7 +1641,7 @@ document.getElementById('generate-button').addEventListener('click', async () =>
     return;
   }
 
-  // Free tier: block premium feature keywords in additional instructions
+  // Tier: block premium feature keywords in additional instructions
   const additionalInstr = document.getElementById('additional-instructions').value.trim();
   const premiumHitGen = checkPremiumKeywords(additionalInstr);
   if (premiumHitGen) {
@@ -1442,15 +1649,20 @@ document.getElementById('generate-button').addEventListener('click', async () =>
     return;
   }
 
-  // Free tier: 1 generation per month
-  if (getGenerationsThisMonth() >= FREE_TIER.maxGenerationsPerMonth) {
-    showUpgradeModal('Monthly Limit Reached', 'You\u2019ve used your <strong>1 free itinerary</strong> this month.<br><br>Upgrade to generate <strong>up to 5 itineraries per day</strong> with longer trips and more destinations.<br><br><em>Or come back next month for another free one!</em>');
+  // Tier: generation limit check
+  if (getGenerationsThisPeriod() >= getTierLimits().maxGenerations) {
+    const tier = getUserTier();
+    if (tier === 'free') {
+      showUpgradeModal('Monthly Limit Reached', 'You\u2019ve used your <strong>1 free itinerary</strong> this month.<br><br>Upgrade to generate <strong>up to 5 itineraries per day</strong> with longer trips and more destinations.<br><br><em>Or come back next month for another free one!</em>');
+    } else {
+      showUpgradeModal('Daily Limit Reached', `You\u2019ve used all <strong>${getTierLimits().maxGenerations} generations</strong> for today.<br><br>Upgrade to Prime for <strong>unlimited generations</strong>.<br><br><em>Or come back tomorrow!</em>`);
+    }
     return;
   }
 
   const days = Math.floor((new Date(end) - new Date(start)) / (1000*3600*24)) + 1;
-  if (days > FREE_TIER.maxDays) {
-    showUpgradeModal('Day Limit', `Free plan supports up to <strong>${FREE_TIER.maxDays} days</strong>.<br><br>Upgrade to plan trips up to <strong>10 days</strong> (Basic) or <strong>unlimited</strong> (Prime).`);
+  if (days > getTierLimits().maxDays) {
+    showUpgradeModal('Day Limit', `Your plan supports up to <strong>${getTierLimits().maxDays} days</strong>.<br><br>Upgrade to plan trips up to <strong>10 days</strong> (Basic) or <strong>unlimited</strong> (Prime).`);
     return;
   }
 
@@ -1659,7 +1871,7 @@ ${ticketTipsInstruction}
   tripData.additionalInstructions = document.getElementById('additional-instructions').value.trim();
   saveTripSession();
 
-  // Free tier: track generation (only on successful API response) + reset update counter
+  // Tier: track generation (only on successful API response) + reset update counter
   if (result) incrementGenerations();
   resetUpdatesForNewItinerary();
   // Re-enable update button for this new itinerary
@@ -1691,7 +1903,7 @@ async function callGemini(prompt) {
     const response = await fetch('/api/generate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ prompt })
+      body: JSON.stringify({ prompt, tier: getUserTier() })
     });
 
     if (!response.ok) {
@@ -2526,7 +2738,7 @@ document.getElementById('back-button').addEventListener('click', () => {
   document.querySelector('.mobile-action-bar').classList.add('hidden');
   // Show "Return to Itinerary" and gray out Generate if limit reached
   document.getElementById('return-to-itinerary-btn').classList.remove('hidden');
-  if (getGenerationsThisMonth() >= FREE_TIER.maxGenerationsPerMonth) {
+  if (getGenerationsThisPeriod() >= getTierLimits().maxGenerations) {
     const genBtn = document.getElementById('generate-button');
     genBtn.disabled = true;
     genBtn.style.opacity = '0.45';
@@ -2554,10 +2766,12 @@ document.addEventListener('click', () => {
 
 // Download as Offline HTML (Clickable)
 document.getElementById('download-html').addEventListener('click', () => {
-  // Free tier: locked
-  showUpgradeModal('Offline HTML', 'Download a <strong>fully clickable offline version</strong> of your itinerary with working map links, websites, and interactive details \u2014 no internet needed.<br><br>PDF download is available for free!<br><br><em>Available on the Basic plan.</em>');
+  if (!getTierLimits().offlineHtml) {
+    showUpgradeModal('Offline HTML', 'Download a <strong>fully clickable offline version</strong> of your itinerary with working map links, websites, and interactive details \u2014 no internet needed.<br><br>PDF download is available for free!<br><br><em>Available on the Basic plan.</em>');
+    document.getElementById('download-menu').classList.add('hidden');
+    return;
+  }
   document.getElementById('download-menu').classList.add('hidden');
-  return;
   const contentEl = document.getElementById('content-display');
   const clone = contentEl.cloneNode(true);
   clone.querySelectorAll('details.day-section').forEach((day, i) => {
@@ -2833,22 +3047,22 @@ document.getElementById('update-itinerary-btn').addEventListener('click', async 
     return;
   }
 
-  // Free tier: block requests to extend beyond day limit
+  // Tier: block requests to extend beyond day limit
   if (instruction) {
     const dayExtendMatch = instruction.match(/(\d+)\s*(?:days?|nights?)/i);
-    if (dayExtendMatch && parseInt(dayExtendMatch[1]) > FREE_TIER.maxDays) {
-      showUpgradeModal('Day Limit', `Free plan supports up to <strong>${FREE_TIER.maxDays} days</strong>.<br><br>Upgrade to plan trips up to <strong>10 days</strong> (Basic) or <strong>unlimited</strong> (Prime).`);
+    if (dayExtendMatch && parseInt(dayExtendMatch[1]) > getTierLimits().maxDays) {
+      showUpgradeModal('Day Limit', `Your plan supports up to <strong>${getTierLimits().maxDays} days</strong>.<br><br>Upgrade to plan trips up to <strong>10 days</strong> (Basic) or <strong>unlimited</strong> (Prime).`);
       return;
     }
   }
 
   // Also block if planning page dates exceed day limit
-  if (newInputs.days > FREE_TIER.maxDays) {
-    showUpgradeModal('Day Limit', `Free plan supports up to <strong>${FREE_TIER.maxDays} days</strong>.<br><br>Upgrade to plan trips up to <strong>10 days</strong> (Basic) or <strong>unlimited</strong> (Prime).`);
+  if (newInputs.days > getTierLimits().maxDays) {
+    showUpgradeModal('Day Limit', `Your plan supports up to <strong>${getTierLimits().maxDays} days</strong>.<br><br>Upgrade to plan trips up to <strong>10 days</strong> (Basic) or <strong>unlimited</strong> (Prime).`);
     return;
   }
 
-  // Free tier: block premium feature keywords in update instruction
+  // Tier: block premium feature keywords in update instruction
   if (instruction) {
     const premiumHitUpd = checkPremiumKeywords(instruction);
     if (premiumHitUpd) {
@@ -2857,9 +3071,14 @@ document.getElementById('update-itinerary-btn').addEventListener('click', async 
     }
   }
 
-  // Free tier: 1 update per itinerary
-  if (getUpdatesThisItinerary() >= FREE_TIER.maxUpdatesPerItinerary) {
-    showUpgradeModal('Update Limit Reached', 'You\u2019ve used your <strong>1 free update</strong> for this itinerary.<br><br>Upgrade to make <strong>unlimited updates</strong> \u2014 swap restaurants, change activities, adjust your schedule as much as you want.');
+  // Tier: update limit check
+  if (getUpdatesThisItinerary() >= getTierLimits().maxUpdatesPerItinerary) {
+    const tier = getUserTier();
+    if (tier === 'free') {
+      showUpgradeModal('Update Limit Reached', 'You\u2019ve used your <strong>1 free update</strong> for this itinerary.<br><br>Upgrade to make <strong>up to 5 updates</strong> (Basic) or <strong>unlimited</strong> (Prime).');
+    } else {
+      showUpgradeModal('Update Limit Reached', `You\u2019ve used all <strong>${getTierLimits().maxUpdatesPerItinerary} updates</strong> for this itinerary.<br><br>Upgrade to Prime for <strong>unlimited updates</strong>.`);
+    }
     return;
   }
 
@@ -2944,9 +3163,9 @@ Replace spaces with + in each place name. Include the city name. Separate stops 
     document.getElementById('planning-changes-summary').innerHTML = '';
     document.getElementById('planning-changes-summary').classList.add('hidden');
 
-    // Free tier: track update usage
+    // Tier: track update usage
     incrementUpdates();
-    if (getUpdatesThisItinerary() >= FREE_TIER.maxUpdatesPerItinerary) {
+    if (getUpdatesThisItinerary() >= getTierLimits().maxUpdatesPerItinerary) {
       document.getElementById('update-itinerary-btn').classList.add('tool-btn-disabled');
       const mobileBar = document.querySelector('.mobile-action-bar');
       if (mobileBar) {
@@ -2958,9 +3177,10 @@ Replace spaces with + in each place name. Include the city name. Separate stops 
 });
 
 document.getElementById('packing-list-btn').addEventListener('click', async () => {
-  // Free tier: locked
-  showUpgradeModal('Packing List', 'Get a <strong>weather-based packing checklist</strong> customized for your destination, trip length, and planned activities.<br><br><em>Available on the Basic plan.</em>');
-  return;
+  if (!getTierLimits().packingList) {
+    showUpgradeModal('Packing List', 'Get a <strong>weather-based packing checklist</strong> customized for your destination, trip length, and planned activities.<br><br><em>Available on the Basic plan.</em>');
+    return;
+  }
   startProgress('Generating packing list...');
 
   const prompt = `Generate a comprehensive packing list for a ${tripData.days}-day trip to ${tripData.destination} from ${tripData.startDate} to ${tripData.endDate}.
@@ -2979,9 +3199,10 @@ Also consider the activities mentioned in the itinerary and provide specific rec
 });
 
 document.getElementById('fun-fact-btn').addEventListener('click', async () => {
-  // Free tier: locked
-  showUpgradeModal('Fun Facts', 'Discover <strong>surprising facts and hidden stories</strong> about your destination that most tourists never learn.<br><br><em>Available on the Prime plan.</em>');
-  return;
+  if (!getTierLimits().funFacts) {
+    showUpgradeModal('Fun Facts', 'Discover <strong>surprising facts and hidden stories</strong> about your destination that most tourists never learn.<br><br><em>Available on the Prime plan.</em>');
+    return;
+  }
   if (!tripData.destination) {
     alert('Error: Destination not found. Please regenerate your itinerary.');
     return;
@@ -3026,8 +3247,8 @@ document.getElementById('fun-fact-btn').addEventListener('click', async () => {
       const paceRadio = document.querySelector('input[name="pace"][value="' + tripData.pace + '"]');
       if (paceRadio) paceRadio.checked = true;
     }
-    // Disable generate button if monthly limit reached
-    if (getGenerationsThisMonth() >= FREE_TIER.maxGenerationsPerMonth) {
+    // Disable generate button if period limit reached
+    if (getGenerationsThisPeriod() >= getTierLimits().maxGenerations) {
       var genBtn = document.getElementById('generate-button');
       genBtn.disabled = true;
       genBtn.style.opacity = '0.45';

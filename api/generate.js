@@ -1,18 +1,29 @@
 // ─── IP-Based Rate Limiting ───
 const rateLimitMap = new Map();
-const RATE_LIMIT_MAX = 3; // per IP per month (generous for shared IPs)
+const TIER_RATE_LIMITS = {
+  free:  { max: 3, period: 'month' },
+  basic: { max: 10, period: 'day' },
+  prime: { max: 100, period: 'day' },
+};
 
-function getRateLimitKey(ip) {
+function getRateLimitKey(ip, tier) {
   const now = new Date();
+  const limits = TIER_RATE_LIMITS[tier] || TIER_RATE_LIMITS.free;
+  if (limits.period === 'day') {
+    const day = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    return `${ip}:${tier}:${day}`;
+  }
   const month = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
-  return `${ip}:${month}`;
+  return `${ip}:${tier}:${month}`;
 }
 
 function cleanOldEntries() {
   const now = new Date();
   const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+  const currentDay = `${currentMonth}-${String(now.getDate()).padStart(2, '0')}`;
   for (const [k] of rateLimitMap) {
-    if (!k.endsWith(currentMonth)) rateLimitMap.delete(k);
+    // Keep entries that end with current day or current month
+    if (!k.endsWith(currentDay) && !k.endsWith(currentMonth)) rateLimitMap.delete(k);
   }
 }
 
@@ -41,14 +52,17 @@ module.exports = async function handler(req, res) {
     return res.status(500).json({ error: 'API key not configured on server.' });
   }
 
-  // Rate limit by IP
+  // Rate limit by IP + tier
   const ip = (req.headers['x-forwarded-for'] || req.headers['x-real-ip'] || 'unknown').split(',')[0].trim();
-  const key = getRateLimitKey(ip);
+  const tier = (['free', 'basic', 'prime'].includes(req.body?.tier)) ? req.body.tier : 'free';
+  const tierLimits = TIER_RATE_LIMITS[tier];
+  const key = getRateLimitKey(ip, tier);
   cleanOldEntries();
   const count = rateLimitMap.get(key) || 0;
 
-  if (count >= RATE_LIMIT_MAX) {
-    return res.status(429).json({ error: 'Monthly limit reached. Please try again next month or upgrade for unlimited generations.' });
+  if (count >= tierLimits.max) {
+    const periodLabel = tierLimits.period === 'day' ? 'daily' : 'monthly';
+    return res.status(429).json({ error: `${periodLabel.charAt(0).toUpperCase() + periodLabel.slice(1)} limit reached. Please try again later or upgrade for more generations.` });
   }
 
   try {
