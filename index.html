@@ -967,6 +967,7 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
     <h3 class="text-lg font-bold text-slate-800 mb-1">Extra Tools</h3>
     <p class="text-slate-500 text-sm mb-4">Refine your itinerary or explore more about your destination.</p>
 
+    <div id="active-instructions-label" class="hidden" style="margin-bottom:8px; padding:8px 12px; background:#f0f9ff; border:1px solid #bae6fd; border-radius:8px; font-size:0.8rem; color:#0c4a6e; line-height:1.4;"></div>
     <div id="planning-changes-summary" class="hidden" style="margin-bottom:12px; padding:10px 14px; background:linear-gradient(135deg,#fef3c7,#fde68a); border:1px solid #f59e0b; border-radius:10px; font-size:0.85rem; color:#92400e; line-height:1.5;"></div>
     <textarea id="update-instruction" class="form-input mb-4 resize-none" rows="3" placeholder="Your specific instruction to update the itinerary..."></textarea>
 
@@ -1113,6 +1114,19 @@ function renderTripOverview() {
     box.innerHTML = chips.map(c => '<span>' + c + '</span>').join('');
     box.classList.remove('hidden');
   } else {
+    box.classList.add('hidden');
+  }
+}
+
+function renderActiveInstructionsLabel() {
+  const box = document.getElementById('active-instructions-label');
+  const text = tripData.additionalInstructions;
+  if (text) {
+    const display = text.length > 120 ? text.slice(0, 120).replace(/\s+\S*$/, '') + '...' : text;
+    box.innerHTML = '<strong>Your instructions:</strong> ' + display;
+    box.classList.remove('hidden');
+  } else {
+    box.innerHTML = '';
     box.classList.add('hidden');
   }
 }
@@ -1593,6 +1607,7 @@ ${ticketTipsInstruction}
   document.getElementById('content-display').innerHTML = routeMapHtml + linkifyUrls(marked.parse(processDailyRoutes(finalResult)));
   restructureItinerary();
   renderTripOverview();
+  renderActiveInstructionsLabel();
 
   document.getElementById('planning-view').classList.add('hidden');
   document.getElementById('results-view').classList.remove('hidden');
@@ -2709,7 +2724,7 @@ function detectPlanningChanges(newInputs) {
   const newTransport = (newInputs.transportation || []).sort().join(',');
   if (newTransport !== oldTransport) changes.push(`transportation changed to: ${newInputs.transportation.join(', ')}`);
   if (newInputs.pace && newInputs.pace !== tripData.pace) changes.push(`pace changed from ${tripData.pace} to ${newInputs.pace}`);
-  if ((newInputs.additionalInstructions || '') !== (tripData.additionalInstructions || '')) changes.push(`additional instructions changed`);
+  // additionalInstructions is NOT a planning change — it's silently synced and included as persistent context in updates
   return changes;
 }
 
@@ -2717,6 +2732,9 @@ function showPlanningChangesSummary() {
   const box = document.getElementById('planning-changes-summary');
   const newInputs = readPlanningInputs();
   const changes = detectPlanningChanges(newInputs);
+  // Silently sync additional instructions (not a "planning change" — applied as persistent context)
+  tripData.additionalInstructions = newInputs.additionalInstructions;
+  renderActiveInstructionsLabel();
   if (changes.length > 0) {
     box.innerHTML = '<strong>Planning changes detected:</strong> ' + changes.join('; ') + '.';
     box.classList.remove('hidden');
@@ -2783,7 +2801,7 @@ document.getElementById('update-itinerary-btn').addEventListener('click', async 
     tripData.budget = newInputs.budget;
     tripData.currency = newInputs.currency;
     tripData.pace = newInputs.pace;
-    tripData.additionalInstructions = newInputs.additionalInstructions;
+    // additionalInstructions already synced in showPlanningChangesSummary()
     // Update header to reflect new destination/days
     document.getElementById('results-title').textContent = `Your Trip: ${tripData.destination} (${tripData.days} days)`;
   }
@@ -2832,7 +2850,8 @@ Also at the VERY BEGINNING of each day (right after the day heading), include a 
 DailyRoute: Place+A+${tripData.destination.replace(/\s+/g, '+')}|Place+B+${tripData.destination.replace(/\s+/g, '+')}|Place+C+${tripData.destination.replace(/\s+/g, '+')}
 Replace spaces with + in each place name. Include the city name. Separate stops with | character. Arrange in optimal time-saving order.`;
 
-  const prompt = `Based on this itinerary:\n\n${tripData.itinerary}\n\nPlease update it with this instruction: ${fullInstruction}${placeDetailsInstruction}${ticketTipsInstruction}`;
+  const contextNote = tripData.additionalInstructions ? `\n\nOriginal trip guidance (keep following these): ${tripData.additionalInstructions}` : '';
+  const prompt = `Based on this itinerary:\n\n${tripData.itinerary}${contextNote}\n\nPlease update it with this instruction: ${fullInstruction}${placeDetailsInstruction}${ticketTipsInstruction}`;
   const result = await callGemini(prompt);
 
   finishProgress();
@@ -2842,6 +2861,7 @@ Replace spaces with + in each place name. Include the city name. Separate stops 
     document.getElementById('content-display').innerHTML = linkifyUrls(marked.parse(processDailyRoutes(result)));
     restructureItinerary();
     renderTripOverview();
+  renderActiveInstructionsLabel();
     document.getElementById('update-instruction').value = '';
     document.getElementById('planning-changes-summary').innerHTML = '';
     document.getElementById('planning-changes-summary').classList.add('hidden');
