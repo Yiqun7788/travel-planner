@@ -965,7 +965,7 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
   <!-- Extra Tools -->
   <div class="mx-6 sm:mx-8 mb-8 p-6 bg-gradient-to-br from-slate-50 to-slate-100 rounded-2xl border border-slate-200">
     <h3 class="text-lg font-bold text-slate-800 mb-1">Extra Tools</h3>
-    <p class="text-slate-500 text-sm mb-4">Refine your itinerary or explore more about your destination.</p>
+    <p class="text-slate-500 text-sm mb-4">Type an instruction below, or <a href="#" id="edit-trip-settings-link" style="color:#0369a1; text-decoration:underline; font-weight:600;">edit your trip settings</a> to update the itinerary.</p>
 
     <div id="active-instructions-label" class="hidden" style="margin-bottom:8px; padding:8px 12px; background:#f0f9ff; border:1px solid #bae6fd; border-radius:8px; font-size:0.8rem; color:#0c4a6e; line-height:1.4;"></div>
     <div id="planning-changes-summary" class="hidden" style="margin-bottom:12px; padding:10px 14px; background:linear-gradient(135deg,#fef3c7,#fde68a); border:1px solid #f59e0b; border-radius:10px; font-size:0.85rem; color:#92400e; line-height:1.5;"></div>
@@ -2462,6 +2462,12 @@ document.getElementById('back-button').addEventListener('click', () => {
     genBtn.style.opacity = '0.45';
     genBtn.style.cursor = 'not-allowed';
   }
+});
+
+// "Edit your trip settings" link in Extra Tools → triggers Back button
+document.getElementById('edit-trip-settings-link').addEventListener('click', (e) => {
+  e.preventDefault();
+  document.getElementById('back-button').click();
 });
 
 // Download menu toggle
