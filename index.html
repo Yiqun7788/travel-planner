@@ -740,7 +740,7 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
         <div class="pricing-price">$2.99<span>/ trip</span></div>
         <ul class="pricing-features">
           <li class="included">Up to 3 destinations</li>
-          <li class="included">10 day max trip</li>
+          <li class="included">14 day max trip</li>
           <li class="included">5 generations/trip</li>
           <li class="included">5 updates/itinerary</li>
           <li class="included">PDF download</li>
@@ -757,7 +757,7 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
         <div class="pricing-price">$6.99<span>/ 3 trips</span></div>
         <ul class="pricing-features">
           <li class="included">Up to 3 destinations</li>
-          <li class="included">10 day max trip</li>
+          <li class="included">14 day max trip</li>
           <li class="included">5 generations/trip</li>
           <li class="included">5 updates/itinerary</li>
           <li class="included">PDF download</li>
@@ -1100,7 +1100,7 @@ function saveTripSession() {
 // ─── Tier System ───
 const TIER_LIMITS = {
   free: { maxDays:3, maxDestinations:1, maxGenerations:1, maxUpdatesPerItinerary:1, offlineHtml:false, packingList:false, cheapTickets:false, funFacts:false },
-  paid: { maxDays:10, maxDestinations:3, maxGenerations:5, maxUpdatesPerItinerary:5, offlineHtml:true, packingList:true, cheapTickets:true, funFacts:true },
+  paid: { maxDays:14, maxDestinations:3, maxGenerations:5, maxUpdatesPerItinerary:5, offlineHtml:true, packingList:true, cheapTickets:true, funFacts:true },
 };
 function getTripCredits() {
   return parseInt(localStorage.getItem('tripCredits') || '0', 10);
@@ -1177,7 +1177,7 @@ function applyTierUI() {
       if (tier === 'free') {
         bannerText.innerHTML = '<strong>Free Plan</strong> \u2014 1 destination, up to 3 days, 1 itinerary per month, 1 update per itinerary. <button class="banner-link" onclick="openPricingModal()">View Plans</button>';
       } else {
-        bannerText.innerHTML = '<strong>Trip Pack</strong> \u2014 Up to 3 destinations, 10 day trips, 5 generations per trip, 5 updates per itinerary. <button class="banner-link" onclick="openPricingModal()">View Plans</button>';
+        bannerText.innerHTML = '<strong>Trip Pack</strong> \u2014 Up to 3 destinations, 14 day trips, 5 generations per trip, 5 updates per itinerary. <button class="banner-link" onclick="openPricingModal()">View Plans</button>';
       }
     }
   }
@@ -1676,7 +1676,7 @@ document.getElementById('generate-button').addEventListener('click', async () =>
 
   const days = Math.floor((new Date(end) - new Date(start)) / (1000*3600*24)) + 1;
   if (days > getTierLimits().maxDays) {
-    showUpgradeModal('Day Limit', `Your plan supports up to <strong>${getTierLimits().maxDays} days</strong>.<br><br>Get a <strong>Trip Pack</strong> for up to 10 days and 3 destinations.`);
+    showUpgradeModal('Day Limit', `Your plan supports up to <strong>${getTierLimits().maxDays} days</strong>.<br><br>Get a <strong>Trip Pack</strong> for up to 14 days and 3 destinations.`);
     return;
   }
 
@@ -3086,14 +3086,14 @@ document.getElementById('update-itinerary-btn').addEventListener('click', async 
   if (instruction) {
     const dayExtendMatch = instruction.match(/(\d+)\s*(?:days?|nights?)/i);
     if (dayExtendMatch && parseInt(dayExtendMatch[1]) > getTierLimits().maxDays) {
-      showUpgradeModal('Day Limit', `Your plan supports up to <strong>${getTierLimits().maxDays} days</strong>.<br><br>Get a <strong>Trip Pack</strong> for up to 10 days and 3 destinations.`);
+      showUpgradeModal('Day Limit', `Your plan supports up to <strong>${getTierLimits().maxDays} days</strong>.<br><br>Get a <strong>Trip Pack</strong> for up to 14 days and 3 destinations.`);
       return;
     }
   }
 
   // Also block if planning page dates exceed day limit
   if (newInputs.days > getTierLimits().maxDays) {
-    showUpgradeModal('Day Limit', `Your plan supports up to <strong>${getTierLimits().maxDays} days</strong>.<br><br>Get a <strong>Trip Pack</strong> for up to 10 days and 3 destinations.`);
+    showUpgradeModal('Day Limit', `Your plan supports up to <strong>${getTierLimits().maxDays} days</strong>.<br><br>Get a <strong>Trip Pack</strong> for up to 14 days and 3 destinations.`);
     return;
   }
 
