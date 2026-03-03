@@ -1104,10 +1104,10 @@ const TIER_LIMITS = {
   prime: { maxDays:Infinity, maxDestinations:Infinity, maxGenerations:Infinity, generationPeriod:'day', maxUpdatesPerItinerary:Infinity, offlineHtml:true, packingList:true, cheapTickets:true, funFacts:true },
 };
 function getUserTier() {
-  return localStorage.getItem('userTier') || 'free';
+  return sessionStorage.getItem('userTier') || 'free';
 }
 function setUserTier(tier) {
-  localStorage.setItem('userTier', tier);
+  sessionStorage.setItem('userTier', tier);
 }
 function getTierLimits() {
   return TIER_LIMITS[getUserTier()];
