@@ -1410,15 +1410,19 @@ document.addEventListener('keydown', function(e) {
     document.getElementById('upgrade-modal').classList.remove('active');
   }
   if (e.ctrlKey && e.shiftKey && e.key === 'L') {
-    if (getTripCredits() > 0) {
-      setTripCredits(0);
-      sessionStorage.removeItem('currentTripPaid');
+    const c = getTripCredits();
+    if (c === 0) {
+      setTripCredits(1); // Trip Pack ($2.99)
+    } else if (c === 1) {
+      setTripCredits(3); // 3-Trip Bundle ($6.99)
     } else {
-      setTripCredits(3);
+      setTripCredits(0); // Free
+      sessionStorage.removeItem('currentTripPaid');
     }
     localStorage.removeItem('freeTierState');
     applyTierUI();
-    const msg = getTripCredits() > 0 ? 'PAID (' + getTripCredits() + ' credits)' : 'FREE';
+    const credits = getTripCredits();
+    const msg = credits > 0 ? 'PAID (' + credits + ' credit' + (credits > 1 ? 's' : '') + ')' : 'FREE';
     console.log('[Dev] Tier switched to:', msg);
     alert('Dev: ' + msg);
   }
