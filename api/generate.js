@@ -1,9 +1,8 @@
 // ─── IP-Based Rate Limiting ───
 const rateLimitMap = new Map();
 const TIER_RATE_LIMITS = {
-  free:  { max: 3, period: 'month' },
-  basic: { max: 10, period: 'day' },
-  prime: { max: 100, period: 'day' },
+  free: { max: 3, period: 'month' },
+  paid: { max: 15, period: 'day' },
 };
 
 function getRateLimitKey(ip, tier) {
@@ -54,7 +53,7 @@ module.exports = async function handler(req, res) {
 
   // Rate limit by IP + tier
   const ip = (req.headers['x-forwarded-for'] || req.headers['x-real-ip'] || 'unknown').split(',')[0].trim();
-  const tier = (['free', 'basic', 'prime'].includes(req.body?.tier)) ? req.body.tier : 'free';
+  const tier = req.body?.tier === 'paid' ? 'paid' : 'free';
   const tierLimits = TIER_RATE_LIMITS[tier];
   const key = getRateLimitKey(ip, tier);
   cleanOldEntries();
