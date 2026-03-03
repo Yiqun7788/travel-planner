@@ -1413,11 +1413,13 @@ document.addEventListener('keydown', function(e) {
     const c = getTripCredits();
     if (c === 0) {
       setTripCredits(1); // Trip Pack ($2.99)
+      sessionStorage.setItem('devCredits', 'true');
     } else if (c === 1) {
       setTripCredits(3); // 3-Trip Bundle ($6.99)
     } else {
       setTripCredits(0); // Free
       sessionStorage.removeItem('currentTripPaid');
+      sessionStorage.removeItem('devCredits');
     }
     localStorage.removeItem('freeTierState');
     applyTierUI();
@@ -1559,6 +1561,10 @@ function toggleLongDistance() {
 document.getElementById('destination').addEventListener('input', toggleLongDistance);
 // Run on page load to set initial state
 toggleLongDistance();
+// Clear dev credits on fresh session (real purchases will skip this once Stripe is integrated)
+if (!sessionStorage.getItem('devCredits') && getTripCredits() > 0) {
+  setTripCredits(0);
+}
 // Apply tier UI on page load
 applyTierUI();
 
