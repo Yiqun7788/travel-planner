@@ -681,6 +681,16 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
   .pricing-grid { grid-template-columns: 1fr; }
   .pricing-modal-card { padding: 24px 16px; }
 }
+
+.save-indicator {
+  position: fixed; bottom: 24px; right: 24px; z-index: 9999;
+  background: #16a34a; color: #fff; padding: 10px 20px;
+  border-radius: 10px; font-size: 14px; font-weight: 600;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  opacity: 0; transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+.save-indicator.visible { opacity: 1; }
 </style>
 </head>
 <body>
@@ -1037,6 +1047,7 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
 </div>
 </div>
 
+<div id="save-indicator" class="save-indicator">&#10003; Trip saved</div>
 </div>
 
 <!-- Footer -->
@@ -1094,7 +1105,24 @@ var tripData = {
 var selectedTravelMode = 'driving';
 
 function saveTripSession() {
-  try { sessionStorage.setItem('tripSession', JSON.stringify(tripData)); } catch {}
+  try {
+    var json = JSON.stringify(tripData);
+    sessionStorage.setItem('tripSession', json);
+    localStorage.setItem('savedTrip', json);
+    showSaveIndicator();
+  } catch {}
+}
+
+function clearSavedTrip() {
+  try { localStorage.removeItem('savedTrip'); sessionStorage.removeItem('tripSession'); } catch {}
+}
+
+function showSaveIndicator() {
+  var el = document.getElementById('save-indicator');
+  if (!el) return;
+  el.classList.add('visible');
+  clearTimeout(el._hideTimer);
+  el._hideTimer = setTimeout(function() { el.classList.remove('visible'); }, 2000);
 }
 
 // ─── Tier System ───
@@ -1686,6 +1714,7 @@ document.getElementById('generate-button').addEventListener('click', async () =>
     return;
   }
 
+  clearSavedTrip();
   startProgress('Generating your itinerary...');
   const pace = document.querySelector('input[name="pace"]:checked').value;
   const primaryInterests = [...document.querySelectorAll('#primary-interests input:checked')].map(i => i.value);
@@ -3263,7 +3292,11 @@ document.getElementById('fun-fact-btn').addEventListener('click', async () => {
 // ─── Restore session on page load ───
 (function restoreSession() {
   try {
-    const saved = sessionStorage.getItem('tripSession');
+    var saved = sessionStorage.getItem('tripSession');
+    if (!saved) {
+      saved = localStorage.getItem('savedTrip');
+      if (saved) sessionStorage.setItem('tripSession', saved);
+    }
     if (!saved) return;
     const data = JSON.parse(saved);
     if (!data.itinerary || !data.destination) return;
