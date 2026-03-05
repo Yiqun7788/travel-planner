@@ -766,7 +766,7 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
           <li class="included">Cheap Ticket Tips</li>
           <li class="included">Fun Facts</li>
         </ul>
-        <button class="pricing-btn pricing-btn-upgrade" onclick="purchaseCredits('trip_pack')">Buy Trip Pack</button>
+        <button class="pricing-btn pricing-btn-upgrade" onclick="selectPlan('trip_pack')">Buy Trip Pack</button>
       </div>
       <!-- 3-Trip Bundle -->
       <div class="pricing-tier">
@@ -783,7 +783,7 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
           <li class="included">Cheap Ticket Tips</li>
           <li class="included">Fun Facts</li>
         </ul>
-        <button class="pricing-btn pricing-btn-upgrade" onclick="purchaseCredits('bundle')">Buy Bundle &mdash; Save 22%</button>
+        <button class="pricing-btn pricing-btn-upgrade" onclick="selectPlan('bundle')">Buy Bundle &mdash; Save 22%</button>
       </div>
     </div>
   </div>
@@ -1293,9 +1293,9 @@ function applyTierUI() {
       btn.removeAttribute('onclick');
     } else if (i === 0 && tier === 'paid') {
       btn.className = 'pricing-btn pricing-btn-upgrade';
-      btn.disabled = true;
-      btn.textContent = 'Free Plan';
-      btn.removeAttribute('onclick');
+      btn.disabled = false;
+      btn.textContent = 'Switch to Free';
+      btn.setAttribute('onclick', "selectPlan('free')");
     } else if (i > 0 && tier === 'paid') {
       btn.className = 'pricing-btn pricing-btn-current';
       btn.disabled = true;
@@ -1305,7 +1305,7 @@ function applyTierUI() {
       btn.className = 'pricing-btn pricing-btn-upgrade';
       btn.disabled = false;
       btn.textContent = i === 1 ? 'Buy Trip Pack' : 'Buy Bundle';
-      btn.setAttribute('onclick', i === 1 ? "purchaseCredits('trip_pack')" : "purchaseCredits('bundle')");
+      btn.setAttribute('onclick', i === 1 ? "selectPlan('trip_pack')" : "selectPlan('bundle')");
     }
   });
 
@@ -1414,7 +1414,19 @@ function openPricingModal() {
 function closePricingModal() {
   document.getElementById('pricing-modal').classList.remove('active');
 }
-// ─── Stripe: purchase credits ───
+// ─── Plan selection: Free switches instantly, paid goes to Stripe ───
+function selectPlan(plan) {
+  if (plan === 'free') {
+    setTripCredits(0);
+    sessionStorage.removeItem('currentTripPaid');
+    localStorage.removeItem('freeTierState');
+    applyTierUI();
+    closePricingModal();
+    return;
+  }
+  // Paid plan → Stripe Checkout
+  purchaseCredits(plan);
+}
 async function purchaseCredits(priceType) {
   const btns = document.querySelectorAll('.pricing-btn-upgrade');
   const originalTexts = [];
