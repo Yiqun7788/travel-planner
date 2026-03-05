@@ -749,7 +749,7 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
           <li class="excluded">Cheap Ticket Tips</li>
           <li class="excluded">Fun Facts</li>
         </ul>
-        <button class="pricing-btn pricing-btn-current" disabled>Current Plan</button>
+        <button id="pricing-btn-free" class="pricing-btn pricing-btn-current" disabled>Current Plan</button>
       </div>
       <!-- Trip Pack -->
       <div class="pricing-tier recommended">
@@ -766,7 +766,7 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
           <li class="included">Cheap Ticket Tips</li>
           <li class="included">Fun Facts</li>
         </ul>
-        <button class="pricing-btn pricing-btn-upgrade" onclick="selectPlan('trip_pack')">Buy Trip Pack</button>
+        <button id="pricing-btn-trip-pack" class="pricing-btn pricing-btn-upgrade">Buy Trip Pack</button>
       </div>
       <!-- 3-Trip Bundle -->
       <div class="pricing-tier">
@@ -783,7 +783,7 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
           <li class="included">Cheap Ticket Tips</li>
           <li class="included">Fun Facts</li>
         </ul>
-        <button class="pricing-btn pricing-btn-upgrade" onclick="selectPlan('bundle')">Buy Bundle &mdash; Save 22%</button>
+        <button id="pricing-btn-bundle" class="pricing-btn pricing-btn-upgrade">Buy Bundle &mdash; Save 22%</button>
       </div>
     </div>
   </div>
@@ -1281,28 +1281,31 @@ function applyTierUI() {
     });
   }
 
-  // ─── Pricing modal: move "Current Plan" indicator ───
-  const pricingTiers = document.querySelectorAll('.pricing-tier');
-  pricingTiers.forEach((el, i) => {
-    const btn = el.querySelector('.pricing-btn');
-    if (!btn) return;
-    if (i === 0 && tier === 'free') {
-      btn.className = 'pricing-btn pricing-btn-current';
-      btn.disabled = true;
-      btn.textContent = 'Current Plan';
-      btn.removeAttribute('onclick');
-    } else if (i === 0 && tier === 'paid') {
-      btn.className = 'pricing-btn pricing-btn-upgrade';
-      btn.disabled = false;
-      btn.textContent = 'Switch to Free';
-      btn.setAttribute('onclick', "selectPlan('free')");
+  // ─── Pricing modal: update button states ───
+  var freeBtn = document.getElementById('pricing-btn-free');
+  var tripPackBtn = document.getElementById('pricing-btn-trip-pack');
+  var bundleBtn = document.getElementById('pricing-btn-bundle');
+  if (freeBtn) {
+    if (tier === 'free') {
+      freeBtn.className = 'pricing-btn pricing-btn-current';
+      freeBtn.disabled = true;
+      freeBtn.textContent = 'Current Plan';
     } else {
-      btn.className = 'pricing-btn pricing-btn-upgrade';
-      btn.disabled = false;
-      btn.textContent = i === 1 ? 'Buy Trip Pack' : 'Buy Bundle';
-      btn.setAttribute('onclick', i === 1 ? "selectPlan('trip_pack')" : "selectPlan('bundle')");
+      freeBtn.className = 'pricing-btn pricing-btn-upgrade';
+      freeBtn.disabled = false;
+      freeBtn.textContent = 'Switch to Free';
     }
-  });
+  }
+  if (tripPackBtn) {
+    tripPackBtn.className = 'pricing-btn pricing-btn-upgrade';
+    tripPackBtn.disabled = false;
+    tripPackBtn.textContent = 'Buy Trip Pack';
+  }
+  if (bundleBtn) {
+    bundleBtn.className = 'pricing-btn pricing-btn-upgrade';
+    bundleBtn.disabled = false;
+    bundleBtn.textContent = 'Buy Bundle';
+  }
 
   // ─── Update date constraints ───
   updateEndDateMin();
@@ -1409,34 +1412,36 @@ function openPricingModal() {
 function closePricingModal() {
   document.getElementById('pricing-modal').classList.remove('active');
 }
-// ─── Plan selection: Free switches instantly, paid goes to Stripe ───
-function selectPlan(plan) {
-  if (plan === 'free') {
-    setTripCredits(0);
-    sessionStorage.removeItem('currentTripPaid');
-    localStorage.removeItem('freeTierState');
-    applyTierUI();
-    closePricingModal();
-    return;
-  }
-  // Paid plan → Stripe Checkout
-  purchaseCredits(plan);
-}
+// ─── Pricing button click handlers (attached via addEventListener) ───
+document.getElementById('pricing-btn-free').addEventListener('click', function() {
+  setTripCredits(0);
+  sessionStorage.removeItem('currentTripPaid');
+  localStorage.removeItem('freeTierState');
+  applyTierUI();
+  closePricingModal();
+});
+document.getElementById('pricing-btn-trip-pack').addEventListener('click', function() {
+  purchaseCredits('trip_pack');
+});
+document.getElementById('pricing-btn-bundle').addEventListener('click', function() {
+  purchaseCredits('bundle');
+});
+
 async function purchaseCredits(priceType) {
-  const btns = document.querySelectorAll('.pricing-btn-upgrade');
-  const originalTexts = [];
-  btns.forEach(btn => {
+  var btns = document.querySelectorAll('.pricing-btn-upgrade');
+  var originalTexts = [];
+  btns.forEach(function(btn) {
     originalTexts.push(btn.textContent);
     btn.disabled = true;
-    btn.textContent = 'Redirecting…';
+    btn.textContent = 'Redirecting\u2026';
   });
   try {
-    const resp = await fetch('/api/create-checkout-session', {
+    var resp = await fetch('/api/create-checkout-session', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ priceType })
+      body: JSON.stringify({ priceType: priceType })
     });
-    const data = await resp.json();
+    var data = await resp.json();
     if (!resp.ok) throw new Error(data.error || 'Payment failed');
     if (data.url) {
       window.location.href = data.url;
@@ -1445,7 +1450,7 @@ async function purchaseCredits(priceType) {
     throw new Error('No checkout URL returned');
   } catch (err) {
     alert('Payment error: ' + err.message);
-    btns.forEach((btn, i) => {
+    btns.forEach(function(btn, i) {
       btn.disabled = false;
       btn.textContent = originalTexts[i];
     });
