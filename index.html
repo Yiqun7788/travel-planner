@@ -1296,11 +1296,6 @@ function applyTierUI() {
       btn.disabled = false;
       btn.textContent = 'Switch to Free';
       btn.setAttribute('onclick', "selectPlan('free')");
-    } else if (i > 0 && tier === 'paid') {
-      btn.className = 'pricing-btn pricing-btn-current';
-      btn.disabled = true;
-      btn.textContent = 'Active';
-      btn.removeAttribute('onclick');
     } else {
       btn.className = 'pricing-btn pricing-btn-upgrade';
       btn.disabled = false;
