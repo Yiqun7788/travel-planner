@@ -3,6 +3,8 @@
   "outputDirectory": "",
   "rewrites": [
     { "source": "/api/generate", "destination": "/api/generate" },
+    { "source": "/api/create-checkout-session", "destination": "/api/create-checkout-session" },
+    { "source": "/api/verify-payment", "destination": "/api/verify-payment" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }

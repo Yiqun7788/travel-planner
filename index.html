@@ -3,7 +3,24 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Travel Planner</title>
+<title>Travel Planner — Free AI-Powered Itinerary Generator</title>
+<meta name="description" content="Plan your perfect trip in seconds. Our free AI travel planner builds personalized day-by-day itineraries with local tips, maps, and booking links." />
+<link rel="canonical" href="https://travel-planner-livid-two.vercel.app/" />
+<!-- Open Graph -->
+<meta property="og:type" content="website" />
+<meta property="og:title" content="Travel Planner — Free AI-Powered Itinerary Generator" />
+<meta property="og:description" content="Plan your perfect trip in seconds. Our free AI travel planner builds personalized day-by-day itineraries with local tips, maps, and booking links." />
+<meta property="og:url" content="https://travel-planner-livid-two.vercel.app/" />
+<meta property="og:site_name" content="Travel Planner" />
+<meta property="og:locale" content="en_US" />
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="Travel Planner — Free AI-Powered Itinerary Generator" />
+<meta name="twitter:description" content="Plan your perfect trip in seconds. Our free AI travel planner builds personalized day-by-day itineraries with local tips, maps, and booking links." />
+<!-- Favicon (inline SVG airplane) -->
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✈️</text></svg>" />
+<!-- Theme color -->
+<meta name="theme-color" content="#0ea5e9" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -749,7 +766,7 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
           <li class="included">Cheap Ticket Tips</li>
           <li class="included">Fun Facts</li>
         </ul>
-        <button class="pricing-btn pricing-btn-upgrade" onclick="alert('Coming soon!')">Buy Trip Pack</button>
+        <button class="pricing-btn pricing-btn-upgrade" onclick="purchaseCredits('trip_pack')">Buy Trip Pack</button>
       </div>
       <!-- 3-Trip Bundle -->
       <div class="pricing-tier">
@@ -766,7 +783,7 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
           <li class="included">Cheap Ticket Tips</li>
           <li class="included">Fun Facts</li>
         </ul>
-        <button class="pricing-btn pricing-btn-upgrade" onclick="alert('Coming soon!')">Buy Bundle &mdash; Save 22%</button>
+        <button class="pricing-btn pricing-btn-upgrade" onclick="purchaseCredits('bundle')">Buy Bundle &mdash; Save 22%</button>
       </div>
     </div>
   </div>
@@ -1288,7 +1305,7 @@ function applyTierUI() {
       btn.className = 'pricing-btn pricing-btn-upgrade';
       btn.disabled = false;
       btn.textContent = i === 1 ? 'Buy Trip Pack' : 'Buy Bundle';
-      btn.setAttribute('onclick', "alert('Coming soon!')");
+      btn.setAttribute('onclick', i === 1 ? "purchaseCredits('trip_pack')" : "purchaseCredits('bundle')");
     }
   });
 
@@ -1318,7 +1335,6 @@ function renderBookingSection() {
   const dest = tripData.destination;
   if (!dest) { section.classList.add('hidden'); return; }
   const encoded = encodeURIComponent(dest);
-  // TODO: Replace these placeholder URLs with your real affiliate links
   document.getElementById('booking-hotels').href = 'https://www.booking.com/searchresults.html?ss=' + encoded;
   document.getElementById('booking-activities').href = 'https://www.getyourguide.com/s/?q=' + encoded;
   document.getElementById('booking-flights').href = 'https://www.google.com/travel/flights?q=flights+to+' + encoded;
@@ -1398,35 +1414,46 @@ function openPricingModal() {
 function closePricingModal() {
   document.getElementById('pricing-modal').classList.remove('active');
 }
+// ─── Stripe: purchase credits ───
+async function purchaseCredits(priceType) {
+  const btns = document.querySelectorAll('.pricing-btn-upgrade');
+  const originalTexts = [];
+  btns.forEach(btn => {
+    originalTexts.push(btn.textContent);
+    btn.disabled = true;
+    btn.textContent = 'Redirecting…';
+  });
+  try {
+    const resp = await fetch('/api/create-checkout-session', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ priceType })
+    });
+    const data = await resp.json();
+    if (!resp.ok) throw new Error(data.error || 'Payment failed');
+    if (data.url) {
+      window.location.href = data.url;
+      return;
+    }
+    throw new Error('No checkout URL returned');
+  } catch (err) {
+    alert('Payment error: ' + err.message);
+    btns.forEach((btn, i) => {
+      btn.disabled = false;
+      btn.textContent = originalTexts[i];
+    });
+  }
+}
 // Close modals on backdrop click
 document.addEventListener('click', function(e) {
   if (e.target.id === 'pricing-modal') closePricingModal();
   if (e.target.id === 'upgrade-modal') document.getElementById('upgrade-modal').classList.remove('active');
 });
-// Close modals on Escape key + dev tier toggle (Ctrl+Shift+L)
+// Close modals on Escape key
 document.addEventListener('keydown', function(e) {
   if (e.key === 'Escape') {
     closePricingModal();
     document.getElementById('upgrade-modal').classList.remove('active');
-  }
-  if (e.ctrlKey && e.shiftKey && e.key === 'L') {
-    const c = getTripCredits();
-    if (c === 0) {
-      setTripCredits(1); // Trip Pack ($2.99)
-      sessionStorage.setItem('devCredits', 'true');
-    } else if (c === 1) {
-      setTripCredits(3); // 3-Trip Bundle ($6.99)
-    } else {
-      setTripCredits(0); // Free
-      sessionStorage.removeItem('currentTripPaid');
-      sessionStorage.removeItem('devCredits');
-    }
-    localStorage.removeItem('freeTierState');
-    applyTierUI();
-    const credits = getTripCredits();
-    const msg = credits > 0 ? 'PAID (' + credits + ' credit' + (credits > 1 ? 's' : '') + ')' : 'FREE';
-    console.log('[Dev] Tier switched to:', msg);
-    alert('Dev: ' + msg);
   }
 });
 
@@ -1561,10 +1588,55 @@ function toggleLongDistance() {
 document.getElementById('destination').addEventListener('input', toggleLongDistance);
 // Run on page load to set initial state
 toggleLongDistance();
-// Clear dev credits on fresh session (real purchases will skip this once Stripe is integrated)
-if (!sessionStorage.getItem('devCredits') && getTripCredits() > 0) {
-  setTripCredits(0);
-}
+
+// ─── Stripe: verify payment on return from checkout ───
+(function verifyPaymentOnLoad() {
+  const params = new URLSearchParams(window.location.search);
+  const sessionId = params.get('session_id');
+  if (!sessionId) return;
+  // Replay protection: check if already verified
+  const verified = JSON.parse(localStorage.getItem('verifiedSessions') || '[]');
+  if (verified.includes(sessionId)) {
+    // Already credited — just clean the URL
+    const clean = new URL(window.location);
+    clean.searchParams.delete('session_id');
+    window.history.replaceState({}, '', clean.pathname + clean.search);
+    return;
+  }
+  fetch('/api/verify-payment', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ sessionId })
+  })
+  .then(r => r.json())
+  .then(data => {
+    if (data.verified && data.credits > 0) {
+      const current = getTripCredits();
+      setTripCredits(current + data.credits);
+      // Store session ID to prevent replay
+      verified.push(sessionId);
+      localStorage.setItem('verifiedSessions', JSON.stringify(verified));
+      // Show success banner
+      const banner = document.createElement('div');
+      banner.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:9999;background:#16a34a;color:white;text-align:center;padding:14px 20px;font-weight:600;font-size:0.95rem;animation:fadeInUp 0.3s ease-out';
+      banner.textContent = 'Payment successful! ' + data.credits + ' trip credit' + (data.credits > 1 ? 's' : '') + ' added to your account.';
+      document.body.appendChild(banner);
+      setTimeout(() => banner.remove(), 5000);
+      applyTierUI();
+    }
+    // Clean the URL
+    const clean = new URL(window.location);
+    clean.searchParams.delete('session_id');
+    window.history.replaceState({}, '', clean.pathname + clean.search);
+  })
+  .catch(() => {
+    // Silent fail — credits not added, user can retry
+    const clean = new URL(window.location);
+    clean.searchParams.delete('session_id');
+    window.history.replaceState({}, '', clean.pathname + clean.search);
+  });
+})();
+
 // Apply tier UI on page load
 applyTierUI();
 
@@ -1815,7 +1887,7 @@ ${ticketTipsInstruction}
   // If API failed, generate a sample itinerary
   if (!result) {
     finalResult = `# ${days}-Day Itinerary for ${dest}\n\n`;
-    finalResult += `*Note: Using sample itinerary due to API quota limit. Please add billing to your Google Cloud project or wait for quota reset.*\n\n`;
+    finalResult += `*Note: We couldn't connect to our AI service right now. Here's a sample itinerary to give you an idea of what to expect. Please try again later for a personalized plan.*\n\n`;
 
     for (let i = 1; i <= days; i++) {
       finalResult += `## Day ${i}\n\n`;
