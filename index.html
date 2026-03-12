@@ -1690,6 +1690,42 @@ toggleLongDistance();
       banner.textContent = 'Payment successful! ' + data.credits + ' trip credit' + (data.credits > 1 ? 's' : '') + ' added to your account.';
       document.body.appendChild(banner);
       setTimeout(() => banner.remove(), 5000);
+      // Clear previous trip session so planning page starts fresh
+      sessionStorage.removeItem('tripSession');
+      tripData.destination = '';
+      tripData.days = 0;
+      tripData.itinerary = '';
+      tripData.startDate = '';
+      tripData.endDate = '';
+      tripData.transportation = [];
+      tripData.localTransport = [];
+      tripData.longDistance = [];
+      tripData.travelers = 1;
+      tripData.interests = [];
+      tripData.pace = 'Medium';
+      tripData.additionalInstructions = '';
+      tripData.wantsCheapTickets = false;
+      tripData.tripFinalized = false;
+      tripData.packingListUsed = false;
+      tripData.funFactUsed = false;
+      resetUpdatesForNewItinerary();
+
+      // Reset all planning form fields
+      document.getElementById('destination').value = '';
+      document.getElementById('start-date').value = '';
+      document.getElementById('end-date').value = '';
+      document.getElementById('currency-select').value = 'USD';
+      var travelersInput = document.querySelector('input[type="number"][min="1"]');
+      if (travelersInput) travelersInput.value = '';
+      document.querySelector('input[name="pace"][value="Medium"]').checked = true;
+      document.getElementById('additional-instructions').value = '';
+      document.getElementById('other-interests').value = '';
+      document.getElementById('cheap-tickets-checkbox').checked = false;
+      // Uncheck all interest checkboxes
+      document.querySelectorAll('#interests-group input[type="checkbox"]').forEach(function(cb) { cb.checked = false; });
+      // Uncheck all transportation checkboxes
+      document.querySelectorAll('#long-distance-group input[type="checkbox"], #local-transport-group input[type="checkbox"]').forEach(function(cb) { cb.checked = false; });
+
       applyTierUI();
       // Reset to planning view so user can start a new trip with their credits
       document.getElementById('results-view').classList.add('hidden');
