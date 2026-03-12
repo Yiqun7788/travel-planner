@@ -29,7 +29,8 @@
       "Bash(vercel login:*)",
       "Bash(printf:*)",
       "Bash(curl:*)",
-      "Bash(vercel:*)"
+      "Bash(vercel:*)",
+      "Bash(node -e:*)"
     ]
   }
 }

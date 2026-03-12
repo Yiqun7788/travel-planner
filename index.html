@@ -527,13 +527,13 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
   opacity: 0.5; cursor: not-allowed;
 }
 .download-menu-item-locked:hover { background: transparent; }
-#upgrade-modal {
+#upgrade-modal, #finalize-modal {
   position: fixed; inset: 0; z-index: 1100;
   background: rgba(0,0,0,0.4); backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
   display: none; justify-content: center; align-items: center;
 }
-#upgrade-modal.active { display: flex; }
+#upgrade-modal.active, #finalize-modal.active { display: flex; }
 .upgrade-modal-card {
   background: #fff; border-radius: 18px; padding: 32px 28px;
   max-width: 420px; width: 90%; text-align: center;
@@ -723,6 +723,20 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
     <div class="modal-actions">
       <button class="modal-btn-primary" onclick="document.getElementById('upgrade-modal').classList.remove('active')">Got it!</button>
       <button class="modal-btn-secondary" onclick="document.getElementById('upgrade-modal').classList.remove('active')">Maybe later</button>
+    </div>
+  </div>
+</div>
+
+<!-- Finalize Modal -->
+<div id="finalize-modal">
+  <div class="upgrade-modal-card">
+    <h3>&#9989; Revision Complete</h3>
+    <p>Are you done revising your itinerary?<br><br>
+    Selecting <strong>Yes</strong> will unlock <strong>Packing List</strong> and <strong>Fun Facts</strong>, and disable further revisions.<br><br>
+    &#128161; <em>You can download your itinerary anytime using the Download button.</em></p>
+    <div class="modal-actions">
+      <button class="modal-btn-primary" onclick="finalizeTripExtras()">Yes, I'm done</button>
+      <button class="modal-btn-secondary" onclick="document.getElementById('finalize-modal').classList.remove('active')">Keep revising</button>
     </div>
   </div>
 </div>
@@ -1105,7 +1119,10 @@ var tripData = {
   interests: [],
   pace: 'Medium',
   additionalInstructions: '',
-  wantsCheapTickets: false
+  wantsCheapTickets: false,
+  tripFinalized: false,
+  packingListUsed: false,
+  funFactUsed: false
 };
 var selectedTravelMode = 'driving';
 
@@ -1168,6 +1185,9 @@ function resetUpdatesForNewItinerary() {
   const s = getFreeTierState();
   s.currentItineraryUpdates = 0;
   saveFreeTierState(s);
+  tripData.tripFinalized = false;
+  tripData.packingListUsed = false;
+  tripData.funFactUsed = false;
 }
 
 function applyTierUI() {
@@ -1234,6 +1254,11 @@ function applyTierUI() {
     if (limits.packingList) {
       packBtn.classList.remove('tool-btn-locked');
       packBtn.innerHTML = '&#127890; Packing List';
+      if (!tripData.tripFinalized || tripData.packingListUsed) {
+        packBtn.classList.add('tool-btn-disabled');
+      } else {
+        packBtn.classList.remove('tool-btn-disabled');
+      }
     } else {
       packBtn.classList.add('tool-btn-locked');
       packBtn.innerHTML = '&#128274; Packing List <span class="tier-badge">&#128274; Trip Pack</span>';
@@ -1246,6 +1271,11 @@ function applyTierUI() {
     if (limits.funFacts) {
       funBtn.classList.remove('tool-btn-locked');
       funBtn.innerHTML = '&#128161; Fun Fact';
+      if (!tripData.tripFinalized || tripData.funFactUsed) {
+        funBtn.classList.add('tool-btn-disabled');
+      } else {
+        funBtn.classList.remove('tool-btn-disabled');
+      }
     } else {
       funBtn.classList.add('tool-btn-locked');
       funBtn.innerHTML = '&#128274; Fun Fact <span class="tier-badge">&#128274; Trip Pack</span>';
@@ -1270,12 +1300,28 @@ function applyTierUI() {
     const mobileBtns = mobileBar.querySelectorAll('.tool-btn');
     mobileBtns.forEach(btn => {
       if (btn.textContent.includes('Pack')) {
-        if (limits.packingList) { btn.classList.remove('tool-btn-locked'); btn.innerHTML = '&#127890; Pack'; }
-        else { btn.classList.add('tool-btn-locked'); btn.innerHTML = '&#128274; Pack'; }
+        if (limits.packingList) {
+          btn.classList.remove('tool-btn-locked'); btn.innerHTML = '&#127890; Pack';
+          if (!tripData.tripFinalized || tripData.packingListUsed) {
+            btn.classList.add('tool-btn-disabled');
+          } else {
+            btn.classList.remove('tool-btn-disabled');
+          }
+        } else {
+          btn.classList.add('tool-btn-locked'); btn.innerHTML = '&#128274; Pack';
+        }
       }
       if (btn.textContent.includes('Fact')) {
-        if (limits.funFacts) { btn.classList.remove('tool-btn-locked'); btn.innerHTML = '&#128161; Fact'; }
-        else { btn.classList.add('tool-btn-locked'); btn.innerHTML = '&#128274; Fact'; }
+        if (limits.funFacts) {
+          btn.classList.remove('tool-btn-locked'); btn.innerHTML = '&#128161; Fact';
+          if (!tripData.tripFinalized || tripData.funFactUsed) {
+            btn.classList.add('tool-btn-disabled');
+          } else {
+            btn.classList.remove('tool-btn-disabled');
+          }
+        } else {
+          btn.classList.add('tool-btn-locked'); btn.innerHTML = '&#128274; Fact';
+        }
       }
     });
   }
@@ -1320,10 +1366,19 @@ function applyTierUI() {
 
   // ─── Re-check update button state ───
   const updateBtn = document.getElementById('update-itinerary-btn');
-  if (getUpdatesThisItinerary() >= limits.maxUpdatesPerItinerary) {
+  const updateDisabled = tripData.tripFinalized || getUpdatesThisItinerary() >= limits.maxUpdatesPerItinerary;
+  if (updateDisabled) {
     updateBtn.classList.add('tool-btn-disabled');
   } else {
     updateBtn.classList.remove('tool-btn-disabled');
+  }
+  // Mobile update button
+  if (mobileBar) {
+    const mobileUpdateBtn = mobileBar.querySelector('.grid') && mobileBar.querySelector('.grid').children[0];
+    if (mobileUpdateBtn) {
+      if (updateDisabled) mobileUpdateBtn.classList.add('tool-btn-disabled');
+      else mobileUpdateBtn.classList.remove('tool-btn-disabled');
+    }
   }
 }
 
@@ -1459,12 +1514,14 @@ async function purchaseCredits(priceType) {
 document.addEventListener('click', function(e) {
   if (e.target.id === 'pricing-modal') closePricingModal();
   if (e.target.id === 'upgrade-modal') document.getElementById('upgrade-modal').classList.remove('active');
+  if (e.target.id === 'finalize-modal') document.getElementById('finalize-modal').classList.remove('active');
 });
 // Close modals on Escape key
 document.addEventListener('keydown', function(e) {
   if (e.key === 'Escape') {
     closePricingModal();
     document.getElementById('upgrade-modal').classList.remove('active');
+    document.getElementById('finalize-modal').classList.remove('active');
   }
 });
 
@@ -1997,6 +2054,9 @@ ${ticketTipsInstruction}
     }
   }
   resetUpdatesForNewItinerary();
+  tripData.tripFinalized = false;
+  tripData.packingListUsed = false;
+  tripData.funFactUsed = false;
   applyTierUI();
   // Re-enable update button for this new itinerary
   const updateBtn = document.getElementById('update-itinerary-btn');
@@ -3171,8 +3231,21 @@ function showPlanningChangesSummary() {
   }
 }
 
+// ─── Finalize Trip Extras ───
+function finalizeTripExtras() {
+  tripData.tripFinalized = true;
+  saveTripSession();
+  document.getElementById('finalize-modal').classList.remove('active');
+  applyTierUI();
+}
+
 // Extra Tools functionality
 document.getElementById('update-itinerary-btn').addEventListener('click', async () => {
+  if (tripData.tripFinalized) {
+    alert('Your trip has been finalized. Generate a new itinerary to make further changes.');
+    return;
+  }
+
   const instruction = document.getElementById('update-instruction').value.trim();
 
   // Read planning page and detect changes
@@ -3310,6 +3383,11 @@ Replace spaces with + in each place name. Include the city name. Separate stops 
         if (mobileUpdateBtn) mobileUpdateBtn.classList.add('tool-btn-disabled');
       }
     }
+
+    // Show finalize modal for paid users
+    if (getUserTier() === 'paid') {
+      document.getElementById('finalize-modal').classList.add('active');
+    }
   }
 });
 
@@ -3318,6 +3396,11 @@ document.getElementById('packing-list-btn').addEventListener('click', async () =
     showUpgradeModal('Packing List', 'Get a <strong>weather-based packing checklist</strong> customized for your destination, trip length, and planned activities.<br><br><em>Available with a Trip Pack.</em>');
     return;
   }
+  if (!tripData.tripFinalized) {
+    alert('Please finalize your itinerary first by completing a revision.');
+    return;
+  }
+  if (tripData.packingListUsed) return;
   startProgress('Generating packing list...');
 
   const prompt = `Generate a comprehensive packing list for a ${tripData.days}-day trip to ${tripData.destination} from ${tripData.startDate} to ${tripData.endDate}.
@@ -3331,7 +3414,10 @@ Also consider the activities mentioned in the itinerary and provide specific rec
   finishProgress();
 
   if (result) {
+    tripData.packingListUsed = true;
+    saveTripSession();
     document.getElementById('content-display').innerHTML += '<details class="day-section" open><summary><span class="day-chevron">\u25B6</span> <span class="day-heading-text">&#127890; Packing List</span></summary><div class="day-content"><h2>Packing List</h2>' + linkifyUrls(marked.parse(result)) + '</div></details>';
+    applyTierUI();
   }
 });
 
@@ -3340,6 +3426,11 @@ document.getElementById('fun-fact-btn').addEventListener('click', async () => {
     showUpgradeModal('Fun Facts', 'Discover <strong>surprising facts and hidden stories</strong> about your destination that most tourists never learn.<br><br><em>Available with a Trip Pack.</em>');
     return;
   }
+  if (!tripData.tripFinalized) {
+    alert('Please finalize your itinerary first by completing a revision.');
+    return;
+  }
+  if (tripData.funFactUsed) return;
   if (!tripData.destination) {
     alert('Error: Destination not found. Please regenerate your itinerary.');
     return;
@@ -3353,7 +3444,10 @@ document.getElementById('fun-fact-btn').addEventListener('click', async () => {
   finishProgress();
 
   if (result) {
+    tripData.funFactUsed = true;
+    saveTripSession();
     document.getElementById('content-display').innerHTML += '<details class="day-section" open><summary><span class="day-chevron">\u25B6</span> <span class="day-heading-text">&#128161; Fun Fact About ' + tripData.destination + '</span></summary><div class="day-content"><h2>Fun Fact About ' + tripData.destination + '</h2>' + linkifyUrls(marked.parse(result)) + '</div></details>';
+    applyTierUI();
   }
 });
 
@@ -3391,6 +3485,8 @@ document.getElementById('fun-fact-btn').addEventListener('click', async () => {
       genBtn.style.opacity = '0.45';
       genBtn.style.cursor = 'not-allowed';
     }
+    // Restore finalize/extras button states
+    applyTierUI();
     // Show return-to-itinerary if user goes back
     document.getElementById('return-to-itinerary-btn').classList.remove('hidden');
   } catch {}
