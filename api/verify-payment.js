@@ -6,6 +6,10 @@ const ALLOWED_ORIGINS = [
   'http://127.0.0.1'
 ];
 
+function isVercelPreview(url) {
+  return /^https:\/\/travel-planner[a-z0-9-]*\.vercel\.app/i.test(url);
+}
+
 module.exports = async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
@@ -13,7 +17,8 @@ module.exports = async function handler(req, res) {
 
   const origin = req.headers['origin'] || '';
   const referer = req.headers['referer'] || '';
-  const isAllowed = ALLOWED_ORIGINS.some(o => origin.startsWith(o) || referer.startsWith(o));
+  const isAllowed = ALLOWED_ORIGINS.some(o => origin.startsWith(o) || referer.startsWith(o))
+    || isVercelPreview(origin) || isVercelPreview(referer);
   if (!isAllowed) {
     return res.status(403).json({ error: 'Forbidden.' });
   }

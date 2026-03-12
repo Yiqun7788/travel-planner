@@ -6,6 +6,11 @@ const ALLOWED_ORIGINS = [
   'http://127.0.0.1'
 ];
 
+// Also allow Vercel preview deployments for this project
+function isVercelPreview(url) {
+  return /^https:\/\/travel-planner[a-z0-9-]*\.vercel\.app/i.test(url);
+}
+
 const PRICE_CONFIG = {
   trip_pack: { credits: 1 },
   bundle:    { credits: 3 }
@@ -18,7 +23,8 @@ module.exports = async function handler(req, res) {
 
   const origin = req.headers['origin'] || '';
   const referer = req.headers['referer'] || '';
-  const isAllowed = ALLOWED_ORIGINS.some(o => origin.startsWith(o) || referer.startsWith(o));
+  const isAllowed = ALLOWED_ORIGINS.some(o => origin.startsWith(o) || referer.startsWith(o))
+    || isVercelPreview(origin) || isVercelPreview(referer);
   if (!isAllowed) {
     return res.status(403).json({ error: 'Forbidden.' });
   }
@@ -47,7 +53,13 @@ module.exports = async function handler(req, res) {
     const stripe = new Stripe(STRIPE_SECRET_KEY);
 
     // Determine the base URL for redirects
-    const requestOrigin = ALLOWED_ORIGINS.find(o => origin.startsWith(o) || referer.startsWith(o)) || ALLOWED_ORIGINS[0];
+    let requestOrigin = ALLOWED_ORIGINS.find(o => origin.startsWith(o) || referer.startsWith(o));
+    if (!requestOrigin) {
+      // Use the preview deployment origin/referer directly
+      const src = isVercelPreview(origin) ? origin : referer;
+      const parsed = new URL(src);
+      requestOrigin = parsed.origin;
+    }
     const baseUrl = requestOrigin.replace(/\/$/, '');
 
     const session = await stripe.checkout.sessions.create({
