@@ -741,8 +741,8 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
         <ul class="pricing-features">
           <li class="included">1 destination</li>
           <li class="included">3 day max trip</li>
-          <li class="included">1 generation/month</li>
-          <li class="included">1 update/itinerary</li>
+          <li class="included">1 trip/month</li>
+          <li class="included">1 revision</li>
           <li class="included">PDF download</li>
           <li class="excluded">Offline HTML</li>
           <li class="excluded">Packing List</li>
@@ -758,8 +758,7 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
         <ul class="pricing-features">
           <li class="included">Up to 3 destinations</li>
           <li class="included">14 day max trip</li>
-          <li class="included">5 generations/trip</li>
-          <li class="included">5 updates/itinerary</li>
+          <li class="included">5 revisions included</li>
           <li class="included">PDF download</li>
           <li class="included">Offline HTML</li>
           <li class="included">Packing List</li>
@@ -775,8 +774,7 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
         <ul class="pricing-features">
           <li class="included">Up to 3 destinations</li>
           <li class="included">14 day max trip</li>
-          <li class="included">5 generations/trip</li>
-          <li class="included">5 updates/itinerary</li>
+          <li class="included">5 revisions included</li>
           <li class="included">PDF download</li>
           <li class="included">Offline HTML</li>
           <li class="included">Packing List</li>
@@ -1117,7 +1115,7 @@ function saveTripSession() {
 // ─── Tier System ───
 const TIER_LIMITS = {
   free: { maxDays:3, maxDestinations:1, maxGenerations:1, maxUpdatesPerItinerary:1, offlineHtml:false, packingList:false, cheapTickets:false, funFacts:false },
-  paid: { maxDays:14, maxDestinations:3, maxGenerations:5, maxUpdatesPerItinerary:5, offlineHtml:true, packingList:true, cheapTickets:true, funFacts:true },
+  paid: { maxDays:14, maxDestinations:3, maxGenerations:1, maxUpdatesPerItinerary:5, offlineHtml:true, packingList:true, cheapTickets:true, funFacts:true },
 };
 function getTripCredits() {
   return parseInt(localStorage.getItem('tripCredits') || '0', 10);
@@ -1192,9 +1190,9 @@ function applyTierUI() {
     const bannerText = banner.querySelector('.banner-text');
     if (bannerText) {
       if (tier === 'free') {
-        bannerText.innerHTML = '<strong>Free Plan</strong> \u2014 1 destination, up to 3 days, 1 itinerary per month, 1 update per itinerary. <button class="banner-link" onclick="openPricingModal()">View Plans</button>';
+        bannerText.innerHTML = '<strong>Free Plan</strong> \u2014 1 destination, up to 3 days, 1 trip per month, 1 revision. <button class="banner-link" onclick="openPricingModal()">View Plans</button>';
       } else {
-        bannerText.innerHTML = '<strong>Trip Pack</strong> \u2014 Up to 3 destinations, 14 day trips, 5 generations per trip, 5 updates per itinerary. <button class="banner-link" onclick="openPricingModal()">View Plans</button>';
+        bannerText.innerHTML = '<strong>Trip Pack</strong> \u2014 Up to 3 destinations, 14 day trips, 5 revisions per trip. <button class="banner-link" onclick="openPricingModal()">View Plans</button>';
       }
     }
   }
@@ -1769,7 +1767,7 @@ document.getElementById('generate-button').addEventListener('click', async () =>
   const hasPaidCredits = getTripCredits() > 0;
   if (!hasPaidCredits) {
     if (getGenerationsThisMonth() >= getTierLimits().maxGenerations) {
-      showUpgradeModal('Monthly Limit Reached', 'You\u2019ve used your <strong>1 free itinerary</strong> this month.<br><br>Buy a <strong>Trip Pack</strong> to generate up to 5 itineraries per trip with longer trips and more destinations.<br><br><em>Or come back next month for another free one!</em>');
+      showUpgradeModal('Monthly Limit Reached', 'You\u2019ve used your <strong>1 free trip</strong> this month.<br><br>Buy a <strong>Trip Pack</strong> for up to 3 destinations, 14 day trips, and 5 revisions.<br><br><em>Or come back next month for another free one!</em>');
       return;
     }
   }
@@ -3209,9 +3207,9 @@ document.getElementById('update-itinerary-btn').addEventListener('click', async 
   // Tier: update limit check
   if (getUpdatesThisItinerary() >= getTierLimits().maxUpdatesPerItinerary) {
     if (getUserTier() === 'free') {
-      showUpgradeModal('Update Limit Reached', 'You\u2019ve used your <strong>1 free update</strong> for this itinerary.<br><br>Buy a <strong>Trip Pack</strong> for up to 5 updates per itinerary.');
+      showUpgradeModal('Revision Limit Reached', 'You\u2019ve used your <strong>1 free revision</strong> for this trip.<br><br>Buy a <strong>Trip Pack</strong> for 5 revisions per trip.');
     } else {
-      showUpgradeModal('Update Limit Reached', `You\u2019ve used all <strong>${getTierLimits().maxUpdatesPerItinerary} updates</strong> for this itinerary.`);
+      showUpgradeModal('Revision Limit Reached', `You\u2019ve used all <strong>${getTierLimits().maxUpdatesPerItinerary} revisions</strong> for this trip.`);
     }
     return;
   }
