@@ -1104,7 +1104,8 @@ var tripData = {
   travelers: 1,
   interests: [],
   pace: 'Medium',
-  additionalInstructions: ''
+  additionalInstructions: '',
+  wantsCheapTickets: false
 };
 var selectedTravelMode = 'driving';
 
@@ -1982,6 +1983,7 @@ ${ticketTipsInstruction}
   tripData.currency = currency;
   tripData.pace = pace;
   tripData.additionalInstructions = document.getElementById('additional-instructions').value.trim();
+  tripData.wantsCheapTickets = wantsCheapTickets;
   saveTripSession();
 
   // Tier: track generation + credit consumption + reset update counter
@@ -3128,7 +3130,8 @@ function readPlanningInputs() {
   const currency = document.getElementById('currency-select').value;
   const pace = document.querySelector('input[name="pace"]:checked').value;
   const additionalInstructions = document.getElementById('additional-instructions').value.trim();
-  return { destination: dest, days, startDate: start, endDate: end, interests, longDistance, localTransport, transportation, travelers, budget, currency, pace, additionalInstructions };
+  const wantsCheapTickets = document.getElementById('cheap-tickets-checkbox').checked;
+  return { destination: dest, days, startDate: start, endDate: end, interests, longDistance, localTransport, transportation, travelers, budget, currency, pace, additionalInstructions, wantsCheapTickets };
 }
 
 function detectPlanningChanges(newInputs) {
@@ -3147,6 +3150,7 @@ function detectPlanningChanges(newInputs) {
   const newTransport = (newInputs.transportation || []).sort().join(',');
   if (newTransport !== oldTransport) changes.push(`transportation changed to: ${newInputs.transportation.join(', ')}`);
   if (newInputs.pace && newInputs.pace !== tripData.pace) changes.push(`pace changed from ${tripData.pace} to ${newInputs.pace}`);
+  if (newInputs.wantsCheapTickets !== tripData.wantsCheapTickets) changes.push(newInputs.wantsCheapTickets ? 'added cheap ticket tips' : 'removed cheap ticket tips');
   // additionalInstructions is NOT a planning change — it's silently synced and included as persistent context in updates
   return changes;
 }
@@ -3228,6 +3232,7 @@ document.getElementById('update-itinerary-btn').addEventListener('click', async 
     tripData.budget = newInputs.budget;
     tripData.currency = newInputs.currency;
     tripData.pace = newInputs.pace;
+    tripData.wantsCheapTickets = newInputs.wantsCheapTickets;
     // additionalInstructions already synced in showPlanningChangesSummary()
     // Update header to reflect new destination/days
     document.getElementById('results-title').textContent = `Your Trip: ${tripData.destination} (${tripData.days} days)`;
