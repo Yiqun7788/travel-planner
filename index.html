@@ -1635,6 +1635,16 @@ toggleLongDistance();
       document.body.appendChild(banner);
       setTimeout(() => banner.remove(), 5000);
       applyTierUI();
+      // Reset to planning view so user can start a new trip with their credits
+      document.getElementById('results-view').classList.add('hidden');
+      document.getElementById('planning-view').classList.remove('hidden');
+      document.getElementById('language-select').parentElement.style.display = '';
+      document.querySelector('.mobile-action-bar').classList.add('hidden');
+      document.getElementById('return-to-itinerary-btn').classList.add('hidden');
+      const genBtn = document.getElementById('generate-button');
+      genBtn.disabled = false;
+      genBtn.style.opacity = '';
+      genBtn.style.cursor = '';
     }
     // Clean the URL
     const clean = new URL(window.location);
