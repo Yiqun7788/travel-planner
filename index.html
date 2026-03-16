@@ -3328,6 +3328,19 @@ function finalizeTripExtras() {
   tripData.tripFinalized = true;
   saveTripSession();
   document.getElementById('finalize-modal').classList.remove('active');
+  // Reset planning page so next Generate starts fresh
+  document.getElementById('destination').value = '';
+  document.getElementById('start-date').value = '';
+  document.getElementById('end-date').value = '';
+  document.getElementById('currency-select').value = 'USD';
+  var travelersInput = document.querySelector('input[type="number"][min="1"]');
+  if (travelersInput) travelersInput.value = '';
+  document.querySelector('input[name="pace"][value="Medium"]').checked = true;
+  document.getElementById('additional-instructions').value = '';
+  document.getElementById('other-interests').value = '';
+  document.getElementById('cheap-tickets-checkbox').checked = false;
+  document.querySelectorAll('#interests-group input[type="checkbox"]').forEach(function(cb) { cb.checked = false; });
+  document.querySelectorAll('#long-distance-group input[type="checkbox"], #local-transport-group input[type="checkbox"]').forEach(function(cb) { cb.checked = false; });
   applyTierUI();
 }
 
