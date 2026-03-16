@@ -527,13 +527,13 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
   opacity: 0.5; cursor: not-allowed;
 }
 .download-menu-item-locked:hover { background: transparent; }
-#upgrade-modal, #finalize-modal {
+#upgrade-modal, #finalize-modal, #confirm-new-trip-modal {
   position: fixed; inset: 0; z-index: 1100;
   background: rgba(0,0,0,0.4); backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
   display: none; justify-content: center; align-items: center;
 }
-#upgrade-modal.active, #finalize-modal.active { display: flex; }
+#upgrade-modal.active, #finalize-modal.active, #confirm-new-trip-modal.active { display: flex; }
 .upgrade-modal-card {
   background: #fff; border-radius: 18px; padding: 32px 28px;
   max-width: 420px; width: 90%; text-align: center;
@@ -737,6 +737,18 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
     <div class="modal-actions">
       <button class="modal-btn-primary" onclick="finalizeTripExtras()">Yes, I'm done</button>
       <button class="modal-btn-secondary" onclick="document.getElementById('finalize-modal').classList.remove('active')">Keep revising</button>
+    </div>
+  </div>
+</div>
+
+<!-- Confirm New Trip Modal -->
+<div id="confirm-new-trip-modal">
+  <div class="upgrade-modal-card">
+    <h3>Start a New Trip?</h3>
+    <p id="confirm-new-trip-message"></p>
+    <div class="modal-actions">
+      <button class="modal-btn-secondary" id="confirm-new-trip-revision">Use a Revision Instead</button>
+      <button class="modal-btn-primary" id="confirm-new-trip-generate">Generate New Trip</button>
     </div>
   </div>
 </div>
@@ -1510,11 +1522,25 @@ async function purchaseCredits(priceType) {
     });
   }
 }
+// Confirm New Trip modal buttons
+document.getElementById('confirm-new-trip-revision').addEventListener('click', function() {
+  document.getElementById('confirm-new-trip-modal').classList.remove('active');
+  document.getElementById('planning-view').classList.add('hidden');
+  document.getElementById('results-view').classList.remove('hidden');
+  document.getElementById('language-select').parentElement.style.display = 'none';
+  if (window.innerWidth <= 768) document.querySelector('.mobile-action-bar').classList.remove('hidden');
+});
+document.getElementById('confirm-new-trip-generate').addEventListener('click', function() {
+  document.getElementById('confirm-new-trip-modal').classList.remove('active');
+  window._confirmNewTripBypass = true;
+  document.getElementById('generate-button').click();
+});
 // Close modals on backdrop click
 document.addEventListener('click', function(e) {
   if (e.target.id === 'pricing-modal') closePricingModal();
   if (e.target.id === 'upgrade-modal') document.getElementById('upgrade-modal').classList.remove('active');
   if (e.target.id === 'finalize-modal') document.getElementById('finalize-modal').classList.remove('active');
+  if (e.target.id === 'confirm-new-trip-modal') document.getElementById('confirm-new-trip-modal').classList.remove('active');
 });
 // Close modals on Escape key
 document.addEventListener('keydown', function(e) {
@@ -1522,6 +1548,7 @@ document.addEventListener('keydown', function(e) {
     closePricingModal();
     document.getElementById('upgrade-modal').classList.remove('active');
     document.getElementById('finalize-modal').classList.remove('active');
+    document.getElementById('confirm-new-trip-modal').classList.remove('active');
   }
 });
 
@@ -1871,6 +1898,19 @@ document.getElementById('generate-button').addEventListener('click', async () =>
     showUpgradeModal('Day Limit', `Your plan supports up to <strong>${getTierLimits().maxDays} days</strong>.<br><br>Get a <strong>Trip Pack</strong> for up to 14 days and 3 destinations.`);
     return;
   }
+
+  // Check if user has an active trip with unused revisions
+  const revisionsLeft = getTierLimits().maxUpdatesPerItinerary - getUpdatesThisItinerary();
+  if (!window._confirmNewTripBypass && getTripCredits() > 0 && tripData.itinerary && !tripData.tripFinalized && revisionsLeft > 0) {
+    const credits = getTripCredits();
+    document.getElementById('confirm-new-trip-message').innerHTML =
+      'You have <strong>' + revisionsLeft + ' revision' + (revisionsLeft > 1 ? 's' : '') +
+      '</strong> left on your current trip. Generating a new itinerary will use <strong>1 of your ' +
+      credits + ' remaining credit' + (credits > 1 ? 's' : '') + '</strong>.';
+    document.getElementById('confirm-new-trip-modal').classList.add('active');
+    return;
+  }
+  window._confirmNewTripBypass = false;
 
   startProgress('Generating your itinerary...');
   const pace = document.querySelector('input[name="pace"]:checked').value;
