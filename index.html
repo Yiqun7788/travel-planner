@@ -990,6 +990,7 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
 
     <!-- Generate Button -->
     <button type="button" id="generate-button" class="btn-primary" data-i18n="generate">Generate Itinerary</button>
+    <p id="generate-button-hint" class="hidden" style="margin-top:8px; padding:10px 14px; background:linear-gradient(135deg,#fef3c7,#fde68a); border:1px solid #f59e0b; border-radius:10px; font-size:0.85rem; color:#92400e; line-height:1.5; text-align:center;"></p>
     <button type="button" id="return-to-itinerary-btn" class="btn-primary hidden" style="margin-top: 10px; background: linear-gradient(135deg, #64748b, #475569);" onclick="document.getElementById('planning-view').classList.add('hidden'); document.getElementById('results-view').classList.remove('hidden'); document.getElementById('language-select').parentElement.style.display='none'; if(window.innerWidth<=768) document.querySelector('.mobile-action-bar').classList.remove('hidden'); showPlanningChangesSummary();">&#8592; Return to Itinerary</button>
 
   </form>
@@ -1064,6 +1065,7 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
       <button id="packing-list-btn" class="tool-btn tool-btn-locked" style="background: linear-gradient(135deg, #22c55e, #16a34a);">&#128274; Packing List <span class="tier-badge">&#128274; Trip Pack</span></button>
       <button id="fun-fact-btn" class="tool-btn tool-btn-locked" style="background: linear-gradient(135deg, #a855f7, #7c3aed);">&#128274; Fun Fact <span class="tier-badge">&#128274; Trip Pack</span></button>
     </div>
+    <button id="finalize-trip-btn" class="hidden tool-btn" style="margin-top:12px; width:100%; background:linear-gradient(135deg,#22c55e,#16a34a); font-size:1rem;" onclick="finalizeTripExtras()">&#9989; Finalize Trip &amp; Unlock Extras</button>
   </div>
 
   <!-- Mobile sticky action bar (cloned buttons on mobile) -->
@@ -1073,6 +1075,7 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
       <button onclick="document.getElementById('packing-list-btn').click()" class="tool-btn tool-btn-locked" style="background: linear-gradient(135deg, #22c55e, #16a34a);">&#128274; Pack</button>
       <button onclick="document.getElementById('fun-fact-btn').click()" class="tool-btn tool-btn-locked" style="background: linear-gradient(135deg, #a855f7, #7c3aed);">&#128274; Fact</button>
     </div>
+    <button id="finalize-trip-btn-mobile" class="hidden tool-btn" style="margin-top:8px; width:100%; background:linear-gradient(135deg,#22c55e,#16a34a); font-size:0.9rem;" onclick="finalizeTripExtras()">&#9989; Finalize Trip</button>
   </div>
 
 </div>
@@ -1370,10 +1373,32 @@ function applyTierUI() {
 
   // ─── Re-check generate button state ───
   const genBtn = document.getElementById('generate-button');
+  const genHint = document.getElementById('generate-button-hint');
+  const revisionsUsed = getUpdatesThisItinerary();
+  const revisionsLeft = limits.maxUpdatesPerItinerary - revisionsUsed;
+  const hardGate = tier === 'paid' && credits > 0 && tripData.itinerary && !tripData.tripFinalized && revisionsLeft > 0;
   if (tier === 'free' && getGenerationsThisMonth() >= limits.maxGenerations) {
     genBtn.disabled = true; genBtn.style.opacity = '0.45'; genBtn.style.cursor = 'not-allowed';
+    genHint.classList.add('hidden');
+  } else if (hardGate) {
+    genBtn.disabled = true; genBtn.style.opacity = '0.45'; genBtn.style.cursor = 'not-allowed';
+    genHint.innerHTML = '&#128274; Finalize your current trip before generating a new one. You have <strong>' + revisionsLeft + ' revision' + (revisionsLeft > 1 ? 's' : '') + '</strong> remaining.';
+    genHint.classList.remove('hidden');
   } else {
     genBtn.disabled = false; genBtn.style.opacity = ''; genBtn.style.cursor = '';
+    genHint.classList.add('hidden');
+  }
+
+  // ─── Show/hide Finalize Trip buttons ───
+  const finalizeBtn = document.getElementById('finalize-trip-btn');
+  const finalizeBtnMobile = document.getElementById('finalize-trip-btn-mobile');
+  const showFinalize = tier === 'paid' && tripData.itinerary && !tripData.tripFinalized && revisionsLeft >= 0;
+  if (showFinalize) {
+    finalizeBtn.classList.remove('hidden');
+    if (finalizeBtnMobile) finalizeBtnMobile.classList.remove('hidden');
+  } else {
+    finalizeBtn.classList.add('hidden');
+    if (finalizeBtnMobile) finalizeBtnMobile.classList.add('hidden');
   }
 
   // ─── Re-check update button state ───
@@ -1760,10 +1785,6 @@ toggleLongDistance();
       document.getElementById('language-select').parentElement.style.display = '';
       document.querySelector('.mobile-action-bar').classList.add('hidden');
       document.getElementById('return-to-itinerary-btn').classList.add('hidden');
-      const genBtn = document.getElementById('generate-button');
-      genBtn.disabled = false;
-      genBtn.style.opacity = '';
-      genBtn.style.cursor = '';
     }
     // Clean the URL
     const clean = new URL(window.location);
@@ -3007,14 +3028,9 @@ document.getElementById('back-button').addEventListener('click', () => {
   document.getElementById('planning-view').classList.remove('hidden');
   document.getElementById('language-select').parentElement.style.display = '';
   document.querySelector('.mobile-action-bar').classList.add('hidden');
-  // Show "Return to Itinerary" and gray out Generate if limit reached
+  // Show "Return to Itinerary" and update generate button state
   document.getElementById('return-to-itinerary-btn').classList.remove('hidden');
-  if (getTripCredits() === 0 && getGenerationsThisMonth() >= getTierLimits().maxGenerations) {
-    const genBtn = document.getElementById('generate-button');
-    genBtn.disabled = true;
-    genBtn.style.opacity = '0.45';
-    genBtn.style.cursor = 'not-allowed';
-  }
+  applyTierUI();
 });
 
 // "Edit your trip settings" link in Extra Tools → triggers Back button
@@ -3460,9 +3476,13 @@ Replace spaces with + in each place name. Include the city name. Separate stops 
       }
     }
 
-    // Show finalize modal for paid users
+    // Paid users: auto-finalize if all revisions used, otherwise show modal
     if (getUserTier() === 'paid') {
-      document.getElementById('finalize-modal').classList.add('active');
+      if (getUpdatesThisItinerary() >= getTierLimits().maxUpdatesPerItinerary) {
+        finalizeTripExtras();
+      } else {
+        document.getElementById('finalize-modal').classList.add('active');
+      }
     }
   }
 });
@@ -3554,14 +3574,7 @@ document.getElementById('fun-fact-btn').addEventListener('click', async () => {
       const paceRadio = document.querySelector('input[name="pace"][value="' + tripData.pace + '"]');
       if (paceRadio) paceRadio.checked = true;
     }
-    // Disable generate button if free tier monthly limit reached
-    if (getTripCredits() === 0 && getGenerationsThisMonth() >= getTierLimits().maxGenerations) {
-      var genBtn = document.getElementById('generate-button');
-      genBtn.disabled = true;
-      genBtn.style.opacity = '0.45';
-      genBtn.style.cursor = 'not-allowed';
-    }
-    // Restore finalize/extras button states
+    // Restore all button states (generate gate, finalize, extras)
     applyTierUI();
     // Show return-to-itinerary if user goes back
     document.getElementById('return-to-itinerary-btn').classList.remove('hidden');
