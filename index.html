@@ -698,6 +698,32 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
   .pricing-grid { grid-template-columns: 1fr; }
   .pricing-modal-card { padding: 24px 16px; }
 }
+
+/* Destination autocomplete dropdown */
+.dest-autocomplete-wrap { position: relative; }
+.dest-autocomplete-wrap:has(.dest-suggestions.visible) .form-input {
+  border-bottom-left-radius: 0; border-bottom-right-radius: 0;
+}
+.dest-suggestions {
+  display: none; position: absolute; top: 100%; left: 0; right: 0;
+  z-index: 50; background: #fff; list-style: none; margin: 0; padding: 0;
+  border: 1px solid #cbd5e1; border-top: none;
+  border-radius: 0 0 0.75rem 0.75rem;
+  max-height: 240px; overflow-y: auto;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+.dest-suggestions.visible { display: block; }
+.dest-suggestions li {
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 14px; cursor: pointer; font-size: 0.92rem;
+  transition: background 0.1s;
+}
+.dest-suggestions li:hover,
+.dest-suggestions li.active {
+  background: #eef2ff; color: #4338ca;
+}
+.dest-sg-name { font-weight: 600; }
+.dest-sg-region { color: #94a3b8; font-size: 0.84rem; margin-left: 2px; }
 </style>
 </head>
 <body>
@@ -856,7 +882,10 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
     <!-- Destination -->
     <div>
       <label class="section-label" data-i18n="destination">Where are you going?</label>
-      <input id="destination" class="form-input" placeholder="e.g. Tokyo, Paris, New York...">
+      <div class="dest-autocomplete-wrap">
+        <input id="destination" class="form-input" autocomplete="off" placeholder="e.g. Tokyo, Paris, New York...">
+        <ul id="dest-suggestions" class="dest-suggestions"></ul>
+      </div>
       <span id="dest-tooltip" class="input-tooltip">&#128274; Free plan supports a single destination only.</span>
     </div>
 
@@ -1825,6 +1854,129 @@ document.getElementById('destination').addEventListener('input', function() {
     }
   }
 });
+
+// ─── Destination autocomplete via Photon API ───
+(function() {
+  const input = document.getElementById('destination');
+  const list  = document.getElementById('dest-suggestions');
+  const SEP   = /[,;\u3001]/;
+  let _acTimer = null;
+  let _acSuppress = false;
+  let _acIdx = -1;
+  let _acItems = [];
+
+  function getActiveSegment() {
+    const val = input.value;
+    const cur = input.selectionStart || val.length;
+    let start = 0;
+    const parts = val.split(SEP);
+    for (let i = 0; i < parts.length; i++) {
+      const end = start + parts[i].length;
+      if (cur <= end) return { text: parts[i].trim(), start, end, idx: i };
+      start = end + 1; // +1 for separator
+    }
+    const last = parts[parts.length - 1];
+    return { text: last.trim(), start: val.length - last.length, end: val.length, idx: parts.length - 1 };
+  }
+
+  function hideSuggestions() {
+    list.classList.remove('visible');
+    list.innerHTML = '';
+    _acIdx = -1;
+    _acItems = [];
+  }
+
+  function fetchSuggestions(query) {
+    return fetch('https://photon.komoot.io/api/?q=' + encodeURIComponent(query) + '&limit=5&lang=en')
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        var feats = data.features || [];
+        var places = feats.filter(function(f) { return f.properties && f.properties.osm_key === 'place'; });
+        return places.length ? places : feats;
+      })
+      .catch(function() { return []; });
+  }
+
+  function renderSuggestions(features) {
+    if (!features.length) { hideSuggestions(); return; }
+    _acItems = features;
+    _acIdx = -1;
+    list.innerHTML = '';
+    features.forEach(function(f, i) {
+      var p = f.properties || {};
+      var name = p.name || p.city || '';
+      var parts = [p.state, p.country].filter(Boolean).join(', ');
+      var li = document.createElement('li');
+      li.innerHTML = '<span>\uD83D\uDCCD</span><span class="dest-sg-name">' +
+        name.replace(/</g, '&lt;') + '</span>' +
+        (parts ? '<span class="dest-sg-region">' + parts.replace(/</g, '&lt;') + '</span>' : '');
+      li.addEventListener('mousedown', function(e) {
+        e.preventDefault();
+        selectSuggestion(i);
+      });
+      list.appendChild(li);
+    });
+    list.classList.add('visible');
+  }
+
+  function selectSuggestion(idx) {
+    var f = _acItems[idx];
+    if (!f) return;
+    var p = f.properties || {};
+    var name = p.name || p.city || '';
+    var seg = getActiveSegment();
+    var val = input.value;
+    // Preserve leading whitespace of current segment for nice formatting
+    var rawPart = val.substring(seg.start, seg.end);
+    var leadSpace = rawPart.match(/^(\s*)/)[1];
+    input.value = val.substring(0, seg.start) + leadSpace + name + val.substring(seg.end);
+    hideSuggestions();
+    _acSuppress = true;
+    // Re-dispatch input so toggleLongDistance and tier enforcement fire
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+    input.focus();
+  }
+
+  input.addEventListener('input', function() {
+    if (_acSuppress) { _acSuppress = false; return; }
+    clearTimeout(_acTimer);
+    _acTimer = setTimeout(function() {
+      var seg = getActiveSegment();
+      if (seg.text.length < 2) { hideSuggestions(); return; }
+      fetchSuggestions(seg.text).then(renderSuggestions);
+    }, 300);
+  });
+
+  input.addEventListener('keydown', function(e) {
+    if (!list.classList.contains('visible')) return;
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      _acIdx = Math.min(_acIdx + 1, _acItems.length - 1);
+      updateActive();
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      _acIdx = Math.max(_acIdx - 1, 0);
+      updateActive();
+    } else if (e.key === 'Enter' && _acIdx >= 0) {
+      e.preventDefault();
+      selectSuggestion(_acIdx);
+    } else if (e.key === 'Escape') {
+      hideSuggestions();
+    }
+  });
+
+  function updateActive() {
+    var items = list.querySelectorAll('li');
+    items.forEach(function(li, i) {
+      li.classList.toggle('active', i === _acIdx);
+    });
+    if (items[_acIdx]) items[_acIdx].scrollIntoView({ block: 'nearest' });
+  }
+
+  input.addEventListener('blur', function() {
+    setTimeout(hideSuggestions, 150);
+  });
+})();
 
 document.getElementById('language-select').addEventListener('change', (e) => {
   currentLang = e.target.value;
