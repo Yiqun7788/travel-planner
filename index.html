@@ -2176,8 +2176,7 @@ Use the proper official English spelling for each city/destination (e.g., "Montr
 
 Generate a detailed ${days}-day travel itinerary for ${dest}.
 Write the response in ${langMap[currentLang]}.
-The traveler arrives at the first destination on ${new Date(start).toLocaleDateString('en-US')} at ${startTime} and departs to return home on ${new Date(end).toLocaleDateString('en-US')} at ${endTime}. Plan Day 1 starting from the arrival time and the last day ending by the departure time.
-${origin ? 'The traveler is coming from ' + origin + '. On Day 1, briefly mention travel from ' + origin + ' to ' + dest.split(/[,;\u3001]/)[0].trim() + '. On the last day, mention the return to ' + origin + '.' : ''}
+${origin ? 'The traveler is starting from ' + origin + ' on ' + new Date(start).toLocaleDateString('en-US') + ' at ' + startTime + ' and must return to ' + origin + ' by ' + new Date(end).toLocaleDateString('en-US') + ' at ' + endTime + '. Day 1 should begin with the journey from ' + origin + ' to ' + dest.split(/[,;\u3001]/)[0].trim() + '. The last day should end with the return trip to ' + origin + '. Do NOT start the itinerary at an airport or train station — the traveler departs directly from ' + origin + '.' : 'The traveler arrives at the first destination on ' + new Date(start).toLocaleDateString('en-US') + ' at ' + startTime + ' and departs to return home on ' + new Date(end).toLocaleDateString('en-US') + ' at ' + endTime + '. Plan Day 1 starting from the arrival time and the last day ending by the departure time.'}
 Trip pace: ${pace}.
 ${primaryInterests.length > 0 ? `Primary interests (focus the itinerary on these): ${primaryInterests.join(", ")}.` : ''}
 ${secondaryInterests.length > 0 ? `Secondary interests (include if possible): ${secondaryInterests.join(", ")}.` : ''}
@@ -3662,7 +3661,7 @@ Also at the VERY BEGINNING of each day (right after the day heading), include a 
 DailyRoute: Place+A+${tripData.destination.replace(/\s+/g, '+')}|Place+B+${tripData.destination.replace(/\s+/g, '+')}|Place+C+${tripData.destination.replace(/\s+/g, '+')}
 Replace spaces with + in each place name. Include the city name. Separate stops with | character. Arrange in optimal time-saving order.`;
 
-  const originNote = tripData.origin ? `\nThe traveler is coming from ${tripData.origin}. Keep mentioning travel from ${tripData.origin} on Day 1 and return to ${tripData.origin} on the last day.` : '';
+  const originNote = tripData.origin ? `\nThe traveler starts from ${tripData.origin} (not from an airport or station). Day 1 begins with the journey from ${tripData.origin}. The last day ends with the return to ${tripData.origin}.` : '';
   const contextNote = tripData.additionalInstructions ? `\n\nOriginal trip guidance (keep following these): ${tripData.additionalInstructions}` : '';
   const prompt = `Based on this itinerary:\n\n${tripData.itinerary}${originNote}${contextNote}\n\nPlease update it with this instruction: ${fullInstruction}${placeDetailsInstruction}${ticketTipsInstruction}`;
   const result = await callGemini(prompt);
