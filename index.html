@@ -2221,15 +2221,16 @@ async function callGemini(prompt) {
 
 // Build long-distance route map HTML if Car or Bike is selected with 2+ destinations
 function buildLongDistanceRouteMap(dest, longDistance) {
-  const places = dest.split(/[,\u3001;]/).map(s => s.trim()).filter(s => s.length > 0);
+  const places = dest.split(/[,\u3001;]/).map(s => s.trim().replace(/^(?:and|&)\s+/i, '')).filter(s => s.length > 0);
   const hasCar = longDistance.includes('Car');
   const hasBike = longDistance.includes('Bike');
   const hasTrain = longDistance.includes('Train');
   const hasBus = longDistance.includes('Long-Distance Bus');
   if (places.length < 2 || hasTrain || hasBus || (!hasCar && !hasBike)) return '';
-  const origin = encodeURIComponent(places[0]);
-  const destination = encodeURIComponent(places[places.length - 1]);
-  const waypoints = places.length > 2 ? '&waypoints=' + places.slice(1, -1).map(p => encodeURIComponent(p)).join('|') : '';
+  const mapsEncode = s => encodeURIComponent(s).replace(/%20/g, '+');
+  const origin = mapsEncode(places[0]);
+  const destination = mapsEncode(places[places.length - 1]);
+  const waypoints = places.length > 2 ? '&waypoints=' + places.slice(1, -1).map(p => mapsEncode(p)).join('%7C') : '';
   let modeLabel, modeIcon, travelmode;
   if (hasCar) { modeLabel = 'Driving'; modeIcon = '&#128663;'; travelmode = 'driving'; }
   else if (hasBike) { modeLabel = 'Biking'; modeIcon = '&#128690;'; travelmode = 'bicycling'; }
@@ -2257,13 +2258,14 @@ function processDailyRoutes(markdown) {
     const stops = stopsStr.split('|').map(s => s.trim()).filter(s => s);
     if (stops.length === 0) return '';
 
+    const mapsEncode = s => encodeURIComponent(s).replace(/%20/g, '+');
     let directionsUrl;
     if (stops.length === 1) {
-      directionsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(stops[0])}`;
+      directionsUrl = `https://www.google.com/maps/search/?api=1&query=${mapsEncode(stops[0])}`;
     } else {
-      const o = encodeURIComponent(stops[0]);
-      const d = encodeURIComponent(stops[stops.length - 1]);
-      const w = stops.length > 2 ? '&waypoints=' + stops.slice(1, -1).map(s => encodeURIComponent(s)).join('|') : '';
+      const o = mapsEncode(stops[0]);
+      const d = mapsEncode(stops[stops.length - 1]);
+      const w = stops.length > 2 ? '&waypoints=' + stops.slice(1, -1).map(s => mapsEncode(s)).join('%7C') : '';
       directionsUrl = `https://www.google.com/maps/dir/?api=1&origin=${o}&destination=${d}${w}&travelmode=walking`;
     }
 
