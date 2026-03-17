@@ -2222,7 +2222,7 @@ At the VERY BEGINNING of each day (right after the day heading like "## Day 1"),
 - Output the route in this EXACT format on a single line (this will be parsed by code):
   DailyRoute: Place+A+${dest.replace(/\s+/g, '+')}|Place+B+${dest.replace(/\s+/g, '+')}|Place+C+${dest.replace(/\s+/g, '+')}
 - Replace spaces with + in each place name. Include the city name after each place. Separate stops with | character.
-- Include ALL places for that day in optimal visiting order.
+- Include ONLY attractions, restaurants, and activities the traveler will visit. Do NOT include the traveler's origin/home city, airports, train stations, or other transit hubs in DailyRoute lines.
 - The line MUST start with "DailyRoute: " exactly.
 - Example for a day in Paris with 3 stops:
   DailyRoute: Eiffel+Tower+Paris|Louvre+Museum+Paris|Notre+Dame+Cathedral+Paris
