@@ -3644,7 +3644,8 @@ Replace spaces with + in each place name. Include the city name. Separate stops 
   if (result) {
     tripData.itinerary = result;
     saveTripSession();
-    document.getElementById('content-display').innerHTML = linkifyUrls(marked.parse(processDailyRoutes(result)));
+    const routeMapHtml = buildLongDistanceRouteMap(tripData.destination, tripData.longDistance || []);
+    document.getElementById('content-display').innerHTML = routeMapHtml + linkifyUrls(marked.parse(processDailyRoutes(result)));
     restructureItinerary();
     renderTripOverview();
     renderActiveInstructionsLabel();
