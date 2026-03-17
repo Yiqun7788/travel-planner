@@ -2227,12 +2227,14 @@ function buildLongDistanceRouteMap(dest, longDistance) {
   const hasTrain = longDistance.includes('Train');
   const hasBus = longDistance.includes('Long-Distance Bus');
   if (places.length < 2 || hasTrain || hasBus || (!hasCar && !hasBike)) return '';
-  const stops = places.map(p => encodeURIComponent(p));
-  const directionsUrl = `https://www.google.com/maps/dir/${stops.join('/')}/`;
-  let modeLabel, modeIcon;
-  if (hasCar) { modeLabel = 'Driving'; modeIcon = '&#128663;'; }
-  else if (hasBike) { modeLabel = 'Biking'; modeIcon = '&#128690;'; }
-  else { modeLabel = ''; modeIcon = '&#128506;'; }
+  const origin = encodeURIComponent(places[0]);
+  const destination = encodeURIComponent(places[places.length - 1]);
+  const waypoints = places.length > 2 ? '&waypoints=' + places.slice(1, -1).map(p => encodeURIComponent(p)).join('|') : '';
+  let modeLabel, modeIcon, travelmode;
+  if (hasCar) { modeLabel = 'Driving'; modeIcon = '&#128663;'; travelmode = 'driving'; }
+  else if (hasBike) { modeLabel = 'Biking'; modeIcon = '&#128690;'; travelmode = 'bicycling'; }
+  else { modeLabel = ''; modeIcon = '&#128506;'; travelmode = 'driving'; }
+  const directionsUrl = `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${destination}${waypoints}&travelmode=${travelmode}`;
 
   const stopsHtml = places.map((p, i) => {
     const marker = i === 0 ? '&#128205;' : i === places.length - 1 ? '&#127937;' : '&#128204;';
@@ -2255,9 +2257,15 @@ function processDailyRoutes(markdown) {
     const stops = stopsStr.split('|').map(s => s.trim()).filter(s => s);
     if (stops.length === 0) return '';
 
-    const directionsUrl = stops.length === 1
-      ? `https://www.google.com/maps/search/?api=1&query=${stops[0]}`
-      : `https://www.google.com/maps/dir/${stops.join('/')}/`;
+    let directionsUrl;
+    if (stops.length === 1) {
+      directionsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(stops[0])}`;
+    } else {
+      const o = encodeURIComponent(stops[0]);
+      const d = encodeURIComponent(stops[stops.length - 1]);
+      const w = stops.length > 2 ? '&waypoints=' + stops.slice(1, -1).map(s => encodeURIComponent(s)).join('|') : '';
+      directionsUrl = `https://www.google.com/maps/dir/?api=1&origin=${o}&destination=${d}${w}&travelmode=walking`;
+    }
 
     return `<a href="${directionsUrl}" target="_blank" rel="noopener noreferrer" class="route-map-link">&#128506; View Day's Route on Google Maps</a>`;
   });
