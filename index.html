@@ -1339,12 +1339,27 @@ function applyTierUI() {
   // ─── Offline HTML button ───
   const htmlBtn = document.getElementById('download-html');
   if (htmlBtn) {
-    if (limits.offlineHtml) {
+    if (limits.offlineHtml && tripData.tripFinalized) {
       htmlBtn.classList.remove('download-menu-item-locked');
       htmlBtn.innerHTML = '&#128196; Offline HTML (Clickable)';
+    } else if (limits.offlineHtml && !tripData.tripFinalized) {
+      htmlBtn.classList.add('download-menu-item-locked');
+      htmlBtn.innerHTML = '&#128274; Offline HTML (Clickable) <span class="tier-badge" style="color:#64748b;background:rgba(0,0,0,0.08);">Finalize trip first</span>';
     } else {
       htmlBtn.classList.add('download-menu-item-locked');
       htmlBtn.innerHTML = '&#128274; Offline HTML (Clickable) <span class="tier-badge" style="color:#64748b;background:rgba(0,0,0,0.08);">&#128274; Trip Pack</span>';
+    }
+  }
+
+  // ─── PDF button (gate behind finalize for paid users) ───
+  const pdfBtn = document.getElementById('download-pdf');
+  if (pdfBtn) {
+    if (tier === 'paid' && !tripData.tripFinalized) {
+      pdfBtn.classList.add('download-menu-item-locked');
+      pdfBtn.innerHTML = '&#128274; Download as PDF <span class="tier-badge" style="color:#64748b;background:rgba(0,0,0,0.08);">Finalize trip first</span>';
+    } else {
+      pdfBtn.classList.remove('download-menu-item-locked');
+      pdfBtn.innerHTML = '&#128462; Download as PDF';
     }
   }
 
@@ -3255,6 +3270,11 @@ document.getElementById('download-html').addEventListener('click', () => {
     document.getElementById('download-menu').classList.add('hidden');
     return;
   }
+  if (getUserTier() === 'paid' && !tripData.tripFinalized) {
+    showUpgradeModal('Finalize Your Trip', 'Please <strong>finalize your trip</strong> before downloading.<br><br>Once you\'re happy with your itinerary, click <strong>"Yes, I\'m done"</strong> to unlock downloads.');
+    document.getElementById('download-menu').classList.add('hidden');
+    return;
+  }
   document.getElementById('download-menu').classList.add('hidden');
   const contentEl = document.getElementById('content-display');
   const clone = contentEl.cloneNode(true);
@@ -3408,6 +3428,11 @@ document.addEventListener('click',function(e){
 
 // Download as PDF
 document.getElementById('download-pdf').addEventListener('click', () => {
+  if (getUserTier() === 'paid' && !tripData.tripFinalized) {
+    showUpgradeModal('Finalize Your Trip', 'Please <strong>finalize your trip</strong> before downloading.<br><br>Once you\'re happy with your itinerary, click <strong>"Yes, I\'m done"</strong> to unlock downloads.');
+    document.getElementById('download-menu').classList.add('hidden');
+    return;
+  }
   const cheapTicketsChecked = document.getElementById('cheap-tickets-checkbox').checked;
   const pdfContent = document.getElementById('content-display').innerHTML
     .replace(/<details /g, '<details open ')
