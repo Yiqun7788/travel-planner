@@ -724,6 +724,40 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
 }
 .dest-sg-name { font-weight: 600; }
 .dest-sg-region { color: #94a3b8; font-size: 0.84rem; margin-left: 2px; }
+
+/* ─── Destination Chip Input ─── */
+.dest-chip-container {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 6px;
+  min-height: 44px; padding: 6px 10px; cursor: text;
+}
+.dest-chip-container:focus-within {
+  border-color: #818cf8; box-shadow: 0 0 0 3px rgba(129,140,248,0.15);
+}
+.dest-chip {
+  display: inline-flex; align-items: center; gap: 4px;
+  background: #eef2ff; color: #4338ca; border: 1px solid #c7d2fe;
+  border-radius: 9999px; padding: 3px 8px 3px 10px;
+  font-size: 0.85rem; font-weight: 500; white-space: nowrap;
+  max-width: 180px;
+}
+.dest-chip-name { overflow: hidden; text-overflow: ellipsis; }
+.dest-chip-remove {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 18px; height: 18px; border-radius: 50%; border: none;
+  background: transparent; color: #6366f1; font-size: 14px; line-height: 1;
+  cursor: pointer; padding: 0; transition: background 0.15s;
+}
+.dest-chip-remove:hover { background: #c7d2fe; }
+.dest-chip-input {
+  flex: 1 1 80px; min-width: 80px; border: none; outline: none;
+  background: transparent; font-size: 0.95rem; padding: 4px 0;
+  font-family: inherit;
+}
+.dest-chip-input::placeholder { color: #94a3b8; }
+.dest-chip-input:disabled { display: none; }
+.dest-autocomplete-wrap:has(.dest-chip-container) .dest-suggestions {
+  border-top: none;
+}
 </style>
 </head>
 <body>
@@ -903,8 +937,12 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
     <!-- Destination -->
     <div>
       <label class="section-label" data-i18n="destination">Where are you going?</label>
+      <input type="hidden" id="destination">
       <div class="dest-autocomplete-wrap">
-        <input id="destination" class="form-input" autocomplete="off" placeholder="e.g. Tokyo, Paris, New York...">
+        <div id="dest-chip-container" class="dest-chip-container form-input">
+          <input id="dest-chip-input" type="text" class="dest-chip-input" autocomplete="off"
+                 placeholder="e.g. Tokyo, Paris, New York...">
+        </div>
         <ul id="dest-suggestions" class="dest-suggestions"></ul>
       </div>
       <span id="dest-tooltip" class="input-tooltip">&#128274; Free plan supports a single destination only.</span>
@@ -1290,6 +1328,7 @@ function applyTierUI() {
     if (tier === 'free') destTip.innerHTML = '&#128274; Free plan supports a single destination only.';
     else destTip.innerHTML = 'Trip Pack supports up to 3 destinations.';
   }
+  if (typeof destChips !== 'undefined') destChips._updateInputState();
 
   // ─── Cheap Tickets checkbox ───
   const cheapLabel = document.getElementById('cheap-tickets-checkbox')?.closest('label');
@@ -1770,6 +1809,114 @@ document.getElementById('start-date').addEventListener('change', function() {
   setTimeout(enforceMaxTripDays, 0);
 });
 
+// ─── Destination Chip Manager ───
+var destChips = (function() {
+  var _chips = [];
+  var container = document.getElementById('dest-chip-container');
+  var chipInput = document.getElementById('dest-chip-input');
+  var hidden = document.getElementById('destination');
+
+  function _syncHidden() {
+    hidden.value = _chips.join(', ');
+    hidden.dispatchEvent(new Event('input', { bubbles: true }));
+  }
+
+  function _render() {
+    container.querySelectorAll('.dest-chip').forEach(function(el) { el.remove(); });
+    _chips.forEach(function(name, idx) {
+      var chip = document.createElement('span');
+      chip.className = 'dest-chip';
+      chip.innerHTML = '<span class="dest-chip-name">' + name.replace(/</g, '&lt;') + '</span>';
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'dest-chip-remove';
+      btn.setAttribute('aria-label', 'Remove ' + name);
+      btn.textContent = '\u00d7';
+      btn.addEventListener('click', function(e) { e.stopPropagation(); removeAt(idx); });
+      chip.appendChild(btn);
+      container.insertBefore(chip, chipInput);
+    });
+    _syncHidden();
+    _updateInputState();
+  }
+
+  function _updateInputState() {
+    var limits = (typeof getTierLimits === 'function') ? getTierLimits() : { maxDestinations: 1 };
+    var atMax = _chips.length >= limits.maxDestinations;
+    chipInput.disabled = atMax;
+    if (atMax) {
+      chipInput.placeholder = '';
+    } else if (_chips.length === 0) {
+      chipInput.placeholder = 'e.g. Tokyo, Paris, New York...';
+    } else {
+      chipInput.placeholder = 'Add destination...';
+    }
+  }
+
+  function add(name) {
+    name = (name || '').trim();
+    if (!name) return;
+    var limits = (typeof getTierLimits === 'function') ? getTierLimits() : { maxDestinations: 1 };
+    if (_chips.length >= limits.maxDestinations) {
+      var tip = document.getElementById('dest-tooltip');
+      if (tip) {
+        tip.classList.add('visible');
+        clearTimeout(tip._hideTimer);
+        tip._hideTimer = setTimeout(function() { tip.classList.remove('visible'); }, 3000);
+      }
+      return;
+    }
+    // Prevent duplicates (case-insensitive)
+    var lower = name.toLowerCase();
+    for (var i = 0; i < _chips.length; i++) {
+      if (_chips[i].toLowerCase() === lower) return;
+    }
+    _chips.push(name);
+    _render();
+  }
+
+  function removeAt(idx) {
+    if (idx >= 0 && idx < _chips.length) {
+      _chips.splice(idx, 1);
+      _render();
+      chipInput.focus();
+    }
+  }
+
+  function removeLast() {
+    if (_chips.length > 0) {
+      _chips.pop();
+      _render();
+    }
+  }
+
+  function clear() {
+    _chips = [];
+    _render();
+  }
+
+  function setFromString(str) {
+    _chips = (str || '').split(/[,;\u3001]/).map(function(s) { return s.trim(); }).filter(Boolean);
+    _render();
+  }
+
+  function getChips() { return _chips.slice(); }
+
+  // Clicking the container focuses the input
+  container.addEventListener('click', function() { chipInput.focus(); });
+
+  return {
+    add: add,
+    removeAt: removeAt,
+    removeLast: removeLast,
+    clear: clear,
+    setFromString: setFromString,
+    getChips: getChips,
+    _updateInputState: _updateInputState,
+    _render: _render
+  };
+})();
+
 // Toggle Long-Distance Transportation based on number of destinations
 function getDestinationCount(value) {
   return value.split(/[,\u3001;]/)
@@ -1859,6 +2006,7 @@ toggleLongDistance();
       // Reset all planning form fields
       document.getElementById('origin').value = '';
       document.getElementById('destination').value = '';
+      destChips.clear();
       document.getElementById('start-date').value = '';
       document.getElementById('end-date').value = '';
       document.getElementById('currency-select').value = 'USD';
@@ -1897,32 +2045,8 @@ toggleLongDistance();
 // Apply tier UI on page load
 applyTierUI();
 
-// Tier: enforce destination limit (commas, semicolons)
-document.getElementById('destination').addEventListener('input', function() {
-  const limits = getTierLimits();
-  if (/[,;\u3001]/.test(this.value)) {
-    const count = getDestinationCount(this.value);
-    if (count > limits.maxDestinations) {
-      // Strip the last separator to keep within limit
-      const parts = this.value.split(/([,;\u3001])/);
-      let kept = '', destsSoFar = 0;
-      for (let i = 0; i < parts.length; i++) {
-        if (/[,;\u3001]/.test(parts[i])) { kept += parts[i]; continue; }
-        if (parts[i].trim().length > 0) destsSoFar++;
-        if (destsSoFar > limits.maxDestinations) break;
-        kept += parts[i];
-      }
-      this.value = kept;
-      const tip = document.getElementById('dest-tooltip');
-      tip.classList.add('visible');
-      clearTimeout(tip._hideTimer);
-      tip._hideTimer = setTimeout(() => tip.classList.remove('visible'), 3000);
-    }
-  }
-});
-
 // ─── Photon autocomplete (reusable for origin + destination) ───
-function initPhotonAutocomplete(inputId, listId, multiSegment) {
+function initPhotonAutocomplete(inputId, listId, multiSegment, onSelect) {
   const input = document.getElementById(inputId);
   const list  = document.getElementById(listId);
   const SEP   = /[,;\u3001]/;
@@ -1991,6 +2115,12 @@ function initPhotonAutocomplete(inputId, listId, multiSegment) {
     if (!f) return;
     var p = f.properties || {};
     var name = p.name || p.city || '';
+    if (onSelect) {
+      onSelect(name);
+      input.value = '';
+      hideSuggestions();
+      return;
+    }
     if (multiSegment) {
       var seg = getActiveSegment();
       var val = input.value;
@@ -2047,7 +2177,49 @@ function initPhotonAutocomplete(inputId, listId, multiSegment) {
   });
 }
 initPhotonAutocomplete('origin', 'origin-suggestions', false);
-initPhotonAutocomplete('destination', 'dest-suggestions', true);
+initPhotonAutocomplete('dest-chip-input', 'dest-suggestions', false, function(name) {
+  destChips.add(name);
+});
+
+// ─── Chip input keyboard & paste handlers ───
+(function() {
+  var chipInput = document.getElementById('dest-chip-input');
+
+  function commitTypedText() {
+    var text = chipInput.value.trim();
+    if (text) {
+      destChips.add(text);
+      chipInput.value = '';
+    }
+  }
+
+  chipInput.addEventListener('keydown', function(e) {
+    if (e.key === 'Backspace' && chipInput.value === '') {
+      destChips.removeLast();
+    } else if (e.key === 'Enter') {
+      // Only commit typed text if no autocomplete item is highlighted
+      var list = document.getElementById('dest-suggestions');
+      if (!list.classList.contains('visible') || !list.querySelector('li.active')) {
+        e.preventDefault();
+        commitTypedText();
+      }
+    } else if (e.key === ',' || e.key === ';') {
+      e.preventDefault();
+      commitTypedText();
+    }
+  });
+
+  chipInput.addEventListener('paste', function(e) {
+    e.preventDefault();
+    var text = (e.clipboardData || window.clipboardData).getData('text');
+    var parts = text.split(/[,;\u3001]/);
+    parts.forEach(function(p) {
+      var name = p.trim();
+      if (name) destChips.add(name);
+    });
+    chipInput.value = '';
+  });
+})();
 
 document.getElementById('language-select').addEventListener('change', (e) => {
   currentLang = e.target.value;
@@ -3596,6 +3768,7 @@ function finalizeTripExtras() {
   // Reset planning page so next Generate starts fresh
   document.getElementById('origin').value = '';
   document.getElementById('destination').value = '';
+  destChips.clear();
   document.getElementById('start-date').value = '';
   document.getElementById('end-date').value = '';
   document.getElementById('currency-select').value = 'USD';
@@ -3851,6 +4024,7 @@ document.getElementById('fun-fact-btn').addEventListener('click', async () => {
     // Restore planning page fields so Back button shows correct values
     document.getElementById('origin').value = tripData.origin || '';
     document.getElementById('destination').value = tripData.destination;
+    destChips.setFromString(tripData.destination);
     document.getElementById('start-date').value = tripData.startDate || '';
     document.getElementById('end-date').value = tripData.endDate || '';
     if (tripData.pace) {
