@@ -3291,6 +3291,10 @@ document.getElementById('edit-trip-settings-link').addEventListener('click', (e)
 // Download menu toggle
 document.getElementById('download-button').addEventListener('click', (e) => {
   e.stopPropagation();
+  if (getUserTier() === 'paid' && !tripData.tripFinalized) {
+    showDownloadGateModal();
+    return;
+  }
   const menu = document.getElementById('download-menu');
   menu.classList.toggle('hidden');
 });
