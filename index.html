@@ -527,13 +527,13 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
   opacity: 0.5; cursor: not-allowed;
 }
 .download-menu-item-locked:hover { background: transparent; }
-#upgrade-modal, #finalize-modal, #confirm-new-trip-modal {
+#upgrade-modal, #finalize-modal, #confirm-new-trip-modal, #download-gate-modal {
   position: fixed; inset: 0; z-index: 1100;
   background: rgba(0,0,0,0.4); backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
   display: none; justify-content: center; align-items: center;
 }
-#upgrade-modal.active, #finalize-modal.active, #confirm-new-trip-modal.active { display: flex; }
+#upgrade-modal.active, #finalize-modal.active, #confirm-new-trip-modal.active, #download-gate-modal.active { display: flex; }
 .upgrade-modal-card {
   background: #fff; border-radius: 18px; padding: 32px 28px;
   max-width: 420px; width: 90%; text-align: center;
@@ -775,6 +775,18 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
     <div class="modal-actions">
       <button class="modal-btn-secondary" id="confirm-new-trip-revision">Use a Revision Instead</button>
       <button class="modal-btn-primary" id="confirm-new-trip-generate">Generate New Trip</button>
+    </div>
+  </div>
+</div>
+
+<!-- Download Gate Modal -->
+<div id="download-gate-modal">
+  <div class="upgrade-modal-card">
+    <h3 id="download-gate-title">&#128229; Downloads Locked</h3>
+    <p id="download-gate-message">Downloads are available after you confirm your updates are complete.<br><br>Are you done with your updates?</p>
+    <div class="modal-actions" id="download-gate-actions">
+      <button class="modal-btn-primary" id="download-gate-finalize">Yes, I'm done</button>
+      <button class="modal-btn-secondary" id="download-gate-cancel">Not yet</button>
     </div>
   </div>
 </div>
@@ -1430,13 +1442,17 @@ function applyTierUI() {
   const genHint = document.getElementById('generate-button-hint');
   const revisionsUsed = getUpdatesThisItinerary();
   const revisionsLeft = limits.maxUpdatesPerItinerary - revisionsUsed;
-  const hardGate = tier === 'paid' && credits > 0 && tripData.itinerary && !tripData.tripFinalized && revisionsLeft > 0;
+  const hardGate = tier === 'paid' && tripData.itinerary && !tripData.tripFinalized;
   if (tier === 'free' && getGenerationsThisMonth() >= limits.maxGenerations) {
     genBtn.disabled = true; genBtn.style.opacity = '0.45'; genBtn.style.cursor = 'not-allowed';
     genHint.classList.add('hidden');
   } else if (hardGate) {
     genBtn.disabled = true; genBtn.style.opacity = '0.45'; genBtn.style.cursor = 'not-allowed';
-    genHint.innerHTML = '&#128274; Finalize your current trip before generating a new one. You have <strong>' + revisionsLeft + ' revision' + (revisionsLeft > 1 ? 's' : '') + '</strong> remaining.';
+    if (revisionsLeft > 0) {
+      genHint.innerHTML = '&#128274; Finalize your current trip before generating a new one. You have <strong>' + revisionsLeft + ' revision' + (revisionsLeft > 1 ? 's' : '') + '</strong> remaining.';
+    } else {
+      genHint.innerHTML = '&#128274; Finalize your current trip before generating a new one.';
+    }
     genHint.classList.remove('hidden');
   } else {
     genBtn.disabled = false; genBtn.style.opacity = ''; genBtn.style.cursor = '';
@@ -1617,12 +1633,32 @@ document.getElementById('confirm-new-trip-generate').addEventListener('click', f
   window._confirmNewTripBypass = true;
   document.getElementById('generate-button').click();
 });
+// ─── Download Gate Modal handlers ───
+function showDownloadGateModal() {
+  document.getElementById('download-gate-title').innerHTML = '&#128229; Downloads Locked';
+  document.getElementById('download-gate-message').innerHTML = 'Downloads are available after you confirm your updates are complete.<br><br>Are you done with your updates?';
+  document.getElementById('download-gate-actions').innerHTML = '<button class="modal-btn-primary" id="download-gate-finalize">Yes, I\'m done</button><button class="modal-btn-secondary" id="download-gate-cancel">Not yet</button>';
+  document.getElementById('download-gate-modal').classList.add('active');
+}
+document.getElementById('download-gate-modal').addEventListener('click', function(e) {
+  if (e.target.id === 'download-gate-finalize') {
+    document.getElementById('download-gate-modal').classList.remove('active');
+    finalizeTripExtras();
+  } else if (e.target.id === 'download-gate-cancel') {
+    document.getElementById('download-gate-title').innerHTML = '&#128712; Almost There';
+    document.getElementById('download-gate-message').innerHTML = 'Downloads will be available after you confirm your updates are done.<br><br>When you\'re ready, click <strong>"Yes, I\'m done"</strong> on the finalize prompt, or tap a Download button again.';
+    document.getElementById('download-gate-actions').innerHTML = '<button class="modal-btn-primary" id="download-gate-ok">Got it</button>';
+  } else if (e.target.id === 'download-gate-ok') {
+    document.getElementById('download-gate-modal').classList.remove('active');
+  }
+});
 // Close modals on backdrop click
 document.addEventListener('click', function(e) {
   if (e.target.id === 'pricing-modal') closePricingModal();
   if (e.target.id === 'upgrade-modal') document.getElementById('upgrade-modal').classList.remove('active');
   if (e.target.id === 'finalize-modal') document.getElementById('finalize-modal').classList.remove('active');
   if (e.target.id === 'confirm-new-trip-modal') document.getElementById('confirm-new-trip-modal').classList.remove('active');
+  if (e.target.id === 'download-gate-modal') document.getElementById('download-gate-modal').classList.remove('active');
 });
 // Close modals on Escape key
 document.addEventListener('keydown', function(e) {
@@ -1631,6 +1667,7 @@ document.addEventListener('keydown', function(e) {
     document.getElementById('upgrade-modal').classList.remove('active');
     document.getElementById('finalize-modal').classList.remove('active');
     document.getElementById('confirm-new-trip-modal').classList.remove('active');
+    document.getElementById('download-gate-modal').classList.remove('active');
   }
 });
 
@@ -3271,7 +3308,7 @@ document.getElementById('download-html').addEventListener('click', () => {
     return;
   }
   if (getUserTier() === 'paid' && !tripData.tripFinalized) {
-    showUpgradeModal('Finalize Your Trip', 'Please <strong>finalize your trip</strong> before downloading.<br><br>Once you\'re happy with your itinerary, click <strong>"Yes, I\'m done"</strong> to unlock downloads.');
+    showDownloadGateModal();
     document.getElementById('download-menu').classList.add('hidden');
     return;
   }
@@ -3429,7 +3466,7 @@ document.addEventListener('click',function(e){
 // Download as PDF
 document.getElementById('download-pdf').addEventListener('click', () => {
   if (getUserTier() === 'paid' && !tripData.tripFinalized) {
-    showUpgradeModal('Finalize Your Trip', 'Please <strong>finalize your trip</strong> before downloading.<br><br>Once you\'re happy with your itinerary, click <strong>"Yes, I\'m done"</strong> to unlock downloads.');
+    showDownloadGateModal();
     document.getElementById('download-menu').classList.add('hidden');
     return;
   }
