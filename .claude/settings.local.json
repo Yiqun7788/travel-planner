@@ -30,7 +30,10 @@
       "Bash(printf:*)",
       "Bash(curl:*)",
       "Bash(vercel:*)",
-      "Bash(node -e:*)"
+      "Bash(node -e:*)",
+      "Bash(find:*)",
+      "Bash(node -c:*)",
+      "Bash(git stash:*)"
     ]
   }
 }

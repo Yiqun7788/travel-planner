@@ -1,3 +1,5 @@
+const { createClient } = require('@supabase/supabase-js');
+
 // ─── IP-Based Rate Limiting ───
 const rateLimitMap = new Map();
 const TIER_RATE_LIMITS = {
@@ -5,15 +7,15 @@ const TIER_RATE_LIMITS = {
   paid: { max: 15, period: 'day' },
 };
 
-function getRateLimitKey(ip, tier) {
+function getRateLimitKey(id, tier) {
   const now = new Date();
   const limits = TIER_RATE_LIMITS[tier] || TIER_RATE_LIMITS.free;
   if (limits.period === 'day') {
     const day = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
-    return `${ip}:${tier}:${day}`;
+    return `${id}:${tier}:${day}`;
   }
   const month = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
-  return `${ip}:${tier}:${month}`;
+  return `${id}:${tier}:${month}`;
 }
 
 function cleanOldEntries() {
@@ -31,6 +33,31 @@ const ALLOWED_ORIGINS = [
   'http://localhost',
   'http://127.0.0.1'
 ];
+
+// Validate JWT and get user profile if token present
+async function getAuthenticatedUser(authHeader) {
+  if (!authHeader || !authHeader.startsWith('Bearer ')) return null;
+  const { SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY } = process.env;
+  if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) return null;
+
+  try {
+    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+    const token = authHeader.replace('Bearer ', '');
+    const { data, error } = await supabase.auth.getUser(token);
+    if (error || !data.user) return null;
+
+    // Fetch profile for authoritative credits
+    const { data: profile } = await supabase
+      .from('user_profiles')
+      .select('credits, free_tier_state')
+      .eq('id', data.user.id)
+      .single();
+
+    return { userId: data.user.id, profile };
+  } catch {
+    return null;
+  }
+}
 
 module.exports = async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -51,11 +78,24 @@ module.exports = async function handler(req, res) {
     return res.status(500).json({ error: 'API key not configured on server.' });
   }
 
-  // Rate limit by IP + tier
-  const ip = (req.headers['x-forwarded-for'] || req.headers['x-real-ip'] || 'unknown').split(',')[0].trim();
-  const tier = req.body?.tier === 'paid' ? 'paid' : 'free';
+  // Authenticate user if JWT present — determines authoritative tier
+  const authUser = await getAuthenticatedUser(req.headers['authorization']);
+  let tier;
+  let rateLimitId;
+
+  if (authUser && authUser.profile) {
+    // Server-authoritative tier based on actual credits in DB
+    tier = (authUser.profile.credits || 0) > 0 ? 'paid' : 'free';
+    rateLimitId = authUser.userId;
+  } else {
+    // Anonymous fallback: IP + client-provided tier
+    const ip = (req.headers['x-forwarded-for'] || req.headers['x-real-ip'] || 'unknown').split(',')[0].trim();
+    tier = req.body?.tier === 'paid' ? 'paid' : 'free';
+    rateLimitId = ip;
+  }
+
   const tierLimits = TIER_RATE_LIMITS[tier];
-  const key = getRateLimitKey(ip, tier);
+  const key = getRateLimitKey(rateLimitId, tier);
   cleanOldEntries();
   const count = rateLimitMap.get(key) || 0;
 

@@ -26,6 +26,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 tailwind.config = {
   theme: {
@@ -506,6 +507,23 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
   color: #fff; font-size: 0.78rem; font-weight: 600; border-radius: 8px;
   transition: background 0.2s;
 }
+#sign-in-nudge {
+  display: flex; align-items: center; gap: 12px;
+  padding: 14px 20px; border-radius: 12px;
+  background: linear-gradient(135deg, #eff6ff, #eef2ff);
+  border: 1px solid #bfdbfe;
+  color: #334155; font-size: 0.88rem; line-height: 1.4;
+}
+#sign-in-nudge button {
+  flex-shrink: 0; padding: 6px 16px; border: none; border-radius: 8px;
+  background: linear-gradient(135deg, #3b82f6, #6366f1); color: #fff;
+  font-weight: 600; font-size: 0.82rem; cursor: pointer; transition: opacity 0.2s;
+}
+#sign-in-nudge button:hover { opacity: 0.88; }
+#sign-in-nudge .nudge-dismiss {
+  background: none; color: #94a3b8; font-size: 1.1rem; padding: 2px 6px;
+}
+#sign-in-nudge .nudge-dismiss:hover { color: #64748b; }
 .booking-card:hover .booking-card-btn { background: linear-gradient(135deg, #2563eb, #1d4ed8); }
 
 /* ─── Free Tier: Locked / Upgrade styles ─── */
@@ -527,13 +545,13 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
   opacity: 0.5; cursor: not-allowed;
 }
 .download-menu-item-locked:hover { background: transparent; }
-#upgrade-modal, #finalize-modal, #confirm-new-trip-modal, #download-gate-modal {
+#upgrade-modal, #finalize-modal, #confirm-new-trip-modal, #download-gate-modal, #auth-modal, #my-trips-modal {
   position: fixed; inset: 0; z-index: 1100;
   background: rgba(0,0,0,0.4); backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
   display: none; justify-content: center; align-items: center;
 }
-#upgrade-modal.active, #finalize-modal.active, #confirm-new-trip-modal.active, #download-gate-modal.active { display: flex; }
+#upgrade-modal.active, #finalize-modal.active, #confirm-new-trip-modal.active, #download-gate-modal.active, #auth-modal.active, #my-trips-modal.active { display: flex; }
 .upgrade-modal-card {
   background: #fff; border-radius: 18px; padding: 32px 28px;
   max-width: 420px; width: 90%; text-align: center;
@@ -567,6 +585,115 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
   margin-top: 4px; display: none;
 }
 .input-tooltip.visible, .date-range-warning.visible { display: block; }
+
+/* ─── Auth Modal ─── */
+.auth-modal-card {
+  background: #fff; border-radius: 18px; padding: 32px 28px;
+  max-width: 400px; width: 90%; text-align: center;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+  animation: fadeInUp 0.25s ease-out; position: relative;
+}
+.auth-modal-card h3 { font-size: 1.3rem; font-weight: 800; color: #1e293b; margin: 0 0 6px; }
+.auth-modal-card .auth-subtitle { font-size: 0.88rem; color: #64748b; margin: 0 0 20px; }
+.auth-input {
+  width: 100%; padding: 11px 14px; border: 1.5px solid #e2e8f0; border-radius: 10px;
+  font-size: 0.92rem; font-family: inherit; margin-bottom: 10px; outline: none;
+  transition: border-color 0.15s;
+}
+.auth-input:focus { border-color: #0ea5e9; }
+.auth-btn-primary {
+  width: 100%; padding: 12px; border: none; border-radius: 10px; cursor: pointer;
+  font-size: 0.95rem; font-weight: 700; font-family: inherit; color: #fff;
+  background: linear-gradient(135deg, #0ea5e9, #6366f1);
+  box-shadow: 0 2px 10px rgba(99,102,241,0.3); transition: transform 0.15s;
+}
+.auth-btn-primary:hover { transform: translateY(-1px); }
+.auth-btn-primary:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+.auth-btn-google {
+  width: 100%; padding: 11px; border: 1.5px solid #e2e8f0; border-radius: 10px;
+  cursor: pointer; font-size: 0.92rem; font-weight: 600; font-family: inherit;
+  background: #fff; color: #1e293b; display: flex; align-items: center;
+  justify-content: center; gap: 8px; transition: background 0.15s;
+}
+.auth-btn-google:hover { background: #f8fafc; }
+.auth-btn-google svg { width: 18px; height: 18px; }
+.auth-divider {
+  display: flex; align-items: center; gap: 12px; margin: 16px 0;
+  color: #94a3b8; font-size: 0.82rem; font-weight: 500;
+}
+.auth-divider::before, .auth-divider::after { content: ''; flex: 1; height: 1px; background: #e2e8f0; }
+.auth-toggle {
+  margin-top: 16px; font-size: 0.85rem; color: #64748b;
+}
+.auth-toggle button {
+  background: none; border: none; color: #0ea5e9; font-weight: 600;
+  cursor: pointer; font-family: inherit; font-size: 0.85rem; padding: 0;
+}
+.auth-toggle button:hover { text-decoration: underline; }
+.auth-error {
+  color: #ef4444; font-size: 0.82rem; font-weight: 500; margin-top: 8px;
+  min-height: 1.2em;
+}
+.auth-close-btn {
+  position: absolute; top: 12px; right: 14px; background: none; border: none;
+  font-size: 1.6rem; color: #94a3b8; cursor: pointer; line-height: 1; padding: 4px;
+}
+.auth-close-btn:hover { color: #64748b; }
+/* User menu dropdown */
+#header-user-btn {
+  display: none; align-items: center; gap: 6px; background: rgba(255,255,255,0.18);
+  border: 1px solid rgba(255,255,255,0.3); border-radius: 10px; padding: 5px 12px 5px 6px;
+  cursor: pointer; color: #fff; font-size: 0.85rem; font-weight: 600; font-family: inherit;
+  transition: background 0.15s; position: relative;
+}
+#header-user-btn:hover { background: rgba(255,255,255,0.28); }
+#header-user-btn .user-avatar {
+  width: 28px; height: 28px; border-radius: 50%; background: rgba(255,255,255,0.25);
+  display: flex; align-items: center; justify-content: center; font-weight: 700;
+  font-size: 0.82rem; overflow: hidden;
+}
+#header-user-btn .user-avatar img { width: 100%; height: 100%; object-fit: cover; }
+#header-sign-in-btn {
+  background: rgba(255,255,255,0.18); border: 1px solid rgba(255,255,255,0.3);
+  border-radius: 10px; padding: 7px 16px; cursor: pointer; color: #fff;
+  font-size: 0.85rem; font-weight: 600; font-family: inherit;
+  transition: background 0.15s;
+}
+#header-sign-in-btn:hover { background: rgba(255,255,255,0.28); }
+#user-menu-dropdown {
+  display: none; position: absolute; top: calc(100% + 6px); right: 0;
+  background: #fff; border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+  min-width: 180px; z-index: 1200; overflow: hidden;
+}
+#user-menu-dropdown.active { display: block; }
+.user-menu-item {
+  display: block; width: 100%; padding: 11px 16px; border: none; background: none;
+  text-align: left; font-size: 0.88rem; font-family: inherit; color: #1e293b;
+  cursor: pointer; transition: background 0.15s;
+}
+.user-menu-item:hover { background: #f1f5f9; }
+.user-menu-item.danger { color: #ef4444; }
+.user-menu-item.danger:hover { background: #fef2f2; }
+/* My Trips Modal */
+.my-trips-card {
+  background: #fff; border-radius: 18px; padding: 28px;
+  max-width: 560px; width: 92%; max-height: 80vh;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+  animation: fadeInUp 0.25s ease-out; position: relative;
+}
+.my-trips-card h3 { font-size: 1.2rem; font-weight: 800; color: #1e293b; margin: 0 0 16px; }
+.my-trips-list { overflow-y: auto; max-height: 60vh; }
+.my-trips-list:empty::after {
+  content: 'No saved trips yet. Generate and finalize a trip to save it here.';
+  display: block; text-align: center; color: #94a3b8; font-size: 0.9rem; padding: 32px 0;
+}
+.my-trip-item {
+  padding: 14px 16px; border: 1.5px solid #e2e8f0; border-radius: 12px;
+  margin-bottom: 10px; cursor: pointer; transition: border-color 0.15s, background 0.15s;
+}
+.my-trip-item:hover { border-color: #0ea5e9; background: #f0f9ff; }
+.my-trip-item h4 { font-size: 0.95rem; font-weight: 700; color: #1e293b; margin: 0 0 4px; }
+.my-trip-item p { font-size: 0.82rem; color: #64748b; margin: 0; }
 
 /* ─── Pricing Modal ─── */
 #pricing-modal {
@@ -825,6 +952,39 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
   </div>
 </div>
 
+<!-- Auth Modal -->
+<div id="auth-modal">
+  <div class="auth-modal-card">
+    <button class="auth-close-btn" onclick="closeAuthModal()">&times;</button>
+    <h3 id="auth-modal-title">Sign In</h3>
+    <p class="auth-subtitle" id="auth-modal-subtitle">Save trips, sync credits, and access your data anywhere.</p>
+    <div id="auth-google-section" style="display:none">
+      <button class="auth-btn-google" onclick="signInWithGoogle()">
+        <svg viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+        Continue with Google
+      </button>
+      <div class="auth-divider">or</div>
+    </div>
+    <input class="auth-input" id="auth-email" type="email" placeholder="Email address" onkeydown="if(event.key==='Enter'){document.getElementById('auth-password').focus();}" />
+    <input class="auth-input" id="auth-password" type="password" placeholder="Password" onkeydown="if(event.key==='Enter')handleEmailAuth();" />
+    <button class="auth-btn-primary" id="auth-submit-btn" onclick="handleEmailAuth()">Sign In</button>
+    <div class="auth-error" id="auth-error"></div>
+    <div class="auth-toggle">
+      <span id="auth-toggle-text">Don't have an account?</span>
+      <button id="auth-toggle-btn" onclick="toggleAuthMode()">Sign Up</button>
+    </div>
+  </div>
+</div>
+
+<!-- My Trips Modal -->
+<div id="my-trips-modal">
+  <div class="my-trips-card">
+    <button class="auth-close-btn" onclick="closeMyTrips()">&times;</button>
+    <h3>My Trips</h3>
+    <div class="my-trips-list" id="my-trips-list"></div>
+  </div>
+</div>
+
 <!-- Pricing Modal -->
 <div id="pricing-modal">
   <div class="pricing-modal-card">
@@ -894,6 +1054,17 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
     </div>
     <div class="flex items-center gap-2">
       <button id="header-tier-badge" onclick="openPricingModal()">Free Plan</button>
+      <button id="header-sign-in-btn" onclick="openAuthModal()">Sign In</button>
+      <div style="position:relative">
+        <button id="header-user-btn" onclick="toggleUserMenu()">
+          <span class="user-avatar" id="user-avatar-el"></span>
+          <span id="user-display-name"></span>
+        </button>
+        <div id="user-menu-dropdown">
+          <button class="user-menu-item" onclick="openMyTrips()">My Trips</button>
+          <button class="user-menu-item danger" onclick="signOut()">Sign Out</button>
+        </div>
+      </div>
       <span class="text-white/80 text-sm hidden sm:inline">&#127760;</span>
       <select id="language-select" class="bg-white text-slate-700 border border-white/30 rounded-lg px-3 py-2 text-sm font-medium cursor-pointer focus:outline-none focus:ring-2 focus:ring-white/50 shadow-sm">
         <option value="en">English</option>
@@ -1112,6 +1283,14 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
   <!-- Itinerary Content -->
   <div id="content-display" class="prose max-w-none px-6 sm:px-8 py-6"></div>
 
+  <!-- Sign-in nudge (shown after generation for guests) -->
+  <div id="sign-in-nudge" class="hidden mx-6 sm:mx-8 mb-4">
+    <span style="font-size:1.25rem">&#128274;</span>
+    <span>Sign in to save this itinerary to your account and access it anywhere.</span>
+    <button onclick="openAuthModal()">Sign In</button>
+    <button class="nudge-dismiss" onclick="this.parentElement.classList.add('hidden')" aria-label="Dismiss">&times;</button>
+  </div>
+
   <!-- Book Your Trip -->
   <div id="booking-section" class="hidden mx-6 sm:mx-8 mb-6 p-6 bg-gradient-to-br from-sky-50 to-indigo-50 rounded-2xl border border-sky-200">
     <h3 class="text-lg font-bold text-slate-800 mb-1">&#128203; Book Your Trip</h3>
@@ -1210,6 +1389,398 @@ marked.use({
   }
 });
 
+// ─── Supabase Auth ───
+var SUPABASE_URL = 'https://zvhbvrnudqswedkzpmwt.supabase.co';
+var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp2aGJ2cm51ZHFzd2Vka3pwbXd0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM5MzUxMTAsImV4cCI6MjA4OTUxMTExMH0.-fnH8QAKMHkaQrt2rJilXEyAfzPBPpmnbwwbAOYgexk';
+// Load config from meta tags (set by deployment) or fall back to env-injected values
+(function loadSupabaseConfig() {
+  var metaUrl = document.querySelector('meta[name="supabase-url"]');
+  var metaKey = document.querySelector('meta[name="supabase-anon-key"]');
+  if (metaUrl && metaUrl.content && metaUrl.content !== '') SUPABASE_URL = metaUrl.content;
+  if (metaKey && metaKey.content && metaKey.content !== '') SUPABASE_ANON_KEY = metaKey.content;
+})();
+
+var supabaseClient = null;
+var currentUser = null;
+var userProfile = null;
+var authMode = 'signin'; // 'signin' or 'signup'
+var GOOGLE_OAUTH_ENABLED = false;
+
+// Initialize Supabase client
+try {
+  if (typeof supabase !== 'undefined' && SUPABASE_URL !== 'https://placeholder.supabase.co') {
+    supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      auth: { autoRefreshToken: true, persistSession: true, detectSessionInUrl: true }
+    });
+  }
+} catch (e) { console.warn('Supabase init skipped:', e.message); }
+
+// Auth state listener
+(function initAuth() {
+  if (!supabaseClient) return;
+  supabaseClient.auth.getSession().then(function(result) {
+    var session = result.data.session;
+    if (session && session.user) {
+      currentUser = session.user;
+      loadUserProfile().then(function() { updateAuthUI(); });
+    }
+  });
+  supabaseClient.auth.onAuthStateChange(function(event, session) {
+    if (event === 'SIGNED_IN' && session && session.user) {
+      currentUser = session.user;
+      if (!userProfile) {
+        loadUserProfile().then(function() {
+          migrateLocalDataToProfile();
+          updateAuthUI();
+        });
+      }
+    } else if (event === 'SIGNED_OUT') {
+      currentUser = null;
+      userProfile = null;
+      updateAuthUI();
+    }
+  });
+})();
+
+async function loadUserProfile() {
+  if (!supabaseClient || !currentUser) return;
+  try {
+    var result = await supabaseClient
+      .from('user_profiles')
+      .select('*')
+      .eq('id', currentUser.id)
+      .single();
+    if (result.data) {
+      userProfile = result.data;
+    }
+  } catch (e) { console.warn('Failed to load profile:', e.message); }
+}
+
+function openAuthModal() {
+  authMode = 'signin';
+  renderAuthModalState();
+  document.getElementById('auth-error').textContent = '';
+  document.getElementById('auth-email').value = '';
+  document.getElementById('auth-password').value = '';
+  document.getElementById('auth-modal').classList.add('active');
+  document.getElementById('auth-google-section').style.display = GOOGLE_OAUTH_ENABLED ? '' : 'none';
+  setTimeout(function() { document.getElementById('auth-email').focus(); }, 100);
+}
+
+function closeAuthModal() {
+  document.getElementById('auth-modal').classList.remove('active');
+}
+
+function toggleAuthMode() {
+  authMode = authMode === 'signin' ? 'signup' : 'signin';
+  renderAuthModalState();
+  document.getElementById('auth-error').textContent = '';
+}
+
+function renderAuthModalState() {
+  var title = document.getElementById('auth-modal-title');
+  var subtitle = document.getElementById('auth-modal-subtitle');
+  var btn = document.getElementById('auth-submit-btn');
+  var toggleText = document.getElementById('auth-toggle-text');
+  var toggleBtn = document.getElementById('auth-toggle-btn');
+  if (authMode === 'signin') {
+    title.textContent = 'Sign In';
+    subtitle.textContent = 'Welcome back! Sign in to access your trips and credits.';
+    btn.textContent = 'Sign In';
+    toggleText.textContent = "Don't have an account?";
+    toggleBtn.textContent = 'Sign Up';
+  } else {
+    title.textContent = 'Sign Up';
+    subtitle.textContent = 'Create an account to save trips, sync credits, and more.';
+    btn.textContent = 'Sign Up';
+    toggleText.textContent = 'Already have an account?';
+    toggleBtn.textContent = 'Sign In';
+  }
+}
+
+async function handleEmailAuth() {
+  if (!supabaseClient) {
+    document.getElementById('auth-error').textContent = 'Auth service not available. Please try again later.';
+    return;
+  }
+  var email = document.getElementById('auth-email').value.trim();
+  var password = document.getElementById('auth-password').value;
+  var errorEl = document.getElementById('auth-error');
+  var btn = document.getElementById('auth-submit-btn');
+  errorEl.textContent = '';
+
+  if (!email || !password) {
+    errorEl.textContent = 'Please enter both email and password.';
+    return;
+  }
+  if (password.length < 6) {
+    errorEl.textContent = 'Password must be at least 6 characters.';
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = authMode === 'signin' ? 'Signing in\u2026' : 'Creating account\u2026';
+
+  try {
+    var result;
+    if (authMode === 'signup') {
+      result = await supabaseClient.auth.signUp({ email: email, password: password });
+    } else {
+      result = await supabaseClient.auth.signInWithPassword({ email: email, password: password });
+    }
+    if (result.error) throw result.error;
+
+    if (authMode === 'signup' && result.data.user && !result.data.session) {
+      errorEl.style.color = '#16a34a';
+      errorEl.textContent = 'Check your email for a confirmation link!';
+      btn.disabled = false;
+      renderAuthModalState();
+      return;
+    }
+
+    closeAuthModal();
+  } catch (err) {
+    errorEl.style.color = '#ef4444';
+    errorEl.textContent = err.message || 'Authentication failed. Please try again.';
+  }
+  btn.disabled = false;
+  renderAuthModalState();
+}
+
+async function signInWithGoogle() {
+  if (!supabaseClient) return;
+  try {
+    await supabaseClient.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo: window.location.origin + '/' }
+    });
+  } catch (err) {
+    document.getElementById('auth-error').textContent = err.message || 'Google sign-in failed.';
+  }
+}
+
+async function signOut() {
+  if (!supabaseClient) return;
+  toggleUserMenu();
+  await supabaseClient.auth.signOut();
+  currentUser = null;
+  userProfile = null;
+  updateAuthUI();
+}
+
+function toggleUserMenu() {
+  var dropdown = document.getElementById('user-menu-dropdown');
+  dropdown.classList.toggle('active');
+}
+
+// Close user menu when clicking outside
+document.addEventListener('click', function(e) {
+  var dropdown = document.getElementById('user-menu-dropdown');
+  var userBtn = document.getElementById('header-user-btn');
+  if (dropdown && dropdown.classList.contains('active') && !userBtn.contains(e.target)) {
+    dropdown.classList.remove('active');
+  }
+});
+
+function updateAuthUI() {
+  var signInBtn = document.getElementById('header-sign-in-btn');
+  var userBtn = document.getElementById('header-user-btn');
+  var avatarEl = document.getElementById('user-avatar-el');
+  var nameEl = document.getElementById('user-display-name');
+
+  // Hide sign-in nudge when user is authenticated
+  var nudgeEl = document.getElementById('sign-in-nudge');
+  if (nudgeEl && currentUser) nudgeEl.classList.add('hidden');
+
+  if (currentUser && userProfile) {
+    signInBtn.style.display = 'none';
+    userBtn.style.display = 'flex';
+    var name = userProfile.display_name || currentUser.email.split('@')[0];
+    nameEl.textContent = name;
+    if (userProfile.avatar_url) {
+      avatarEl.innerHTML = '<img src="' + userProfile.avatar_url + '" alt="" />';
+    } else {
+      avatarEl.textContent = name.charAt(0).toUpperCase();
+    }
+  } else {
+    signInBtn.style.display = '';
+    userBtn.style.display = 'none';
+  }
+  applyTierUI();
+}
+
+async function getAuthHeaders() {
+  var headers = { 'Content-Type': 'application/json' };
+  if (!supabaseClient || !currentUser) return headers;
+  try {
+    var result = await supabaseClient.auth.getSession();
+    if (result.data.session) {
+      headers['Authorization'] = 'Bearer ' + result.data.session.access_token;
+    }
+  } catch (e) {}
+  return headers;
+}
+
+// ─── Migration & Trip Management ───
+async function migrateLocalDataToProfile() {
+  if (!supabaseClient || !currentUser || !userProfile) return;
+  // Only migrate if profile has no credits and no free tier state set
+  var hasExistingData = (userProfile.credits > 0) || (Object.keys(userProfile.free_tier_state || {}).length > 0);
+  if (hasExistingData) return;
+
+  var localCredits = parseInt(localStorage.getItem('tripCredits') || '0', 10);
+  var localFreeState = {};
+  try { localFreeState = JSON.parse(localStorage.getItem('freeTierState') || '{}'); } catch {}
+  var localSessions = [];
+  try { localSessions = JSON.parse(localStorage.getItem('verifiedSessions') || '[]'); } catch {}
+
+  var hasLocalData = localCredits > 0 || Object.keys(localFreeState).length > 0 || localSessions.length > 0;
+  if (!hasLocalData) return;
+
+  var updates = {};
+  if (localCredits > 0) updates.credits = localCredits;
+  if (Object.keys(localFreeState).length > 0) updates.free_tier_state = localFreeState;
+  if (localSessions.length > 0) updates.verified_sessions = localSessions;
+
+  try {
+    await supabaseClient.from('user_profiles').update(updates).eq('id', currentUser.id);
+    // Refresh profile
+    Object.assign(userProfile, updates);
+    applyTierUI();
+  } catch (e) { console.warn('Migration failed:', e.message); }
+}
+
+async function saveCurrentTripToSupabase() {
+  if (!supabaseClient || !currentUser || !tripData.itinerary) return;
+  try {
+    var dest = tripData.destination || '';
+    var tripRecord = {
+      user_id: currentUser.id,
+      destination: dest,
+      origin: tripData.origin || '',
+      days: tripData.days || 1,
+      start_date: tripData.startDate ? tripData.startDate.split('T')[0] : null,
+      end_date: tripData.endDate ? tripData.endDate.split('T')[0] : null,
+      travelers: tripData.travelers || 1,
+      interests: tripData.interests || [],
+      transportation: tripData.transportation || [],
+      long_distance: tripData.longDistance || [],
+      local_transport: tripData.localTransport || [],
+      pace: tripData.pace || 'Medium',
+      budget: tripData.budget || '',
+      currency: tripData.currency || 'USD',
+      additional_instructions: tripData.additionalInstructions || '',
+      wants_cheap_tickets: tripData.wantsCheapTickets || false,
+      itinerary: tripData.itinerary,
+      trip_finalized: tripData.tripFinalized || false,
+      packing_list_used: tripData.packingListUsed || false,
+      fun_fact_used: tripData.funFactUsed || false,
+      updates_count: tripData.updatesCount || 0,
+      is_paid_trip: sessionStorage.getItem('currentTripPaid') === 'true'
+    };
+
+    // Check if we already have a saved trip ID for this session
+    if (tripData._supabaseTripId) {
+      await supabaseClient.from('trips').update(tripRecord).eq('id', tripData._supabaseTripId);
+    } else {
+      var result = await supabaseClient.from('trips').insert(tripRecord).select('id').single();
+      if (result.data) tripData._supabaseTripId = result.data.id;
+    }
+  } catch (e) { console.warn('Trip save failed:', e.message); }
+}
+
+function openMyTrips() {
+  if (!currentUser) { openAuthModal(); return; }
+  document.getElementById('user-menu-dropdown').classList.remove('active');
+  document.getElementById('my-trips-modal').classList.add('active');
+  loadMyTrips();
+}
+
+function closeMyTrips() {
+  document.getElementById('my-trips-modal').classList.remove('active');
+}
+
+async function loadMyTrips() {
+  var listEl = document.getElementById('my-trips-list');
+  listEl.innerHTML = '<p style="text-align:center;color:#94a3b8;padding:20px">Loading trips\u2026</p>';
+  if (!supabaseClient || !currentUser) { listEl.innerHTML = ''; return; }
+
+  try {
+    var result = await supabaseClient
+      .from('trips')
+      .select('id, destination, days, start_date, created_at, trip_finalized')
+      .eq('user_id', currentUser.id)
+      .order('created_at', { ascending: false })
+      .limit(50);
+
+    if (!result.data || result.data.length === 0) { listEl.innerHTML = ''; return; }
+
+    listEl.innerHTML = result.data.map(function(trip) {
+      var date = trip.start_date ? new Date(trip.start_date).toLocaleDateString() : new Date(trip.created_at).toLocaleDateString();
+      var status = trip.trip_finalized ? 'Finalized' : 'Draft';
+      return '<div class="my-trip-item" onclick="loadTrip(\'' + trip.id + '\')">' +
+        '<h4>' + (trip.destination || 'Untitled Trip') + '</h4>' +
+        '<p>' + trip.days + ' days &middot; ' + date + ' &middot; ' + status + '</p>' +
+        '</div>';
+    }).join('');
+  } catch (e) {
+    listEl.innerHTML = '<p style="text-align:center;color:#ef4444;padding:20px">Failed to load trips.</p>';
+  }
+}
+
+async function loadTrip(tripId) {
+  if (!supabaseClient || !currentUser) return;
+  try {
+    var result = await supabaseClient.from('trips').select('*').eq('id', tripId).single();
+    if (!result.data) return;
+    var t = result.data;
+
+    tripData.origin = t.origin || '';
+    tripData.destination = t.destination || '';
+    tripData.days = t.days || 1;
+    tripData.itinerary = t.itinerary || '';
+    tripData.startDate = t.start_date || '';
+    tripData.endDate = t.end_date || '';
+    tripData.transportation = t.transportation || [];
+    tripData.longDistance = t.long_distance || [];
+    tripData.localTransport = t.local_transport || [];
+    tripData.travelers = t.travelers || 1;
+    tripData.interests = t.interests || [];
+    tripData.pace = t.pace || 'Medium';
+    tripData.budget = t.budget || '';
+    tripData.currency = t.currency || 'USD';
+    tripData.additionalInstructions = t.additional_instructions || '';
+    tripData.wantsCheapTickets = t.wants_cheap_tickets || false;
+    tripData.tripFinalized = t.trip_finalized || false;
+    tripData.packingListUsed = t.packing_list_used || false;
+    tripData.funFactUsed = t.fun_fact_used || false;
+    tripData.updatesCount = t.updates_count || 0;
+    tripData._supabaseTripId = t.id;
+
+    if (t.is_paid_trip) sessionStorage.setItem('currentTripPaid', 'true');
+    saveTripSession();
+
+    closeMyTrips();
+
+    // Render the itinerary
+    var dest = tripData.destination;
+    var days = tripData.days;
+    document.getElementById('results-title').textContent = 'Your Trip: ' + dest + ' (' + days + ' days)';
+    var routeMapHtml = typeof buildLongDistanceRouteMap === 'function' ? buildLongDistanceRouteMap(dest, tripData.longDistance || [], tripData.origin) : '';
+    document.getElementById('content-display').innerHTML = routeMapHtml + linkifyUrls(marked.parse(processDailyRoutes(tripData.itinerary)));
+    restructureItinerary();
+    renderTripOverview();
+    if (typeof renderActiveInstructionsLabel === 'function') renderActiveInstructionsLabel();
+    if (typeof renderBookingSection === 'function') renderBookingSection();
+
+    document.getElementById('planning-view').classList.add('hidden');
+    document.getElementById('results-view').classList.remove('hidden');
+    document.getElementById('language-select').parentElement.style.display = 'none';
+    if (window.innerWidth <= 768) document.querySelector('.mobile-action-bar').classList.remove('hidden');
+    applyTierUI();
+  } catch (e) { console.warn('Load trip failed:', e.message); }
+}
+
 // Global variables for Extra Tools
 var tripData = {
   origin: '',
@@ -1240,10 +1811,18 @@ const TIER_LIMITS = {
   paid: { maxDays:14, maxDestinations:3, maxGenerations:1, maxUpdatesPerItinerary:5, offlineHtml:true, packingList:true, cheapTickets:true, funFacts:true },
 };
 function getTripCredits() {
+  if (currentUser && userProfile) return userProfile.credits || 0;
   return parseInt(localStorage.getItem('tripCredits') || '0', 10);
 }
 function setTripCredits(n) {
-  localStorage.setItem('tripCredits', String(Math.max(0, n)));
+  var val = Math.max(0, n);
+  localStorage.setItem('tripCredits', String(val));
+  if (currentUser && userProfile) {
+    userProfile.credits = val;
+    if (supabaseClient) {
+      supabaseClient.from('user_profiles').update({ credits: val }).eq('id', currentUser.id).then(function() {});
+    }
+  }
 }
 function getUserTier() {
   if (getTripCredits() > 0) return 'paid';
@@ -1255,10 +1834,35 @@ function getTierLimits() {
 }
 
 function getFreeTierState() {
+  if (currentUser && userProfile) {
+    return userProfile.free_tier_state || {};
+  }
   try { return JSON.parse(localStorage.getItem('freeTierState') || '{}'); } catch { return {}; }
 }
 function saveFreeTierState(state) {
   localStorage.setItem('freeTierState', JSON.stringify(state));
+  if (currentUser && userProfile) {
+    userProfile.free_tier_state = state;
+    if (supabaseClient) {
+      supabaseClient.from('user_profiles').update({ free_tier_state: state }).eq('id', currentUser.id).then(function() {});
+    }
+  }
+}
+function getVerifiedSessions() {
+  if (currentUser && userProfile) return userProfile.verified_sessions || [];
+  try { return JSON.parse(localStorage.getItem('verifiedSessions') || '[]'); } catch { return []; }
+}
+function addVerifiedSession(sessionId) {
+  var sessions = getVerifiedSessions();
+  if (sessions.includes(sessionId)) return;
+  sessions.push(sessionId);
+  localStorage.setItem('verifiedSessions', JSON.stringify(sessions));
+  if (currentUser && userProfile) {
+    userProfile.verified_sessions = sessions;
+    if (supabaseClient) {
+      supabaseClient.from('user_profiles').update({ verified_sessions: sessions }).eq('id', currentUser.id).then(function() {});
+    }
+  }
 }
 function getMonthKey() {
   const d = new Date();
@@ -1395,19 +1999,19 @@ function applyTierUI() {
       htmlBtn.innerHTML = '&#128196; Offline HTML (Clickable)';
     } else if (limits.offlineHtml && !tripData.tripFinalized) {
       htmlBtn.classList.add('download-menu-item-locked');
-      htmlBtn.innerHTML = '&#128274; Offline HTML (Clickable) <span class="tier-badge" style="color:#64748b;background:rgba(0,0,0,0.08);">Finalize trip first</span>';
+      htmlBtn.innerHTML = '&#128274; Offline HTML (Clickable) <span class="tier-badge" style="color:#64748b;background:rgba(0,0,0,0.08);">Confirm updates done first</span>';
     } else {
       htmlBtn.classList.add('download-menu-item-locked');
       htmlBtn.innerHTML = '&#128274; Offline HTML (Clickable) <span class="tier-badge" style="color:#64748b;background:rgba(0,0,0,0.08);">&#128274; Trip Pack</span>';
     }
   }
 
-  // ─── PDF button (gate behind finalize for paid users) ───
+  // ─── PDF button ───
   const pdfBtn = document.getElementById('download-pdf');
   if (pdfBtn) {
     if (tier === 'paid' && !tripData.tripFinalized) {
       pdfBtn.classList.add('download-menu-item-locked');
-      pdfBtn.innerHTML = '&#128274; Download as PDF <span class="tier-badge" style="color:#64748b;background:rgba(0,0,0,0.08);">Finalize trip first</span>';
+      pdfBtn.innerHTML = '&#128274; Download as PDF <span class="tier-badge" style="color:#64748b;background:rgba(0,0,0,0.08);">Confirm updates done first</span>';
     } else {
       pdfBtn.classList.remove('download-menu-item-locked');
       pdfBtn.innerHTML = '&#128462; Download as PDF';
@@ -1481,34 +2085,23 @@ function applyTierUI() {
   const genHint = document.getElementById('generate-button-hint');
   const revisionsUsed = getUpdatesThisItinerary();
   const revisionsLeft = limits.maxUpdatesPerItinerary - revisionsUsed;
-  const hardGate = tier === 'paid' && tripData.itinerary && !tripData.tripFinalized;
+  const paidWithActiveTrip = tier === 'paid' && tripData.itinerary;
   if (tier === 'free' && getGenerationsThisMonth() >= limits.maxGenerations) {
     genBtn.disabled = true; genBtn.style.opacity = '0.45'; genBtn.style.cursor = 'not-allowed';
     genHint.classList.add('hidden');
-  } else if (hardGate) {
+  } else if (paidWithActiveTrip) {
     genBtn.disabled = true; genBtn.style.opacity = '0.45'; genBtn.style.cursor = 'not-allowed';
-    if (revisionsLeft > 0) {
-      genHint.innerHTML = '&#128274; Finalize your current trip before generating a new one. You have <strong>' + revisionsLeft + ' revision' + (revisionsLeft > 1 ? 's' : '') + '</strong> remaining.';
-    } else {
-      genHint.innerHTML = '&#128274; Finalize your current trip before generating a new one.';
-    }
-    genHint.classList.remove('hidden');
+    genHint.classList.add('hidden');
   } else {
     genBtn.disabled = false; genBtn.style.opacity = ''; genBtn.style.cursor = '';
     genHint.classList.add('hidden');
   }
 
-  // ─── Show/hide Finalize Trip buttons ───
+  // ─── Show/hide Finalize Trip buttons (free tier only) ───
   const finalizeBtn = document.getElementById('finalize-trip-btn');
   const finalizeBtnMobile = document.getElementById('finalize-trip-btn-mobile');
-  const showFinalize = tier === 'paid' && tripData.itinerary && !tripData.tripFinalized && revisionsLeft >= 0;
-  if (showFinalize) {
-    finalizeBtn.classList.remove('hidden');
-    if (finalizeBtnMobile) finalizeBtnMobile.classList.remove('hidden');
-  } else {
-    finalizeBtn.classList.add('hidden');
-    if (finalizeBtnMobile) finalizeBtnMobile.classList.add('hidden');
-  }
+  finalizeBtn.classList.add('hidden');
+  if (finalizeBtnMobile) finalizeBtnMobile.classList.add('hidden');
 
   // ─── Re-check update button state ───
   const updateBtn = document.getElementById('update-itinerary-btn');
@@ -1639,9 +2232,10 @@ async function purchaseCredits(priceType) {
     btn.textContent = 'Redirecting\u2026';
   });
   try {
+    var authHeaders = await getAuthHeaders();
     var resp = await fetch('/api/create-checkout-session', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: authHeaders,
       body: JSON.stringify({ priceType: priceType })
     });
     var data = await resp.json();
@@ -1698,6 +2292,8 @@ document.addEventListener('click', function(e) {
   if (e.target.id === 'finalize-modal') document.getElementById('finalize-modal').classList.remove('active');
   if (e.target.id === 'confirm-new-trip-modal') document.getElementById('confirm-new-trip-modal').classList.remove('active');
   if (e.target.id === 'download-gate-modal') document.getElementById('download-gate-modal').classList.remove('active');
+  if (e.target.id === 'auth-modal') closeAuthModal();
+  if (e.target.id === 'my-trips-modal') closeMyTrips();
 });
 // Close modals on Escape key
 document.addEventListener('keydown', function(e) {
@@ -1707,6 +2303,8 @@ document.addEventListener('keydown', function(e) {
     document.getElementById('finalize-modal').classList.remove('active');
     document.getElementById('confirm-new-trip-modal').classList.remove('active');
     document.getElementById('download-gate-modal').classList.remove('active');
+    closeAuthModal();
+    closeMyTrips();
   }
 });
 
@@ -1951,12 +2549,12 @@ document.getElementById('destination').addEventListener('input', toggleLongDista
 toggleLongDistance();
 
 // ─── Stripe: verify payment on return from checkout ───
-(function verifyPaymentOnLoad() {
+(async function verifyPaymentOnLoad() {
   const params = new URLSearchParams(window.location.search);
   const sessionId = params.get('session_id');
   if (!sessionId) return;
   // Replay protection: check if already verified
-  const verified = JSON.parse(localStorage.getItem('verifiedSessions') || '[]');
+  const verified = getVerifiedSessions();
   if (verified.includes(sessionId)) {
     // Already credited — just clean the URL
     const clean = new URL(window.location);
@@ -1964,9 +2562,10 @@ toggleLongDistance();
     window.history.replaceState({}, '', clean.pathname + clean.search);
     return;
   }
+  var authHeaders = await getAuthHeaders();
   fetch('/api/verify-payment', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: authHeaders,
     body: JSON.stringify({ sessionId })
   })
   .then(r => r.json())
@@ -1975,8 +2574,7 @@ toggleLongDistance();
       const current = getTripCredits();
       setTripCredits(current + data.credits);
       // Store session ID to prevent replay
-      verified.push(sessionId);
-      localStorage.setItem('verifiedSessions', JSON.stringify(verified));
+      addVerifiedSession(sessionId);
       // Show success banner
       const banner = document.createElement('div');
       banner.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:9999;background:#16a34a;color:white;text-align:center;padding:14px 20px;font-weight:600;font-size:0.95rem;animation:fadeInUp 0.3s ease-out';
@@ -2582,18 +3180,28 @@ ${ticketTipsInstruction}
   renderActiveInstructionsLabel();
   renderBookingSection();
 
+  // Save trip to Supabase for logged-in users
+  tripData._supabaseTripId = null; // New trip, get fresh ID
+  saveCurrentTripToSupabase();
+
   document.getElementById('planning-view').classList.add('hidden');
   document.getElementById('results-view').classList.remove('hidden');
   document.getElementById('language-select').parentElement.style.display = 'none';
   if (window.innerWidth <= 768) document.querySelector('.mobile-action-bar').classList.remove('hidden');
+
+  // Show sign-in nudge for guest users
+  var nudge = document.getElementById('sign-in-nudge');
+  if (!currentUser) nudge.classList.remove('hidden');
+  else nudge.classList.add('hidden');
 });
 
 // API calls go through the server-side route — API key is stored securely in Vercel environment variables
 async function callGemini(prompt) {
   try {
+    const authHeaders = await getAuthHeaders();
     const response = await fetch('/api/generate', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: authHeaders,
       body: JSON.stringify({ prompt, tier: getUserTier() })
     });
 
@@ -3463,7 +4071,7 @@ document.getElementById('edit-trip-settings-link').addEventListener('click', (e)
 // Download menu toggle
 document.getElementById('download-button').addEventListener('click', (e) => {
   e.stopPropagation();
-  if (getUserTier() === 'paid' && !tripData.tripFinalized) {
+  if (!tripData.tripFinalized) {
     showDownloadGateModal();
     return;
   }
@@ -3483,7 +4091,7 @@ document.getElementById('download-html').addEventListener('click', () => {
     document.getElementById('download-menu').classList.add('hidden');
     return;
   }
-  if (getUserTier() === 'paid' && !tripData.tripFinalized) {
+  if (!tripData.tripFinalized) {
     showDownloadGateModal();
     document.getElementById('download-menu').classList.add('hidden');
     return;
@@ -3641,7 +4249,7 @@ document.addEventListener('click',function(e){
 
 // Download as PDF
 document.getElementById('download-pdf').addEventListener('click', () => {
-  if (getUserTier() === 'paid' && !tripData.tripFinalized) {
+  if (!tripData.tripFinalized) {
     showDownloadGateModal();
     document.getElementById('download-menu').classList.add('hidden');
     return;
@@ -3764,6 +4372,7 @@ function showPlanningChangesSummary() {
 function finalizeTripExtras() {
   tripData.tripFinalized = true;
   saveTripSession();
+  saveCurrentTripToSupabase();
   document.getElementById('finalize-modal').classList.remove('active');
   // Reset planning page so next Generate starts fresh
   document.getElementById('origin').value = '';
@@ -3885,6 +4494,8 @@ For ${tripData.travelers} traveler(s), include: cost-saving options, ${tripData.
 
 STRUCTURE: You MUST use ## for day headings (e.g., "## Day 1: Title") and ### for time-of-day sections. ALWAYS include a theme AND time range in parentheses (e.g., "### Morning: Museums & Markets (9:00 AM - 12:30 PM)", "### Afternoon: Culture & Parks (12:30 PM - 5:00 PM)", "### Evening: Food & Nightlife (5:00 PM onwards)"). The last time period of the day should use "onwards" instead of an end time. Every day MUST have at least 2 ### time sub-sections. List places under the appropriate ### section, never directly under ## headings. Do NOT add separate city headings — include the city name in the ## Day heading (e.g., "## Day 3: Chester - Medieval Walls").
 
+CRITICAL: You MUST output EVERY single day as its own separate ## Day section. NEVER group, merge, or combine multiple days together (e.g., do NOT write "## Days 3-8" or "Days 3 to 8"). Even if several days share the same activity (like a canal boat trip or cruise), each day MUST have its own ## Day heading with unique details, activities, stops, or points of interest for that specific day. Maintain the same level of detail as the original itinerary.
+
 IMPORTANT: For EVERY place, attraction, restaurant, and activity in the updated itinerary, include:
 1. A Google Maps link: https://www.google.com/maps/search/?api=1&query=PLACE+NAME+CITY (replace spaces with +). ALWAYS provide this.
 2. Official website: ONLY if you are 100% certain it is real. Otherwise write "Website: Search online for latest info". NEVER guess or invent URLs.
@@ -3920,6 +4531,8 @@ Replace spaces with + in each place name. Include the city name. Separate stops 
     document.getElementById('planning-changes-summary').innerHTML = '';
     document.getElementById('planning-changes-summary').classList.add('hidden');
 
+    // Save updated trip to Supabase
+    saveCurrentTripToSupabase();
     // Tier: track update usage
     incrementUpdates();
     if (getUpdatesThisItinerary() >= getTierLimits().maxUpdatesPerItinerary) {
@@ -3931,13 +4544,9 @@ Replace spaces with + in each place name. Include the city name. Separate stops 
       }
     }
 
-    // Paid users: auto-finalize if all revisions used, otherwise show modal
-    if (getUserTier() === 'paid') {
-      if (getUpdatesThisItinerary() >= getTierLimits().maxUpdatesPerItinerary) {
-        finalizeTripExtras();
-      } else {
-        document.getElementById('finalize-modal').classList.add('active');
-      }
+    // Free users: show finalize modal after update
+    if (getUserTier() === 'free') {
+      document.getElementById('finalize-modal').classList.add('active');
     }
   }
 });
@@ -3948,7 +4557,7 @@ document.getElementById('packing-list-btn').addEventListener('click', async () =
     return;
   }
   if (!tripData.tripFinalized) {
-    alert('Please finalize your itinerary first by completing a revision.');
+    alert('Please confirm your updates are done before using this feature.');
     return;
   }
   if (tripData.packingListUsed) return;
@@ -3978,7 +4587,7 @@ document.getElementById('fun-fact-btn').addEventListener('click', async () => {
     return;
   }
   if (!tripData.tripFinalized) {
-    alert('Please finalize your itinerary first by completing a revision.');
+    alert('Please confirm your updates are done before using this feature.');
     return;
   }
   if (tripData.funFactUsed) return;

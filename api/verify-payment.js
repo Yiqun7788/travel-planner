@@ -1,4 +1,5 @@
 const Stripe = require('stripe');
+const { createClient } = require('@supabase/supabase-js');
 
 const ALLOWED_ORIGINS = [
   'https://travel-planner-livid-two.vercel.app',
@@ -41,6 +42,40 @@ module.exports = async function handler(req, res) {
 
     if (session.payment_status === 'paid') {
       const credits = parseInt(session.metadata?.credits, 10) || 0;
+
+      // If userId in metadata, add credits server-side to prevent manipulation
+      const userId = session.metadata?.userId;
+      if (userId && credits > 0) {
+        const { SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY } = process.env;
+        if (SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY) {
+          try {
+            const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+
+            // Check if this session was already credited to prevent replay
+            const { data: profile } = await supabase
+              .from('user_profiles')
+              .select('credits, verified_sessions')
+              .eq('id', userId)
+              .single();
+
+            if (profile) {
+              const alreadyVerified = (profile.verified_sessions || []).includes(sessionId);
+              if (!alreadyVerified) {
+                const newCredits = (profile.credits || 0) + credits;
+                const newSessions = [...(profile.verified_sessions || []), sessionId];
+                await supabase
+                  .from('user_profiles')
+                  .update({ credits: newCredits, verified_sessions: newSessions })
+                  .eq('id', userId);
+              }
+            }
+          } catch (e) {
+            console.error('Supabase credit update error:', e);
+            // Non-fatal: client-side fallback will still apply credits to localStorage
+          }
+        }
+      }
+
       return res.status(200).json({ verified: true, credits });
     }
 

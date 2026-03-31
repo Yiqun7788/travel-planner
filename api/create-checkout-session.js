@@ -1,4 +1,5 @@
 const Stripe = require('stripe');
+const { createClient } = require('@supabase/supabase-js');
 
 const ALLOWED_ORIGINS = [
   'https://travel-planner-livid-two.vercel.app',
@@ -49,6 +50,21 @@ module.exports = async function handler(req, res) {
 
   const credits = PRICE_CONFIG[priceType].credits;
 
+  // Extract userId from JWT if present
+  let userId = '';
+  const authHeader = req.headers['authorization'] || '';
+  if (authHeader.startsWith('Bearer ')) {
+    const { SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY } = process.env;
+    if (SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY) {
+      try {
+        const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+        const token = authHeader.replace('Bearer ', '');
+        const { data, error } = await supabase.auth.getUser(token);
+        if (!error && data.user) userId = data.user.id;
+      } catch {}
+    }
+  }
+
   try {
     const stripe = new Stripe(STRIPE_SECRET_KEY);
 
@@ -65,7 +81,7 @@ module.exports = async function handler(req, res) {
     const session = await stripe.checkout.sessions.create({
       mode: 'payment',
       line_items: [{ price: priceId, quantity: 1 }],
-      metadata: { credits: String(credits), priceType },
+      metadata: { credits: String(credits), priceType, userId },
       success_url: `${baseUrl}/?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${baseUrl}/`,
     });

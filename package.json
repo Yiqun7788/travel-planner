@@ -4,6 +4,7 @@
   "description": "Multilingual AI-powered travel planner using Gemini API",
   "private": true,
   "dependencies": {
+    "@supabase/supabase-js": "^2.49.0",
     "stripe": "^17.0.0"
   }
 }
