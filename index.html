@@ -1286,7 +1286,7 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
   <!-- Sign-in nudge (shown after generation for guests) -->
   <div id="sign-in-nudge" class="hidden mx-6 sm:mx-8 mb-4">
     <span style="font-size:1.25rem">&#128274;</span>
-    <span>Sign in to save this itinerary to your account and access it anywhere.</span>
+    <span>This trip is saved on this browser only. Sign in to access it anywhere.</span>
     <button onclick="openAuthModal()">Sign In</button>
     <button class="nudge-dismiss" onclick="this.parentElement.classList.add('hidden')" aria-label="Dismiss">&times;</button>
   </div>
@@ -1428,6 +1428,7 @@ try {
   supabaseClient.auth.onAuthStateChange(function(event, session) {
     if (event === 'SIGNED_IN' && session && session.user) {
       currentUser = session.user;
+      try { localStorage.removeItem('savedTrip'); } catch {}
       if (!userProfile) {
         loadUserProfile().then(function() {
           migrateLocalDataToProfile();
@@ -1803,6 +1804,9 @@ var selectedTravelMode = 'driving';
 
 function saveTripSession() {
   try { sessionStorage.setItem('tripSession', JSON.stringify(tripData)); } catch {}
+  if (!currentUser) {
+    try { localStorage.setItem('savedTrip', JSON.stringify(tripData)); } catch {}
+  }
 }
 
 // ─── Tier System ───
@@ -2583,6 +2587,7 @@ toggleLongDistance();
       setTimeout(() => banner.remove(), 5000);
       // Clear previous trip session so planning page starts fresh
       sessionStorage.removeItem('tripSession');
+      try { localStorage.removeItem('savedTrip'); } catch {}
       tripData.destination = '';
       tripData.days = 0;
       tripData.itinerary = '';
@@ -4614,7 +4619,10 @@ document.getElementById('fun-fact-btn').addEventListener('click', async () => {
 // ─── Restore session on page load ───
 (function restoreSession() {
   try {
-    const saved = sessionStorage.getItem('tripSession');
+    var saved = sessionStorage.getItem('tripSession');
+    if (!saved && !currentUser) {
+      saved = localStorage.getItem('savedTrip');
+    }
     if (!saved) return;
     const data = JSON.parse(saved);
     if (!data.itinerary || !data.destination) return;
