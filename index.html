@@ -1092,6 +1092,11 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
       <span class="banner-icon">&#9432;</span>
       <span class="banner-text"><strong>Free Plan</strong> — 1 destination, up to 3 days, 1 itinerary per month, 1 update per itinerary. <button class="banner-link" onclick="openPricingModal()">View Plans</button></span>
     </div>
+    <div id="planning-sign-in-nudge" class="hidden" style="display:none;align-items:center;gap:12px;padding:14px 20px;border-radius:12px;background:linear-gradient(135deg,#eff6ff,#eef2ff);border:1px solid #bfdbfe;color:#334155;font-size:0.88rem;line-height:1.4;margin-top:12px;">
+      <span style="font-size:1.25rem">&#128274;</span>
+      <span>Your trip will be saved on this browser only. <strong>Sign in</strong> to access it anywhere and across devices.</span>
+      <button onclick="openAuthModal()" style="flex-shrink:0;padding:6px 16px;border:none;border-radius:8px;background:linear-gradient(135deg,#3b82f6,#6366f1);color:#fff;font-weight:600;font-size:0.82rem;cursor:pointer;">Sign In</button>
+    </div>
   </div>
 
   <form id="itinerary-form" class="px-6 sm:px-8 pb-8 space-y-7">
@@ -1417,12 +1422,19 @@ try {
 
 // Auth state listener
 (function initAuth() {
-  if (!supabaseClient) return;
+  if (!supabaseClient) {
+    var pn = document.getElementById('planning-sign-in-nudge');
+    if (pn) pn.style.display = 'flex';
+    return;
+  }
   supabaseClient.auth.getSession().then(function(result) {
     var session = result.data.session;
     if (session && session.user) {
       currentUser = session.user;
       loadUserProfile().then(function() { updateAuthUI(); });
+    } else {
+      var pn = document.getElementById('planning-sign-in-nudge');
+      if (pn) pn.style.display = 'flex';
     }
   });
   supabaseClient.auth.onAuthStateChange(function(event, session) {
@@ -1589,9 +1601,11 @@ function updateAuthUI() {
   var avatarEl = document.getElementById('user-avatar-el');
   var nameEl = document.getElementById('user-display-name');
 
-  // Hide sign-in nudge when user is authenticated
+  // Hide sign-in nudges when user is authenticated
   var nudgeEl = document.getElementById('sign-in-nudge');
   if (nudgeEl && currentUser) nudgeEl.classList.add('hidden');
+  var planNudge = document.getElementById('planning-sign-in-nudge');
+  if (planNudge) planNudge.style.display = currentUser ? 'none' : 'flex';
 
   if (currentUser && userProfile) {
     signInBtn.style.display = 'none';
