@@ -1443,7 +1443,8 @@ try {
       try { localStorage.removeItem('savedTrip'); } catch {}
       if (!userProfile) {
         loadUserProfile().then(function() {
-          migrateLocalDataToProfile();
+          return migrateLocalDataToProfile();
+        }).then(function() {
           updateAuthUI();
         });
       }
