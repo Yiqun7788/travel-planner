@@ -4650,6 +4650,8 @@ document.getElementById('fun-fact-btn').addEventListener('click', async () => {
     }
     // Restore all button states (generate gate, finalize, extras)
     applyTierUI();
+    // Show sign-in nudge for guest users on restore
+    if (!currentUser) document.getElementById('sign-in-nudge').classList.remove('hidden');
     // Show return-to-itinerary if user goes back
     document.getElementById('return-to-itinerary-btn').classList.remove('hidden');
   } catch {}
