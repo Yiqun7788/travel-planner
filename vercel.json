@@ -19,6 +19,8 @@
     { "source": "/api/generate", "destination": "/api/generate" },
     { "source": "/api/create-checkout-session", "destination": "/api/create-checkout-session" },
     { "source": "/api/verify-payment", "destination": "/api/verify-payment" },
+    { "source": "/robots.txt", "destination": "/public/robots.txt" },
+    { "source": "/sitemap.xml", "destination": "/public/sitemap.xml" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
