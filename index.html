@@ -3128,7 +3128,10 @@ At the VERY BEGINNING of each day (right after the day heading like "## Day 1"),
 - The line MUST start with "DailyRoute: " exactly.
 - Example for a day in Paris with 3 stops:
   DailyRoute: Eiffel+Tower+Paris|Louvre+Museum+Paris|Notre+Dame+Cathedral+Paris
-${ticketTipsInstruction}
+${longDistance.includes('Car') ? `
+PARKING & DRIVING TIPS: The traveler is driving by car. For EVERY stop/attraction, include a practical parking tip right after the fee line. Use this format:
+- Parking: [specific advice for that location]
+Include details like: free parking spots nearby, affordable parking lots/garages with approximate rates, or park-and-ride options (e.g., "Park at [specific lot/station] and take the metro into the city center"). Tailor the advice to each specific location — mention actual lot names, streets, or transit stations when possible.` : ''}${ticketTipsInstruction}
 `;
 
   const result = await callGemini(prompt);
@@ -3417,8 +3420,8 @@ function restructureItinerary() {
 
   // Helper: strip leading time stamps like "10:30 AM - 12:30 PM " or "08:04 AM " from a name
   const timeStampPrefixRe = /^\d{1,2}:\d{2}\s*(?:AM|PM)\s*(?:[-–]\s*\d{1,2}:\d{2}\s*(?:AM|PM))?\s*/i;
-  // Structured data line pattern (Map, Website, Address, Hours, Fee)
-  const structuredLineRe = /^(map|website|address|hours?|open|opening|fee|price|cost|admission|entry):/i;
+  // Structured data line pattern (Map, Website, Address, Hours, Fee, Parking)
+  const structuredLineRe = /^(map|website|address|hours?|open|opening|fee|price|cost|admission|entry|parking):/i;
 
   function parseStopsFromElements(elements) {
     const stops = [];
@@ -3440,7 +3443,7 @@ function restructureItinerary() {
         current = {
           name: rawName,
           description: desc,
-          mapUrl: '', website: '', address: '', hours: '', fee: '', notes: [], extraEls: []
+          mapUrl: '', website: '', address: '', hours: '', fee: '', parking: '', notes: [], extraEls: []
         };
         continue;
       }
@@ -3451,7 +3454,7 @@ function restructureItinerary() {
         current = {
           name: el.textContent.trim().replace(/^[\d]+[\.\)]\s*/, '').replace(timeStampPrefixRe, ''),
           description: '',
-          mapUrl: '', website: '', address: '', hours: '', fee: '', notes: [], extraEls: []
+          mapUrl: '', website: '', address: '', hours: '', fee: '', parking: '', notes: [], extraEls: []
         };
         continue;
       }
@@ -3469,7 +3472,7 @@ function restructureItinerary() {
           current = {
             name: placeName,
             description: placeDesc,
-            mapUrl: '', website: '', address: '', hours: '', fee: '', notes: [], extraEls: []
+            mapUrl: '', website: '', address: '', hours: '', fee: '', parking: '', notes: [], extraEls: []
           };
           continue;
         }
@@ -3504,7 +3507,7 @@ function restructureItinerary() {
                 else if (node.nodeType === 1) desc += node.textContent;
               }
               desc = desc.trim().replace(/^[:\-–—\s]+/, '').replace(timeStampPrefixRe, '').replace(/^[:\-–—\s]+/, '');
-              current = { name: rawName, description: desc, mapUrl: '', website: '', address: '', hours: '', fee: '', notes: [], extraEls: [] };
+              current = { name: rawName, description: desc, mapUrl: '', website: '', address: '', hours: '', fee: '', parking: '', notes: [], extraEls: [] };
 
               // Process nested <ul> for structured data (Map, Website, etc.)
               const nestedUl = li.querySelector(':scope > ul') || li.querySelector('ul');
@@ -3523,6 +3526,8 @@ function restructureItinerary() {
                     current.hours = subText.replace(/^(hours?|open|opening):\s*/i, '');
                   } else if (/^(fee|price|cost|admission|entry):/i.test(subText)) {
                     current.fee = subText.replace(/^(fee|price|cost|admission|entry):\s*/i, '');
+                  } else if (/^parking:/i.test(subText)) {
+                    current.parking = subText.replace(/^parking:\s*/i, '');
                   } else {
                     current.notes.push(subLi.innerHTML);
                   }
@@ -3536,7 +3541,7 @@ function restructureItinerary() {
               if (timeMatch) {
                 const afterTime = timeMatch[2];
                 const dashParts = afterTime.split(/\s*[—–]\s*/);
-                current = { name: dashParts[0].trim().replace(/\.\s*$/, ''), description: dashParts.length > 1 ? dashParts.slice(1).join(' — ').trim() : '', mapUrl: '', website: '', address: '', hours: '', fee: '', notes: [], extraEls: [] };
+                current = { name: dashParts[0].trim().replace(/\.\s*$/, ''), description: dashParts.length > 1 ? dashParts.slice(1).join(' — ').trim() : '', mapUrl: '', website: '', address: '', hours: '', fee: '', parking: '', notes: [], extraEls: [] };
                 // Process nested <ul>
                 const nestedUl = li.querySelector(':scope > ul') || li.querySelector('ul');
                 if (nestedUl && current) {
@@ -3547,6 +3552,7 @@ function restructureItinerary() {
                     else if (/^address:/i.test(subText)) { current.address = subText.replace(/^address:\s*/i, ''); }
                     else if (/^(hours?|open|opening):/i.test(subText)) { current.hours = subText.replace(/^(hours?|open|opening):\s*/i, ''); }
                     else if (/^(fee|price|cost|admission|entry):/i.test(subText)) { current.fee = subText.replace(/^(fee|price|cost|admission|entry):\s*/i, ''); }
+                    else if (/^parking:/i.test(subText)) { current.parking = subText.replace(/^parking:\s*/i, ''); }
                     else { current.notes.push(subLi.innerHTML); }
                   });
                 }
@@ -3558,6 +3564,7 @@ function restructureItinerary() {
               else if (/^address:/i.test(liText)) { current.address = liText.replace(/^address:\s*/i, ''); }
               else if (/^(hours?|open|opening):/i.test(liText)) { current.hours = liText.replace(/^(hours?|open|opening):\s*/i, ''); }
               else if (/^(fee|price|cost|admission|entry):/i.test(liText)) { current.fee = liText.replace(/^(fee|price|cost|admission|entry):\s*/i, ''); }
+              else if (/^parking:/i.test(liText)) { current.parking = liText.replace(/^parking:\s*/i, ''); }
             }
           });
           continue;
@@ -3586,6 +3593,9 @@ function restructureItinerary() {
               consumed = true;
             } else if (/^(fee|price|cost|admission|entry):/i.test(text)) {
               current.fee = text.replace(/^(fee|price|cost|admission|entry):\s*/i, '');
+              consumed = true;
+            } else if (/^parking:/i.test(text)) {
+              current.parking = text.replace(/^parking:\s*/i, '');
               consumed = true;
             } else {
               current.notes.push(html);
@@ -3618,6 +3628,10 @@ function restructureItinerary() {
         }
         if (/^(fee|price|cost|admission|entry):/i.test(pText)) {
           current.fee = pText.replace(/^(fee|price|cost|admission|entry):\s*/i, '');
+          continue;
+        }
+        if (/^parking:/i.test(pText)) {
+          current.parking = pText.replace(/^parking:\s*/i, '');
           continue;
         }
       }
@@ -3674,7 +3688,7 @@ function restructureItinerary() {
     left.appendChild(nameDiv);
 
     // Build description: inline text + descriptive notes (exclude structured data)
-    const structuredPattern = /^(map|website|address|hours?|open|opening|fee|price|cost|admission|entry):/i;
+    const structuredPattern = /^(map|website|address|hours?|open|opening|fee|price|cost|admission|entry|parking):/i;
     const descNotes = stop.notes
       .map(html => { const tmp = document.createElement('span'); tmp.innerHTML = html; return tmp.textContent.trim(); })
       .filter(t => t && !structuredPattern.test(t));
@@ -3767,7 +3781,7 @@ function restructureItinerary() {
     }
 
     // "Details" toggle button in actions row — only show if there's something to expand
-    const hasDetails = stop.address || stop.hours || stop.fee || stop.notes.length > 0;
+    const hasDetails = stop.address || stop.hours || stop.fee || stop.parking || stop.notes.length > 0;
     if (hasDetails) {
       const detailsBtn = document.createElement('button');
       detailsBtn.className = 'stop-details-btn';
@@ -3793,6 +3807,7 @@ function restructureItinerary() {
     if (stop.address) panel.innerHTML += '<div class="stop-detail-row"><span class="stop-detail-label">Address</span><span class="stop-detail-value">' + stop.address + '</span></div>';
     if (stop.hours) panel.innerHTML += '<div class="stop-detail-row"><span class="stop-detail-label">Hours</span><span class="stop-detail-value">' + stop.hours + '</span></div>';
     if (stop.fee) panel.innerHTML += '<div class="stop-detail-row"><span class="stop-detail-label">Fee</span><span class="stop-detail-value">' + stop.fee + '</span></div>';
+    if (stop.parking) panel.innerHTML += '<div class="stop-detail-row"><span class="stop-detail-label">Parking</span><span class="stop-detail-value">' + stop.parking + '</span></div>';
     if (stop.website) panel.innerHTML += '<div class="stop-detail-row"><span class="stop-detail-label">Website</span><span class="stop-detail-value">' + stop.website + '</span></div>';
     if (stop.notes.length > 0) panel.innerHTML += '<div class="stop-extra-notes">' + stop.notes.join(' ') + '</div>';
 
@@ -4589,7 +4604,11 @@ CRITICAL: Never invent or guess website URLs.
 
 Also at the VERY BEGINNING of each day (right after the day heading), include a daily route line in this EXACT format on a single line:
 DailyRoute: Place+A+${tripData.destination.replace(/\s+/g, '+')}|Place+B+${tripData.destination.replace(/\s+/g, '+')}|Place+C+${tripData.destination.replace(/\s+/g, '+')}
-Replace spaces with + in each place name. Include the city name. Separate stops with | character. Arrange in optimal time-saving order.`;
+Replace spaces with + in each place name. Include the city name. Separate stops with | character. Arrange in optimal time-saving order.${(tripData.longDistance || []).includes('Car') ? `
+
+PARKING & DRIVING TIPS: The traveler is driving by car. For EVERY stop/attraction, include a practical parking tip right after the fee line. Use this format:
+- Parking: [specific advice for that location]
+Include details like: free parking spots nearby, affordable parking lots/garages with approximate rates, or park-and-ride options (e.g., "Park at [specific lot/station] and take the metro into the city center"). Tailor the advice to each specific location.` : ''}`;
 
   const originNote = tripData.origin ? `\nThe traveler starts from ${tripData.origin} (not from an airport or station). Day 1 begins with the journey from ${tripData.origin}. The last day ends with the return to ${tripData.origin}.` : '';
   const contextNote = tripData.additionalInstructions ? `\n\nOriginal trip guidance (keep following these): ${tripData.additionalInstructions}` : '';
