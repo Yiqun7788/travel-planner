@@ -2702,6 +2702,8 @@ toggleLongDistance();
 
 // Apply tier UI on page load
 applyTierUI();
+// Reset button states when restored from bfcache (e.g. browser Back from Stripe)
+window.addEventListener('pageshow', function(e) { if (e.persisted) applyTierUI(); });
 
 // ─── Photon autocomplete (reusable for origin + destination) ───
 function initPhotonAutocomplete(inputId, listId, multiSegment, onSelect) {
