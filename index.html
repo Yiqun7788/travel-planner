@@ -969,9 +969,11 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
 /* Problem + Solution side-by-side */
 .problem-solution-row {
   display: grid; grid-template-columns: 1fr 1fr; gap: 40px;
-  align-items: start; text-align: left; max-width: 1000px; margin: 0 auto;
+  align-items: stretch; text-align: left; max-width: 1000px; margin: 0 auto;
 }
 .problem-solution-row .ps-col { display: flex; flex-direction: column; }
+.problem-solution-row .ps-col .pain-list,
+.problem-solution-row .ps-col .benefits-grid { flex: 1; }
 .problem-solution-row .ps-col h2 {
   font-size: 1.5rem; font-weight: 800; color: #0f172a;
   letter-spacing: -0.02em; margin-bottom: 6px;
