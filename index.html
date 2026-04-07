@@ -2113,15 +2113,9 @@ function applyTierUI() {
   var tripPackBtn = document.getElementById('pricing-btn-trip-pack');
   var bundleBtn = document.getElementById('pricing-btn-bundle');
   if (freeBtn) {
-    if (tier === 'free') {
-      freeBtn.className = 'pricing-btn pricing-btn-current';
-      freeBtn.disabled = true;
-      freeBtn.textContent = 'Current Plan';
-    } else {
-      freeBtn.className = 'pricing-btn pricing-btn-upgrade';
-      freeBtn.disabled = false;
-      freeBtn.textContent = 'Switch to Free';
-    }
+    freeBtn.className = 'pricing-btn pricing-btn-current';
+    freeBtn.disabled = true;
+    freeBtn.textContent = 'Current Plan';
   }
   if (tripPackBtn) {
     tripPackBtn.className = 'pricing-btn pricing-btn-upgrade';
@@ -2268,10 +2262,6 @@ function closePricingModal() {
 }
 // ─── Pricing button click handlers (attached via addEventListener) ───
 document.getElementById('pricing-btn-free').addEventListener('click', function() {
-  setTripCredits(0);
-  sessionStorage.removeItem('currentTripPaid');
-  localStorage.removeItem('freeTierState');
-  applyTierUI();
   closePricingModal();
 });
 var pendingPurchasePriceType = null;
