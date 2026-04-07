@@ -966,10 +966,26 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
   margin: 0 auto 40px; line-height: 1.6;
 }
 
+/* Problem + Solution side-by-side */
+.problem-solution-row {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 40px;
+  text-align: left; max-width: 1000px; margin: 0 auto;
+}
+.problem-solution-row .ps-col h2 {
+  font-size: 1.5rem; font-weight: 800; color: #0f172a;
+  letter-spacing: -0.02em; margin-bottom: 6px;
+}
+.problem-solution-row .ps-col .ps-sub {
+  font-size: 0.95rem; color: #64748b; margin-bottom: 24px; line-height: 1.5;
+}
+@media (max-width: 720px) {
+  .problem-solution-row { grid-template-columns: 1fr; gap: 48px; }
+}
+
 /* Pain points */
 .pain-list {
-  display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 16px; text-align: left; max-width: 700px; margin: 0 auto;
+  display: grid; grid-template-columns: 1fr;
+  gap: 12px; text-align: left;
 }
 .pain-item {
   display: flex; align-items: flex-start; gap: 12px;
@@ -1300,32 +1316,30 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
     </div>
   </section>
 
-  <!-- Problem -->
+  <!-- Problem + Solution (side by side) -->
   <section class="home-section">
-    <div class="home-section-inner">
-      <h2 data-i18n="homeProblemTitle">Planning a trip shouldn't take forever</h2>
-      <p class="section-sub" data-i18n="homeProblemSub">Sound familiar?</p>
-      <div class="pain-list">
-        <div class="pain-item"><span class="pain-icon">&#128269;</span><span data-i18n="homePain1">Searching dozens of "top things to do" lists</span></div>
-        <div class="pain-item"><span class="pain-icon">&#128214;</span><span data-i18n="homePain2">Reading blog after blog with conflicting advice</span></div>
-        <div class="pain-item"><span class="pain-icon">&#128203;</span><span data-i18n="homePain3">Copying notes into spreadsheets and docs</span></div>
-        <div class="pain-item"><span class="pain-icon">&#128506;</span><span data-i18n="homePain4">Opening Google Maps to figure out a route</span></div>
-        <div class="pain-item"><span class="pain-icon">&#129302;</span><span data-i18n="homePain5">Asking ChatGPT and getting a vague wall of text</span></div>
-        <div class="pain-item"><span class="pain-icon">&#128553;</span><span data-i18n="homePain6">Ending up with a messy, incomplete plan anyway</span></div>
+    <div class="problem-solution-row">
+      <div class="ps-col">
+        <h2 data-i18n="homeProblemTitle">Planning a trip shouldn't take forever</h2>
+        <p class="ps-sub" data-i18n="homeProblemSub">Sound familiar?</p>
+        <div class="pain-list">
+          <div class="pain-item"><span class="pain-icon">&#128269;</span><span data-i18n="homePain1">Searching dozens of "top things to do" lists</span></div>
+          <div class="pain-item"><span class="pain-icon">&#128214;</span><span data-i18n="homePain2">Reading blog after blog with conflicting advice</span></div>
+          <div class="pain-item"><span class="pain-icon">&#128203;</span><span data-i18n="homePain3">Copying notes into spreadsheets and docs</span></div>
+          <div class="pain-item"><span class="pain-icon">&#128506;</span><span data-i18n="homePain4">Opening Google Maps to figure out a route</span></div>
+          <div class="pain-item"><span class="pain-icon">&#129302;</span><span data-i18n="homePain5">Asking ChatGPT and getting a vague wall of text</span></div>
+          <div class="pain-item"><span class="pain-icon">&#128553;</span><span data-i18n="homePain6">Ending up with a messy, incomplete plan anyway</span></div>
+        </div>
       </div>
-    </div>
-  </section>
-
-  <!-- Solution -->
-  <section class="home-section">
-    <div class="home-section-inner">
-      <h2 data-i18n="homeSolutionTitle">One tool. One complete trip plan.</h2>
-      <p class="section-sub" data-i18n="homeSolutionSub">Travel Planner turns your destination and dates into a detailed, ready-to-follow itinerary.</p>
-      <div class="benefits-grid">
-        <div class="benefit-card"><div class="benefit-icon">&#128197;</div><h3 data-i18n="homeSolCard1Title">Day-by-day schedule</h3><p data-i18n="homeSolCard1Desc">Every activity timed and ordered so you never wonder "what's next?"</p></div>
-        <div class="benefit-card"><div class="benefit-icon">&#128205;</div><h3 data-i18n="homeSolCard2Title">Maps &amp; directions</h3><p data-i18n="homeSolCard2Desc">One-click Google Maps links between every stop on your route.</p></div>
-        <div class="benefit-card"><div class="benefit-icon">&#9881;&#65039;</div><h3 data-i18n="homeSolCard3Title">Fully customizable</h3><p data-i18n="homeSolCard3Desc">Set your budget, pace, interests, and transport — get a trip that fits you.</p></div>
-        <div class="benefit-card"><div class="benefit-icon">&#9889;</div><h3 data-i18n="homeSolCard4Title">Ready in minutes</h3><p data-i18n="homeSolCard4Desc">No research rabbit holes. Fill in a form, click generate, done.</p></div>
+      <div class="ps-col">
+        <h2 data-i18n="homeSolutionTitle">One tool. One complete trip plan.</h2>
+        <p class="ps-sub" data-i18n="homeSolutionSub">Travel Planner turns your destination and dates into a detailed, ready-to-follow itinerary.</p>
+        <div class="benefits-grid" style="grid-template-columns:1fr">
+          <div class="benefit-card"><div class="benefit-icon">&#128197;</div><h3 data-i18n="homeSolCard1Title">Day-by-day schedule</h3><p data-i18n="homeSolCard1Desc">Every activity timed and ordered so you never wonder "what's next?"</p></div>
+          <div class="benefit-card"><div class="benefit-icon">&#128205;</div><h3 data-i18n="homeSolCard2Title">Maps &amp; directions</h3><p data-i18n="homeSolCard2Desc">One-click Google Maps links between every stop on your route.</p></div>
+          <div class="benefit-card"><div class="benefit-icon">&#9881;&#65039;</div><h3 data-i18n="homeSolCard3Title">Fully customizable</h3><p data-i18n="homeSolCard3Desc">Set your budget, pace, interests, and transport — get a trip that fits you.</p></div>
+          <div class="benefit-card"><div class="benefit-icon">&#9889;</div><h3 data-i18n="homeSolCard4Title">Ready in minutes</h3><p data-i18n="homeSolCard4Desc">No research rabbit holes. Fill in a form, click generate, done.</p></div>
+        </div>
       </div>
     </div>
   </section>
