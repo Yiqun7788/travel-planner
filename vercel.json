@@ -21,6 +21,7 @@
     { "source": "/api/verify-payment", "destination": "/api/verify-payment" },
     { "source": "/robots.txt", "destination": "/public/robots.txt" },
     { "source": "/sitemap.xml", "destination": "/public/sitemap.xml" },
+    { "source": "/dublin-example.html", "destination": "/dublin-example.html" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }

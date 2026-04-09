@@ -1033,35 +1033,19 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
 .step-card h3 { font-size: 1.05rem; font-weight: 700; color: #0f172a; margin-bottom: 6px; }
 .step-card p { font-size: 0.9rem; color: #64748b; line-height: 1.5; }
 
-/* Example output mockup */
-.example-mockup {
-  background: #fff; border: 1px solid #e2e8f0; border-radius: 16px;
-  overflow: hidden; box-shadow: 0 4px 24px rgba(0,0,0,0.06);
-  text-align: left; max-width: 700px; margin: 0 auto;
+/* Example output embed */
+.example-embed-wrap {
+  max-width: 860px; margin: 0 auto; border-radius: 16px;
+  overflow: hidden; box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+  border: 1px solid #e2e8f0; background: #fff;
 }
-.example-mockup-header {
-  background: linear-gradient(135deg, #0ea5e9, #6366f1);
-  padding: 20px 24px; color: #fff;
+.example-embed-wrap iframe {
+  display: block; width: 100%; border: none;
+  height: 700px;
 }
-.example-mockup-header h3 { font-size: 1.1rem; font-weight: 700; margin: 0; }
-.example-mockup-header p { font-size: 0.85rem; opacity: 0.85; margin: 4px 0 0; }
-.example-day {
-  padding: 20px 24px; border-bottom: 1px solid #f1f5f9;
+@media (max-width: 768px) {
+  .example-embed-wrap iframe { height: 500px; }
 }
-.example-day:last-child { border-bottom: none; }
-.example-day-title {
-  font-size: 0.95rem; font-weight: 700; color: #4f46e5; margin-bottom: 10px;
-}
-.example-stop {
-  display: flex; gap: 12px; align-items: flex-start;
-  padding: 8px 0; font-size: 0.88rem;
-}
-.example-stop-time {
-  flex-shrink: 0; font-weight: 600; color: #0ea5e9;
-  min-width: 60px;
-}
-.example-stop-name { color: #0f172a; font-weight: 600; }
-.example-stop-desc { color: #64748b; margin-top: 2px; font-size: 0.84rem; }
 
 /* Final CTA */
 .home-cta-section {
@@ -1387,27 +1371,8 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
     <div class="home-section-inner">
       <h2 data-i18n="homeExampleTitle">What you'll get</h2>
       <p class="section-sub" data-i18n="homeExampleSub">Here's a preview from a 5-day Dublin itinerary.</p>
-      <div class="example-mockup">
-        <div class="example-mockup-header">
-          <h3>Your Trip: Dublin (5 days)</h3>
-          <p>Budget: $3,000 &middot; 2 travelers &middot; Medium pace</p>
-        </div>
-        <div class="example-day">
-          <div class="example-day-title">Day 1 — Arrival &amp; Historic Heart</div>
-          <div class="example-stop"><span class="example-stop-time">10:00 AM</span><div><div class="example-stop-name">Dublin Castle</div><div class="example-stop-desc">Historic complex, once the seat of British rule in Ireland.</div></div></div>
-          <div class="example-stop"><span class="example-stop-time">1:00 PM</span><div><div class="example-stop-name">Chester Beatty Library</div><div class="example-stop-desc">Award-winning museum with a world-class collection of manuscripts and art.</div></div></div>
-          <div class="example-stop"><span class="example-stop-time">5:00 PM</span><div><div class="example-stop-name">The Brazen Head</div><div class="example-stop-desc">Dublin's oldest pub — traditional Irish food and live music nightly.</div></div></div>
-        </div>
-        <div class="example-day">
-          <div class="example-day-title">Day 2 — Literary Legacies &amp; Irish Culture</div>
-          <div class="example-stop"><span class="example-stop-time">9:00 AM</span><div><div class="example-stop-name">Book of Kells Exhibition</div><div class="example-stop-desc">See the illuminated medieval manuscript and the iconic Old Library.</div></div></div>
-          <div class="example-stop"><span class="example-stop-time">2:00 PM</span><div><div class="example-stop-name">Grafton Street</div><div class="example-stop-desc">Dublin's premier shopping street, buzzing with buskers and caf&eacute;s.</div></div></div>
-        </div>
-        <div class="example-day">
-          <div class="example-day-title">Day 3 — Prisons, Pints &amp; Vikings</div>
-          <div class="example-stop"><span class="example-stop-time">9:00 AM</span><div><div class="example-stop-name">Kilmainham Gaol</div><div class="example-stop-desc">Powerful museum in a former prison, central to Irish independence.</div></div></div>
-          <div class="example-stop"><span class="example-stop-time">1:00 PM</span><div><div class="example-stop-name">Guinness Storehouse</div><div class="example-stop-desc">Seven floors of brewing history, with a tasting at the Gravity Bar.</div></div></div>
-        </div>
+      <div class="example-embed-wrap">
+        <iframe src="/dublin-example.html" title="Example: 5-day Dublin itinerary" loading="lazy"></iframe>
       </div>
     </div>
   </section>
