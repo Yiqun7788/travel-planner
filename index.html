@@ -562,13 +562,13 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
   opacity: 0.5; cursor: not-allowed;
 }
 .download-menu-item-locked:hover { background: transparent; }
-#upgrade-modal, #finalize-modal, #confirm-new-trip-modal, #download-gate-modal, #sign-in-gate-modal, #auth-modal, #my-trips-modal {
+#upgrade-modal, #finalize-modal, #confirm-new-trip-modal, #download-gate-modal, #sign-in-gate-modal, #auth-modal, #my-trips-modal, #retry-modal {
   position: fixed; inset: 0; z-index: 1100;
   background: rgba(0,0,0,0.4); backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
   display: none; justify-content: center; align-items: center;
 }
-#upgrade-modal.active, #finalize-modal.active, #confirm-new-trip-modal.active, #download-gate-modal.active, #sign-in-gate-modal.active, #auth-modal.active, #my-trips-modal.active { display: flex; }
+#upgrade-modal.active, #finalize-modal.active, #confirm-new-trip-modal.active, #download-gate-modal.active, #sign-in-gate-modal.active, #auth-modal.active, #my-trips-modal.active, #retry-modal.active { display: flex; }
 #sign-in-gate-modal { z-index: 1300; }
 .upgrade-modal-card {
   background: #fff; border-radius: 18px; padding: 32px 28px;
@@ -1265,6 +1265,17 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
         </ul>
         <button id="pricing-btn-bundle" class="pricing-btn pricing-btn-upgrade">Buy Bundle &mdash; Save 25%</button>
       </div>
+    </div>
+  </div>
+</div>
+
+<div id="retry-modal">
+  <div class="upgrade-modal-card">
+    <h3>Service Temporarily Busy</h3>
+    <p>Our planning service is experiencing high demand right now. Your form is still filled in — just tap <strong>Try Again</strong> to retry.</p>
+    <div class="modal-actions">
+      <button class="modal-btn-primary" id="retry-modal-retry">Try Again</button>
+      <button class="modal-btn-secondary" id="retry-modal-close">Close</button>
     </div>
   </div>
 </div>
@@ -2628,6 +2639,14 @@ document.getElementById('confirm-new-trip-generate').addEventListener('click', f
   window._confirmNewTripBypass = true;
   document.getElementById('generate-button').click();
 });
+// ─── Retry Modal handlers ───
+document.getElementById('retry-modal-retry').addEventListener('click', function() {
+  document.getElementById('retry-modal').classList.remove('active');
+  document.getElementById('generate-button').click();
+});
+document.getElementById('retry-modal-close').addEventListener('click', function() {
+  document.getElementById('retry-modal').classList.remove('active');
+});
 // ─── Download Gate Modal handlers ───
 function showDownloadGateModal() {
   document.getElementById('download-gate-title').innerHTML = '&#128229; Downloads Locked';
@@ -2669,6 +2688,7 @@ document.addEventListener('click', function(e) {
   if (e.target.id === 'sign-in-gate-modal') document.getElementById('sign-in-gate-modal').classList.remove('active');
   if (e.target.id === 'auth-modal') closeAuthModal();
   if (e.target.id === 'my-trips-modal') closeMyTrips();
+  if (e.target.id === 'retry-modal') document.getElementById('retry-modal').classList.remove('active');
 });
 // Close modals on Escape key
 document.addEventListener('keydown', function(e) {
@@ -2679,6 +2699,7 @@ document.addEventListener('keydown', function(e) {
     document.getElementById('confirm-new-trip-modal').classList.remove('active');
     document.getElementById('download-gate-modal').classList.remove('active');
     document.getElementById('sign-in-gate-modal').classList.remove('active');
+    document.getElementById('retry-modal').classList.remove('active');
     closeAuthModal();
     closeMyTrips();
   }
@@ -3440,6 +3461,11 @@ Include details like: free parking spots nearby, affordable parking lots/garages
 
   finishProgress();
 
+  if (result === '__TEMP_ERROR__') {
+    document.getElementById('retry-modal').classList.add('active');
+    return;
+  }
+
   let finalResult = result;
 
   // Extract corrected destination spelling from Gemini response
@@ -3605,23 +3631,14 @@ async function callGemini(prompt) {
         return '';
       }
 
-      errBanner.textContent = `API error: ${errorData.error || response.status}`;
-      errBanner.classList.remove('hidden');
-      setTimeout(() => errBanner.classList.add('hidden'), 8000);
-      throw new Error(errorData.error || `API error: ${response.status}`);
+      return '__TEMP_ERROR__';
     }
 
     const data = await response.json();
     return data.text || '';
   } catch (error) {
     console.error('API error:', error);
-    const errBanner = document.getElementById('error-message');
-    if (!errBanner.textContent) {
-      errBanner.textContent = `Connection error: ${error.message}`;
-      errBanner.classList.remove('hidden');
-      setTimeout(() => errBanner.classList.add('hidden'), 8000);
-    }
-    return '';
+    return '__TEMP_ERROR__';
   }
 }
 
