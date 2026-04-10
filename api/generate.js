@@ -111,26 +111,51 @@ module.exports = async function handler(req, res) {
       return res.status(400).json({ error: 'Prompt is required.' });
     }
 
-    const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${API_KEY}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }]
-        })
+    // Try multiple models with retry on 503 (model overloaded).
+    // gemini-2.5-flash has been experiencing frequent UNAVAILABLE errors,
+    // so we fall back to gemini-2.0-flash and then gemini-flash-latest.
+    const MODELS = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-flash-latest'];
+    const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+    let response;
+    let lastErrorData;
+    let lastStatus;
+    let succeeded = false;
+
+    // Constrained to stay within Vercel's ~10s serverless timeout.
+    // Fast-fail 503s burn ~300-700ms each; a successful generation takes ~3-6s.
+    outer: for (const model of MODELS) {
+      // Retry each model up to 2 times on transient errors
+      for (let attempt = 0; attempt < 2; attempt++) {
+        response = await fetch(
+          `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${API_KEY}`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              contents: [{ parts: [{ text: prompt }] }]
+            })
+          }
+        );
+
+        if (response.ok) { succeeded = true; break outer; }
+
+        lastStatus = response.status;
+        try { lastErrorData = await response.json(); } catch { lastErrorData = {}; }
+
+        // Only retry/fall-back on transient errors (503 UNAVAILABLE, 500, 504)
+        if (lastStatus !== 503 && lastStatus !== 500 && lastStatus !== 504) break outer;
+
+        // Small delay before retrying same model
+        if (attempt === 0) await sleep(400);
       }
-    );
+    }
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      const status = response.status;
-
-      if (status === 429) {
+    if (!succeeded) {
+      if (lastStatus === 429) {
         return res.status(429).json({ error: 'API quota exceeded. Please try again later.' });
       }
-
-      return res.status(status).json({ error: `Gemini API error: ${JSON.stringify(errorData)}` });
+      return res.status(lastStatus || 500).json({ error: `Gemini API error: ${JSON.stringify(lastErrorData)}` });
     }
 
     const data = await response.json();
