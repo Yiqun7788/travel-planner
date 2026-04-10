@@ -1257,6 +1257,7 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
   <div class="upgrade-modal-card">
     <h3>Service Temporarily Busy</h3>
     <p>Our planning service is experiencing high demand right now. Your form is still filled in — just tap <strong>Try Again</strong> to retry.</p>
+    <p id="retry-modal-detail" style="font-size:0.8rem;color:#94a3b8;margin-top:-4px;display:none;"></p>
     <div class="modal-actions">
       <button class="modal-btn-primary" id="retry-modal-retry">Try Again</button>
       <button class="modal-btn-secondary" id="retry-modal-close">Close</button>
@@ -3428,6 +3429,13 @@ Include details like: free parking spots nearby, affordable parking lots/garages
   finishProgress();
 
   if (result === '__TEMP_ERROR__') {
+    const detailEl = document.getElementById('retry-modal-detail');
+    if (window.__lastApiError) {
+      detailEl.textContent = window.__lastApiError;
+      detailEl.style.display = 'block';
+    } else {
+      detailEl.style.display = 'none';
+    }
     document.getElementById('retry-modal').classList.add('active');
     return;
   }
@@ -3586,8 +3594,9 @@ async function callGemini(prompt) {
     });
 
     if (!response.ok) {
-      const errorData = await response.json();
-      console.error('API error:', errorData);
+      let errorData = {};
+      try { errorData = await response.json(); } catch {}
+      console.error('API error:', response.status, errorData);
 
       const errBanner = document.getElementById('error-message');
       if (response.status === 429) {
@@ -3597,13 +3606,25 @@ async function callGemini(prompt) {
         return '';
       }
 
-      return '__TEMP_ERROR__';
+      // Only show retry modal for genuinely transient gateway errors
+      if (response.status === 502 || response.status === 503 || response.status === 504) {
+        window.__lastApiError = 'HTTP ' + response.status + ': ' + (errorData.error || response.statusText || 'Service unavailable');
+        return '__TEMP_ERROR__';
+      }
+
+      // Other errors (500, 400, 403, etc.): show banner and fall through to sample itinerary
+      const msg = errorData.error || 'Something went wrong';
+      errBanner.textContent = 'Error ' + response.status + ': ' + msg + '. Using sample itinerary.';
+      errBanner.classList.remove('hidden');
+      setTimeout(() => errBanner.classList.add('hidden'), 12000);
+      return '';
     }
 
     const data = await response.json();
     return data.text || '';
   } catch (error) {
     console.error('API error:', error);
+    window.__lastApiError = 'Network error: ' + (error.message || 'Could not reach server');
     return '__TEMP_ERROR__';
   }
 }
