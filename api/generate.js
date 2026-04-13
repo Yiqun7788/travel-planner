@@ -113,8 +113,8 @@ module.exports = async function handler(req, res) {
 
     // Try multiple models with retry on 503 (model overloaded).
     // gemini-2.5-flash has been experiencing frequent UNAVAILABLE errors,
-    // so we fall back to gemini-2.0-flash and then gemini-flash-latest.
-    const MODELS = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-flash-latest'];
+    // so we fall back to gemini-2.5-pro and then gemini-1.5-flash.
+    const MODELS = ['gemini-2.5-flash', 'gemini-2.5-pro', 'gemini-1.5-flash'];
     const sleep = ms => new Promise(r => setTimeout(r, ms));
 
     let response;
@@ -143,8 +143,13 @@ module.exports = async function handler(req, res) {
         lastStatus = response.status;
         try { lastErrorData = await response.json(); } catch { lastErrorData = {}; }
 
-        // Only retry/fall-back on transient errors (503 UNAVAILABLE, 500, 504)
-        if (lastStatus !== 503 && lastStatus !== 500 && lastStatus !== 504) break outer;
+        // Transient errors (503, 500, 504): retry same model then fall back
+        // Model gone (404): skip to next model immediately (don't retry)
+        // Hard errors (429, 400, 403, etc.): stop everything
+        if (lastStatus !== 503 && lastStatus !== 500 && lastStatus !== 504) {
+          if (lastStatus === 404) break; // inner break → try next model
+          break outer; // hard error → stop
+        }
 
         // Small delay before retrying same model
         if (attempt === 0) await sleep(400);
