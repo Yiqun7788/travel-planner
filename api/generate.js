@@ -112,10 +112,9 @@ module.exports = async function handler(req, res) {
     }
 
     // Try multiple models with retry on 503 (model overloaded).
-    // gemini-2.5-flash has been experiencing frequent UNAVAILABLE errors,
-    // so we fall back to gemini-2.5-pro and then gemini-1.5-flash.
-    const MODELS = ['gemini-2.5-flash', 'gemini-2.5-pro', 'gemini-1.5-flash'];
-    const sleep = ms => new Promise(r => setTimeout(r, ms));
+    // gemini-2.5-flash can hit UNAVAILABLE spikes, so we fall back to
+    // gemini-2.5-flash-lite (lighter, less contended) then gemini-3-flash-preview.
+    const MODELS = ['gemini-2.5-flash', 'gemini-2.5-flash-lite', 'gemini-3-flash-preview'];
 
     let response;
     let lastErrorData;
@@ -123,37 +122,27 @@ module.exports = async function handler(req, res) {
     let succeeded = false;
 
     // Constrained to stay within Vercel's ~10s serverless timeout.
-    // Fast-fail 503s burn ~300-700ms each; a successful generation takes ~3-6s.
-    outer: for (const model of MODELS) {
-      // Retry each model up to 2 times on transient errors
-      for (let attempt = 0; attempt < 2; attempt++) {
-        response = await fetch(
-          `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${API_KEY}`,
-          {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              contents: [{ parts: [{ text: prompt }] }]
-            })
-          }
-        );
-
-        if (response.ok) { succeeded = true; break outer; }
-
-        lastStatus = response.status;
-        try { lastErrorData = await response.json(); } catch { lastErrorData = {}; }
-
-        // Transient errors (503, 500, 504): retry same model then fall back
-        // Model gone (404): skip to next model immediately (don't retry)
-        // Hard errors (429, 400, 403, etc.): stop everything
-        if (lastStatus !== 503 && lastStatus !== 500 && lastStatus !== 504) {
-          if (lastStatus === 404) break; // inner break → try next model
-          break outer; // hard error → stop
+    // Try each model once; 503 fast-fails (~300ms) so 3 models costs ~1s overhead.
+    for (const model of MODELS) {
+      response = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${API_KEY}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: prompt }] }]
+          })
         }
+      );
 
-        // Small delay before retrying same model
-        if (attempt === 0) await sleep(400);
-      }
+      if (response.ok) { succeeded = true; break; }
+
+      lastStatus = response.status;
+      try { lastErrorData = await response.json(); } catch { lastErrorData = {}; }
+
+      // Transient (503, 500, 504) or model gone (404): try next model
+      // Hard errors (429, 400, 403, etc.): stop immediately
+      if (lastStatus !== 503 && lastStatus !== 500 && lastStatus !== 504 && lastStatus !== 404) break;
     }
 
     if (!succeeded) {
