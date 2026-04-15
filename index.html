@@ -3361,6 +3361,15 @@ For ${travelers} traveler(s), provide:
   const startTime = new Date(start).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
   const endTime = new Date(end).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
 
+  // Build day-of-week mapping so Gemini can avoid scheduling places on closed days
+  const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+  let dayOfWeekMap = '';
+  for (let i = 0; i < days; i++) {
+    const d = new Date(start);
+    d.setDate(d.getDate() + i);
+    dayOfWeekMap += `Day ${i + 1} = ${dayNames[d.getDay()]}${i < days - 1 ? ', ' : ''}`;
+  }
+
   const prompt = `
 SPELLING CORRECTION: On the very first line of your response, output the correctly spelled destination name(s) in this exact format:
 CorrectedDestinations: City1, City2, City3
@@ -3393,6 +3402,11 @@ IMPORTANT - For EVERY place, attraction, restaurant, and activity mentioned in t
 3. Address (full street address)
 4. Opening hours (e.g., "Open: 9:00 AM - 5:00 PM, Closed Mondays")
 5. Entry fees or price range (e.g., "Fee: $15 adults, $10 children" or "Free admission" or "$$$ - expensive")
+
+AVAILABILITY CHECK — The calendar days for this trip are: ${dayOfWeekMap}.
+For each place you recommend, consider whether it is typically closed or restricted on that day of the week (e.g., many museums close on Mondays, some churches and cathedrals restrict tourist visits on Sundays, certain restaurants close mid-week, etc.).
+Do NOT schedule a place on a day it is known to be closed or unavailable to tourists. If a must-see attraction is closed on the day it would naturally fit, move it to another day when it is open and briefly note why (e.g., "Moved to Day 3 since it is closed on Mondays").
+If a place is closed on ALL days of the trip, mention it as a note but do not include it as a scheduled stop.
 
 Format each place like this:
 **Place Name** — Brief description (5-10 words about what makes this place notable)
