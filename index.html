@@ -4940,7 +4940,7 @@ Include details like: free parking spots nearby, affordable parking lots/garages
 
   const originNote = tripData.origin ? `\nThe traveler starts from ${tripData.origin} (not from an airport or station). Day 1 begins with the journey from ${tripData.origin}. The last day ends with the return to ${tripData.origin}.` : '';
   const contextNote = tripData.additionalInstructions ? `\n\nOriginal trip guidance (keep following these): ${tripData.additionalInstructions}` : '';
-  const prompt = `Based on this itinerary:\n\n${tripData.itinerary}${originNote}${contextNote}\n\nPlease update it with this instruction: ${fullInstruction}${placeDetailsInstruction}${ticketTipsInstruction}`;
+  const prompt = `Based on this itinerary:\n\n${tripData.itinerary}${originNote}${contextNote}\n\nPlease update it with this instruction: ${fullInstruction}\n\nCRITICAL: Keep every activity on the SAME day and in the SAME order as the original itinerary unless the user's instruction explicitly requires moving it to a different day. Only change what the user asked for — do NOT reorganize, reorder, or shuffle other activities across days.${placeDetailsInstruction}${ticketTipsInstruction}`;
   const result = await callGemini(prompt);
 
   finishProgress();
