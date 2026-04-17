@@ -2908,9 +2908,9 @@ function toggleLongDistance() {
     group.classList.remove('hidden');
     helper.classList.add('hidden');
     section.style.opacity = '1';
-    // Show round-trip option only when Car is checked
-    const carChecked = group.querySelector('input[value="Car"]').checked;
-    if (carChecked) {
+    // Show round-trip option when any long-distance transport is checked
+    const anyLongDistChecked = group.querySelector('input:checked');
+    if (anyLongDistChecked) {
       roundTripEl.classList.remove('hidden');
     } else {
       roundTripEl.classList.add('hidden');
@@ -3463,7 +3463,7 @@ ${longDistance.includes('Car') ? `
 PARKING & DRIVING TIPS: The traveler is driving by car. For EVERY stop/attraction, include a practical parking tip right after the fee line. Use this format:
 - Parking: [specific advice for that location]
 Include details like: free parking spots nearby, affordable parking lots/garages with approximate rates, or park-and-ride options (e.g., "Park at [specific lot/station] and take the metro into the city center"). Tailor the advice to each specific location — mention actual lot names, streets, or transit stations when possible.` : ''}${roundTrip && !origin && getDestinationCount(dest) > 1 ? `
-ROUND TRIP: The traveler is driving a round trip. The last day MUST end with the drive back to ${dest.split(/[,;\u3001]/)[0].trim()} to complete the loop. Include driving time and distance for the return leg.` : ''}${ticketTipsInstruction}
+ROUND TRIP: The traveler is making a round trip${longDistance.length === 1 ? ' by ' + longDistance[0].toLowerCase() : ''}. The last day MUST end with the return journey back to ${dest.split(/[,;\u3001]/)[0].trim()} to complete the loop. Include estimated travel time and distance for the return leg.` : ''}${ticketTipsInstruction}
 `;
 
   const result = await callGemini(prompt);
@@ -4967,7 +4967,7 @@ Replace spaces with + in each place name. Include the city name. Separate stops 
 PARKING & DRIVING TIPS: The traveler is driving by car. For EVERY stop/attraction, include a practical parking tip right after the fee line. Use this format:
 - Parking: [specific advice for that location]
 Include details like: free parking spots nearby, affordable parking lots/garages with approximate rates, or park-and-ride options (e.g., "Park at [specific lot/station] and take the metro into the city center"). Tailor the advice to each specific location.` : ''}${tripData.roundTrip && !tripData.origin && getDestinationCount(tripData.destination) > 1 ? `
-ROUND TRIP: The traveler is driving a round trip. The last day MUST end with the drive back to ${tripData.destination.split(/[,;\u3001]/)[0].trim()} to complete the loop. Include driving time and distance for the return leg.` : ''}`;
+ROUND TRIP: The traveler is making a round trip${(tripData.longDistance || []).length === 1 ? ' by ' + tripData.longDistance[0].toLowerCase() : ''}. The last day MUST end with the return journey back to ${tripData.destination.split(/[,;\u3001]/)[0].trim()} to complete the loop. Include estimated travel time and distance for the return leg.` : ''}`;
 
   const originNote = tripData.origin ? `\nThe traveler starts from ${tripData.origin} (not from an airport or station). Day 1 begins with the journey from ${tripData.origin}. The last day ends with the return to ${tripData.origin}.` : '';
   const contextNote = tripData.additionalInstructions ? `\n\nOriginal trip guidance (keep following these): ${tripData.additionalInstructions}` : '';
