@@ -1765,11 +1765,15 @@ try {
   supabaseClient.auth.onAuthStateChange(function(event, session) {
     if (event === 'SIGNED_IN' && session && session.user) {
       currentUser = session.user;
-      try { localStorage.removeItem('savedTrip'); } catch {}
       if (!userProfile) {
         loadUserProfile().then(function() {
           return migrateLocalDataToProfile();
         }).then(function() {
+          // Save any guest-generated trip to Supabase now that user is signed in
+          if (tripData.itinerary && !tripData._supabaseTripId) {
+            saveCurrentTripToSupabase();
+          }
+          try { localStorage.removeItem('savedTrip'); } catch {}
           updateAuthUI();
           if (typeof pendingPurchasePriceType !== 'undefined' && pendingPurchasePriceType) {
             var pt = pendingPurchasePriceType;
