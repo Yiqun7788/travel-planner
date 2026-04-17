@@ -562,13 +562,13 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
   opacity: 0.5; cursor: not-allowed;
 }
 .download-menu-item-locked:hover { background: transparent; }
-#upgrade-modal, #finalize-modal, #confirm-new-trip-modal, #download-gate-modal, #sign-in-gate-modal, #auth-modal, #my-trips-modal, #retry-modal {
+#upgrade-modal, #finalize-modal, #confirm-new-trip-modal, #download-gate-modal, #sign-in-gate-modal, #guest-or-signin-modal, #auth-modal, #my-trips-modal, #retry-modal {
   position: fixed; inset: 0; z-index: 1100;
   background: rgba(0,0,0,0.4); backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
   display: none; justify-content: center; align-items: center;
 }
-#upgrade-modal.active, #finalize-modal.active, #confirm-new-trip-modal.active, #download-gate-modal.active, #sign-in-gate-modal.active, #auth-modal.active, #my-trips-modal.active, #retry-modal.active { display: flex; }
+#upgrade-modal.active, #finalize-modal.active, #confirm-new-trip-modal.active, #download-gate-modal.active, #sign-in-gate-modal.active, #guest-or-signin-modal.active, #auth-modal.active, #my-trips-modal.active, #retry-modal.active { display: flex; }
 #sign-in-gate-modal { z-index: 1300; }
 .upgrade-modal-card {
   background: #fff; border-radius: 18px; padding: 32px 28px;
@@ -1155,6 +1155,21 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
     <div class="modal-actions">
       <button class="modal-btn-primary" id="sign-in-gate-signin">Sign In First</button>
       <button class="modal-btn-secondary" id="sign-in-gate-guest">Continue as Guest</button>
+    </div>
+  </div>
+</div>
+
+<!-- Guest-or-SignIn Modal -->
+<div id="guest-or-signin-modal">
+  <div class="upgrade-modal-card">
+    <h3>&#128506; Create My Trip</h3>
+    <p style="text-align:left;font-size:0.95rem;line-height:1.7;margin:12px 0 18px">
+      <strong>&#128274; As a guest:</strong> Your trip is saved on this browser only &mdash; if you clear data or switch devices, it's gone.<br><br>
+      <strong>&#9989; With sign-in:</strong> Your trip is linked to your account &mdash; access it on any device, anytime.
+    </p>
+    <div class="modal-actions">
+      <button class="modal-btn-primary" id="guest-modal-signin">Sign In / Sign Up</button>
+      <button class="modal-btn-secondary" id="guest-modal-guest">Continue as Guest</button>
     </div>
   </div>
 </div>
@@ -1779,6 +1794,10 @@ try {
             var pt = pendingPurchasePriceType;
             pendingPurchasePriceType = null;
             purchaseCredits(pt);
+          }
+          if (pendingNavigateToPlanning) {
+            pendingNavigateToPlanning = false;
+            showView('planning');
           }
         });
       }
@@ -2569,6 +2588,7 @@ document.getElementById('pricing-btn-free').addEventListener('click', function()
   closePricingModal();
 });
 var pendingPurchasePriceType = null;
+var pendingNavigateToPlanning = false;
 document.getElementById('pricing-btn-trip-pack').addEventListener('click', function() {
   if (currentUser) { purchaseCredits('trip_pack'); return; }
   pendingPurchasePriceType = 'trip_pack';
@@ -2665,6 +2685,16 @@ document.getElementById('sign-in-gate-guest').addEventListener('click', function
   pendingPurchasePriceType = null;
   if (pt) purchaseCredits(pt);
 });
+// ─── Guest-or-SignIn Modal handlers ───
+document.getElementById('guest-modal-signin').addEventListener('click', function() {
+  document.getElementById('guest-or-signin-modal').classList.remove('active');
+  pendingNavigateToPlanning = true;
+  openAuthModal();
+});
+document.getElementById('guest-modal-guest').addEventListener('click', function() {
+  document.getElementById('guest-or-signin-modal').classList.remove('active');
+  showView('planning');
+});
 // Close modals on backdrop click
 document.addEventListener('click', function(e) {
   if (e.target.id === 'pricing-modal') closePricingModal();
@@ -2673,6 +2703,7 @@ document.addEventListener('click', function(e) {
   if (e.target.id === 'confirm-new-trip-modal') document.getElementById('confirm-new-trip-modal').classList.remove('active');
   if (e.target.id === 'download-gate-modal') document.getElementById('download-gate-modal').classList.remove('active');
   if (e.target.id === 'sign-in-gate-modal') document.getElementById('sign-in-gate-modal').classList.remove('active');
+  if (e.target.id === 'guest-or-signin-modal') document.getElementById('guest-or-signin-modal').classList.remove('active');
   if (e.target.id === 'auth-modal') closeAuthModal();
   if (e.target.id === 'my-trips-modal') closeMyTrips();
   if (e.target.id === 'retry-modal') document.getElementById('retry-modal').classList.remove('active');
@@ -2686,6 +2717,7 @@ document.addEventListener('keydown', function(e) {
     document.getElementById('confirm-new-trip-modal').classList.remove('active');
     document.getElementById('download-gate-modal').classList.remove('active');
     document.getElementById('sign-in-gate-modal').classList.remove('active');
+    document.getElementById('guest-or-signin-modal').classList.remove('active');
     document.getElementById('retry-modal').classList.remove('active');
     closeAuthModal();
     closeMyTrips();
@@ -5157,7 +5189,11 @@ function showView(viewName) {
 }
 
 function showPlanningView() {
-  showView('planning');
+  if (currentUser) {
+    showView('planning');
+  } else {
+    document.getElementById('guest-or-signin-modal').classList.add('active');
+  }
 }
 
 function showHomeView() {
