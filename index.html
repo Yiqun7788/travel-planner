@@ -1490,6 +1490,9 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
         <label class="option-card"><input type="checkbox" value="Long-Distance Bus"> <span class="option-icon">&#128653;</span> <span class="flex flex-col leading-tight"><span data-i18n="longDistanceBus">Long-Distance Bus</span><span class="text-xs text-slate-400" data-i18n="longDistanceBusDesc">(e.g., FlixBus, coach services)</span></span></label>
         <label class="option-card"><input type="checkbox" value="Boat"> <span class="option-icon">&#9973;</span> <span data-i18n="boat">Boat</span></label>
       </div>
+      <div id="round-trip-option" class="hidden mt-2">
+        <label class="option-card"><input type="checkbox" id="round-trip-checkbox"> <span class="option-icon">&#128260;</span> <span>Round Trip</span><span class="text-xs text-slate-400 ml-1">(return to starting point)</span></label>
+      </div>
     </div>
 
     <!-- Local Transportation -->
@@ -2007,6 +2010,7 @@ async function saveCurrentTripToSupabase() {
       currency: tripData.currency || 'USD',
       additional_instructions: tripData.additionalInstructions || '',
       wants_cheap_tickets: tripData.wantsCheapTickets || false,
+      round_trip: tripData.roundTrip || false,
       itinerary: tripData.itinerary,
       trip_finalized: tripData.tripFinalized || false,
       packing_list_used: tripData.packingListUsed || false,
@@ -2087,6 +2091,7 @@ async function loadTrip(tripId) {
     tripData.currency = t.currency || 'USD';
     tripData.additionalInstructions = t.additional_instructions || '';
     tripData.wantsCheapTickets = t.wants_cheap_tickets || false;
+    tripData.roundTrip = t.round_trip || false;
     tripData.tripFinalized = t.trip_finalized || false;
     tripData.packingListUsed = t.packing_list_used || false;
     tripData.funFactUsed = t.fun_fact_used || false;
@@ -2134,6 +2139,7 @@ var tripData = {
   pace: 'Medium',
   additionalInstructions: '',
   wantsCheapTickets: false,
+  roundTrip: false,
   tripFinalized: false,
   packingListUsed: false,
   funFactUsed: false
@@ -2894,21 +2900,35 @@ function toggleLongDistance() {
   const destCount = getDestinationCount(document.getElementById('destination').value);
   const limits = getTierLimits();
 
+  const roundTripEl = document.getElementById('round-trip-option');
+  const roundTripCb = document.getElementById('round-trip-checkbox');
+
   if (limits.maxDestinations > 1 && destCount > 1) {
     // Multi-destination on paid tier: show transport options
     group.classList.remove('hidden');
     helper.classList.add('hidden');
     section.style.opacity = '1';
+    // Show round-trip option only when Car is checked
+    const carChecked = group.querySelector('input[value="Car"]').checked;
+    if (carChecked) {
+      roundTripEl.classList.remove('hidden');
+    } else {
+      roundTripEl.classList.add('hidden');
+      roundTripCb.checked = false;
+    }
   } else {
     // Single destination or free tier: hide transport options
     group.querySelectorAll('input:checked').forEach(cb => cb.checked = false);
     group.classList.add('hidden');
     helper.classList.remove('hidden');
     section.style.opacity = '0.7';
+    roundTripEl.classList.add('hidden');
+    roundTripCb.checked = false;
   }
 }
 
 document.getElementById('destination').addEventListener('input', toggleLongDistance);
+document.getElementById('long-distance-group').addEventListener('change', toggleLongDistance);
 // Run on page load to set initial state
 toggleLongDistance();
 
@@ -2961,6 +2981,7 @@ toggleLongDistance();
       tripData.pace = 'Medium';
       tripData.additionalInstructions = '';
       tripData.wantsCheapTickets = false;
+      tripData.roundTrip = false;
       tripData.tripFinalized = false;
       tripData.packingListUsed = false;
       tripData.funFactUsed = false;
@@ -2979,6 +3000,7 @@ toggleLongDistance();
       document.getElementById('additional-instructions').value = '';
       document.getElementById('other-interests').value = '';
       document.getElementById('cheap-tickets-checkbox').checked = false;
+      document.getElementById('round-trip-checkbox').checked = false;
       // Uncheck all interest checkboxes
       document.querySelectorAll('#interests-group input[type="checkbox"]').forEach(function(cb) { cb.checked = false; });
       // Uncheck all transportation checkboxes
@@ -3321,6 +3343,9 @@ document.getElementById('generate-button').addEventListener('click', async () =>
   // Check if cheap tickets checkbox is selected
   const wantsCheapTickets = document.getElementById('cheap-tickets-checkbox').checked;
 
+  // Check if round trip checkbox is selected
+  const roundTrip = document.getElementById('round-trip-checkbox').checked;
+
   const langMap = {
     en:"English", zh:"Simplified Chinese", ja:"Japanese",
     de:"German", es:"Spanish", fr:"French"
@@ -3437,7 +3462,8 @@ At the VERY BEGINNING of each day (right after the day heading like "## Day 1"),
 ${longDistance.includes('Car') ? `
 PARKING & DRIVING TIPS: The traveler is driving by car. For EVERY stop/attraction, include a practical parking tip right after the fee line. Use this format:
 - Parking: [specific advice for that location]
-Include details like: free parking spots nearby, affordable parking lots/garages with approximate rates, or park-and-ride options (e.g., "Park at [specific lot/station] and take the metro into the city center"). Tailor the advice to each specific location — mention actual lot names, streets, or transit stations when possible.` : ''}${ticketTipsInstruction}
+Include details like: free parking spots nearby, affordable parking lots/garages with approximate rates, or park-and-ride options (e.g., "Park at [specific lot/station] and take the metro into the city center"). Tailor the advice to each specific location — mention actual lot names, streets, or transit stations when possible.` : ''}${roundTrip && !origin && getDestinationCount(dest) > 1 ? `
+ROUND TRIP: The traveler is driving a round trip. The last day MUST end with the drive back to ${dest.split(/[,;\u3001]/)[0].trim()} to complete the loop. Include driving time and distance for the return leg.` : ''}${ticketTipsInstruction}
 `;
 
   const result = await callGemini(prompt);
@@ -3547,6 +3573,7 @@ Include details like: free parking spots nearby, affordable parking lots/garages
   tripData.pace = pace;
   tripData.additionalInstructions = document.getElementById('additional-instructions').value.trim();
   tripData.wantsCheapTickets = wantsCheapTickets;
+  tripData.roundTrip = roundTrip;
   saveTripSession();
 
   // Tier: track generation + credit consumption + reset update counter
@@ -4750,7 +4777,8 @@ function readPlanningInputs() {
   const pace = document.querySelector('input[name="pace"]:checked').value;
   const additionalInstructions = document.getElementById('additional-instructions').value.trim();
   const wantsCheapTickets = document.getElementById('cheap-tickets-checkbox').checked;
-  return { origin, destination: dest, days, startDate: start, endDate: end, interests, longDistance, localTransport, transportation, travelers, budget, currency, pace, additionalInstructions, wantsCheapTickets };
+  const roundTrip = document.getElementById('round-trip-checkbox').checked;
+  return { origin, destination: dest, days, startDate: start, endDate: end, interests, longDistance, localTransport, transportation, travelers, budget, currency, pace, additionalInstructions, wantsCheapTickets, roundTrip };
 }
 
 function detectPlanningChanges(newInputs) {
@@ -4771,6 +4799,7 @@ function detectPlanningChanges(newInputs) {
   if (newTransport !== oldTransport) changes.push(`transportation changed to: ${newInputs.transportation.join(', ')}`);
   if (newInputs.pace && newInputs.pace !== tripData.pace) changes.push(`pace changed from ${tripData.pace} to ${newInputs.pace}`);
   if (newInputs.wantsCheapTickets !== tripData.wantsCheapTickets) changes.push(newInputs.wantsCheapTickets ? 'added cheap ticket tips' : 'removed cheap ticket tips');
+  if (newInputs.roundTrip !== (tripData.roundTrip || false)) changes.push(newInputs.roundTrip ? 'changed to round trip (return to starting point)' : 'changed to one-way trip');
   // additionalInstructions is NOT a planning change — it's silently synced and included as persistent context in updates
   return changes;
 }
@@ -4883,6 +4912,7 @@ document.getElementById('update-itinerary-btn').addEventListener('click', async 
     tripData.currency = newInputs.currency;
     tripData.pace = newInputs.pace;
     tripData.wantsCheapTickets = newInputs.wantsCheapTickets;
+    tripData.roundTrip = newInputs.roundTrip;
     // additionalInstructions already synced in showPlanningChangesSummary()
     // Update header to reflect new destination/days
     document.getElementById('results-title').textContent = `Your Trip: ${tripData.destination} (${tripData.days} days)`;
@@ -4936,7 +4966,8 @@ Replace spaces with + in each place name. Include the city name. Separate stops 
 
 PARKING & DRIVING TIPS: The traveler is driving by car. For EVERY stop/attraction, include a practical parking tip right after the fee line. Use this format:
 - Parking: [specific advice for that location]
-Include details like: free parking spots nearby, affordable parking lots/garages with approximate rates, or park-and-ride options (e.g., "Park at [specific lot/station] and take the metro into the city center"). Tailor the advice to each specific location.` : ''}`;
+Include details like: free parking spots nearby, affordable parking lots/garages with approximate rates, or park-and-ride options (e.g., "Park at [specific lot/station] and take the metro into the city center"). Tailor the advice to each specific location.` : ''}${tripData.roundTrip && !tripData.origin && getDestinationCount(tripData.destination) > 1 ? `
+ROUND TRIP: The traveler is driving a round trip. The last day MUST end with the drive back to ${tripData.destination.split(/[,;\u3001]/)[0].trim()} to complete the loop. Include driving time and distance for the return leg.` : ''}`;
 
   const originNote = tripData.origin ? `\nThe traveler starts from ${tripData.origin} (not from an airport or station). Day 1 begins with the journey from ${tripData.origin}. The last day ends with the return to ${tripData.origin}.` : '';
   const contextNote = tripData.additionalInstructions ? `\n\nOriginal trip guidance (keep following these): ${tripData.additionalInstructions}` : '';
@@ -5119,6 +5150,9 @@ function scrollToExample() {
       const paceRadio = document.querySelector('input[name="pace"][value="' + tripData.pace + '"]');
       if (paceRadio) paceRadio.checked = true;
     }
+    // Restore round-trip checkbox and visibility
+    document.getElementById('round-trip-checkbox').checked = tripData.roundTrip || false;
+    toggleLongDistance();
     // Restore all button states (generate gate, finalize, extras)
     applyTierUI();
     // Show sign-in nudge for guest users on restore
