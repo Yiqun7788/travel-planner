@@ -2052,12 +2052,17 @@ async function saveCurrentTripToSupabase() {
 
     // Check if we already have a saved trip ID for this session
     if (tripData._supabaseTripId) {
-      await supabaseClient.from('trips').update(tripRecord).eq('id', tripData._supabaseTripId);
+      var res = await supabaseClient.from('trips').update(tripRecord).eq('id', tripData._supabaseTripId);
+      if (res.error) console.error('Trip update failed:', res.error.message, res.error);
     } else {
       var result = await supabaseClient.from('trips').insert(tripRecord).select('id').single();
-      if (result.data) tripData._supabaseTripId = result.data.id;
+      if (result.error) {
+        console.error('Trip insert failed:', result.error.message, result.error);
+      } else if (result.data) {
+        tripData._supabaseTripId = result.data.id;
+      }
     }
-  } catch (e) { console.warn('Trip save failed:', e.message); }
+  } catch (e) { console.error('Trip save exception:', e.message); }
 }
 
 function openMyTrips() {
@@ -3668,6 +3673,10 @@ ROUND TRIP: The traveler is making a round trip${longDistance.length === 1 ? ' b
     if (mobileUpdateBtn) mobileUpdateBtn.classList.remove('tool-btn-disabled');
   }
 
+  // Save trip to Supabase for logged-in users (before rendering, which may throw)
+  tripData._supabaseTripId = null; // New trip, get fresh ID
+  saveCurrentTripToSupabase();
+
   document.getElementById('results-title').textContent = `Your Trip: ${dest} (${days} days)`;
   const routeMapHtml = buildLongDistanceRouteMap(dest, longDistance, origin);
   document.getElementById('content-display').innerHTML = routeMapHtml + linkifyUrls(marked.parse(processDailyRoutes(finalResult)));
@@ -3675,10 +3684,6 @@ ROUND TRIP: The traveler is making a round trip${longDistance.length === 1 ? ' b
   renderTripOverview();
   renderActiveInstructionsLabel();
   renderBookingSection();
-
-  // Save trip to Supabase for logged-in users
-  tripData._supabaseTripId = null; // New trip, get fresh ID
-  saveCurrentTripToSupabase();
 
   document.getElementById('home-view').classList.add('hidden');
   document.getElementById('planning-view').classList.add('hidden');
@@ -4127,6 +4132,7 @@ function restructureItinerary() {
         const fullSpan = document.createElement('span');
         fullSpan.className = 'stop-full-desc';
         fullSpan.id = descId;
+        fullSpan.style.display = 'none';
         fullSpan.textContent = fullDesc;
         const more = document.createElement('button');
         more.type = 'button';
@@ -4137,10 +4143,11 @@ function restructureItinerary() {
         more.textContent = 'Read more\u2026';
         more.addEventListener('click', function(e) {
           e.stopPropagation();
-          const isExpanded = fullSpan.classList.toggle('expanded');
-          shortSpan.style.display = isExpanded ? 'none' : '';
-          more.textContent = isExpanded ? 'Read less' : 'Read more\u2026';
-          more.setAttribute('aria-expanded', String(isExpanded));
+          var showing = more.getAttribute('aria-expanded') === 'true';
+          fullSpan.style.display = showing ? 'none' : 'inline';
+          shortSpan.style.display = showing ? '' : 'none';
+          more.textContent = showing ? 'Read more\u2026' : 'Read less';
+          more.setAttribute('aria-expanded', String(!showing));
         });
         descDiv.appendChild(shortSpan);
         descDiv.appendChild(fullSpan);
@@ -4237,7 +4244,8 @@ function restructureItinerary() {
     // Toggle logic for Details button
     if (hasDetails) {
       const detailsBtn = card.querySelector('.stop-details-btn');
-      detailsBtn.addEventListener('click', function() {
+      detailsBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
         const expanded = card.classList.toggle('open');
         detailsBtn.setAttribute('aria-expanded', String(expanded));
       });
@@ -4567,6 +4575,32 @@ function restructureItinerary() {
   }
 }
 
+// Delegated handler for "Read more" toggles (fallback for inline handlers)
+document.addEventListener('click', function(e) {
+  var btn = e.target.closest('[data-readmore-toggle]');
+  if (!btn) return;
+  e.stopPropagation();
+  var targetId = btn.getAttribute('aria-controls');
+  var fullEl = document.getElementById(targetId);
+  if (!fullEl) return;
+  var shortEl = fullEl.previousElementSibling;
+  var showing = btn.getAttribute('aria-expanded') === 'true';
+  fullEl.style.display = showing ? 'none' : 'inline';
+  if (shortEl) shortEl.style.display = showing ? '' : 'none';
+  btn.textContent = showing ? 'Read more\u2026' : 'Read less';
+  btn.setAttribute('aria-expanded', String(!showing));
+});
+
+// Delegated handler for "Details" toggles (fallback for inline handlers)
+document.addEventListener('click', function(e) {
+  var btn = e.target.closest('[data-details-toggle]');
+  if (!btn) return;
+  var card = btn.closest('.stop-card');
+  if (!card) return;
+  var expanded = card.classList.toggle('open');
+  btn.setAttribute('aria-expanded', String(expanded));
+});
+
 document.getElementById('back-button').addEventListener('click', () => {
   document.getElementById('home-view').classList.add('hidden');
   document.getElementById('results-view').classList.add('hidden');
@@ -4639,7 +4673,7 @@ document.getElementById('download-html').addEventListener('click', () => {
     overviewHtml += '</ul></nav>';
   }
   clone.querySelectorAll('.stop-card.open').forEach(c => c.classList.remove('open'));
-  clone.querySelectorAll('.stop-full-desc.expanded').forEach(el => el.classList.remove('expanded'));
+  clone.querySelectorAll('.stop-full-desc').forEach(el => { el.style.display = ''; el.classList.remove('expanded'); });
   clone.querySelectorAll('.mobile-action-bar').forEach(el => el.remove());
   const bodyContent = clone.innerHTML;
 
@@ -4738,10 +4772,11 @@ document.addEventListener('click',function(e){
   var fullEl=document.getElementById(targetId);
   if(!fullEl)return;
   var shortEl=fullEl.previousElementSibling;
-  var isExpanded=fullEl.classList.toggle('expanded');
-  if(shortEl)shortEl.style.display=isExpanded?'none':'';
-  btn.textContent=isExpanded?'Read less':'Read more\\u2026';
-  btn.setAttribute('aria-expanded',String(isExpanded));
+  var showing=btn.getAttribute('aria-expanded')==='true';
+  fullEl.style.display=showing?'none':'inline';
+  if(shortEl)shortEl.style.display=showing?'':'none';
+  btn.textContent=showing?'Read more\\u2026':'Read less';
+  btn.setAttribute('aria-expanded',String(!showing));
 });
 document.addEventListener('click',function(e){
   var btn=e.target.closest('[data-details-toggle]');
@@ -5065,6 +5100,9 @@ ROUND TRIP: The traveler is making a round trip${(tripData.longDistance || []).l
   if (result) {
     tripData.itinerary = result;
     saveTripSession();
+    // Save updated trip to Supabase (before rendering, which may throw)
+    saveCurrentTripToSupabase();
+
     const routeMapHtml = buildLongDistanceRouteMap(tripData.destination, tripData.longDistance || [], tripData.origin);
     document.getElementById('content-display').innerHTML = routeMapHtml + linkifyUrls(marked.parse(processDailyRoutes(result)));
     restructureItinerary();
@@ -5074,9 +5112,6 @@ ROUND TRIP: The traveler is making a round trip${(tripData.longDistance || []).l
     document.getElementById('update-instruction').value = '';
     document.getElementById('planning-changes-summary').innerHTML = '';
     document.getElementById('planning-changes-summary').classList.add('hidden');
-
-    // Save updated trip to Supabase
-    saveCurrentTripToSupabase();
     // Tier: track update usage
     incrementUpdates();
     if (getUpdatesThisItinerary() >= getTierLimits().maxUpdatesPerItinerary) {
