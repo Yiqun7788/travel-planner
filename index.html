@@ -562,13 +562,13 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
   opacity: 0.5; cursor: not-allowed;
 }
 .download-menu-item-locked:hover { background: transparent; }
-#upgrade-modal, #finalize-modal, #confirm-new-trip-modal, #download-gate-modal, #sign-in-gate-modal, #guest-or-signin-modal, #auth-modal, #my-trips-modal, #retry-modal {
+#upgrade-modal, #finalize-modal, #confirm-new-trip-modal, #download-gate-modal, #sign-in-gate-modal, #guest-or-signin-modal, #auth-modal, #retry-modal {
   position: fixed; inset: 0; z-index: 1100;
   background: rgba(0,0,0,0.4); backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
   display: none; justify-content: center; align-items: center;
 }
-#upgrade-modal.active, #finalize-modal.active, #confirm-new-trip-modal.active, #download-gate-modal.active, #sign-in-gate-modal.active, #guest-or-signin-modal.active, #auth-modal.active, #my-trips-modal.active, #retry-modal.active { display: flex; }
+#upgrade-modal.active, #finalize-modal.active, #confirm-new-trip-modal.active, #download-gate-modal.active, #sign-in-gate-modal.active, #guest-or-signin-modal.active, #auth-modal.active, #retry-modal.active { display: flex; }
 #sign-in-gate-modal { z-index: 1300; }
 .upgrade-modal-card {
   background: #fff; border-radius: 18px; padding: 32px 28px;
@@ -692,26 +692,6 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
 .user-menu-item:hover { background: #f1f5f9; }
 .user-menu-item.danger { color: #ef4444; }
 .user-menu-item.danger:hover { background: #fef2f2; }
-/* My Trips Modal */
-.my-trips-card {
-  background: #fff; border-radius: 18px; padding: 28px;
-  max-width: 560px; width: 92%; max-height: 80vh;
-  box-shadow: 0 20px 60px rgba(0,0,0,0.2);
-  animation: fadeInUp 0.25s ease-out; position: relative;
-}
-.my-trips-card h3 { font-size: 1.2rem; font-weight: 800; color: #1e293b; margin: 0 0 16px; }
-.my-trips-list { overflow-y: auto; max-height: 60vh; }
-.my-trips-list:empty::after {
-  content: 'No saved trips yet. Generate and finalize a trip to save it here.';
-  display: block; text-align: center; color: #94a3b8; font-size: 0.9rem; padding: 32px 0;
-}
-.my-trip-item {
-  padding: 14px 16px; border: 1.5px solid #e2e8f0; border-radius: 12px;
-  margin-bottom: 10px; cursor: pointer; transition: border-color 0.15s, background 0.15s;
-}
-.my-trip-item:hover { border-color: #0ea5e9; background: #f0f9ff; }
-.my-trip-item h4 { font-size: 0.95rem; font-weight: 700; color: #1e293b; margin: 0 0 4px; }
-.my-trip-item p { font-size: 0.82rem; color: #64748b; margin: 0; }
 
 /* ─── Pricing Modal ─── */
 #pricing-modal {
@@ -1198,14 +1178,6 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
   </div>
 </div>
 
-<!-- My Trips Modal -->
-<div id="my-trips-modal">
-  <div class="my-trips-card">
-    <button class="auth-close-btn" onclick="closeMyTrips()">&times;</button>
-    <h3>My Trips</h3>
-    <div class="my-trips-list" id="my-trips-list"></div>
-  </div>
-</div>
 
 <!-- Pricing Modal -->
 <div id="pricing-modal">
@@ -1296,7 +1268,6 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
           <span id="user-display-name"></span>
         </button>
         <div id="user-menu-dropdown">
-          <button class="user-menu-item" onclick="openMyTrips()">My Trips</button>
           <button class="user-menu-item danger" onclick="signOut()">Sign Out</button>
         </div>
       </div>
@@ -1784,10 +1755,6 @@ try {
         loadUserProfile().then(function() {
           return migrateLocalDataToProfile();
         }).then(function() {
-          // Save any guest-generated trip to Supabase now that user is signed in
-          if (tripData.itinerary && !tripData._supabaseTripId) {
-            saveCurrentTripToSupabase();
-          }
           try { localStorage.removeItem('savedTrip'); } catch {}
           updateAuthUI();
           if (typeof pendingPurchasePriceType !== 'undefined' && pendingPurchasePriceType) {
@@ -2019,148 +1986,6 @@ async function migrateLocalDataToProfile() {
   } catch (e) { console.warn('Migration failed:', e.message); }
 }
 
-async function saveCurrentTripToSupabase() {
-  if (!supabaseClient || !currentUser || !tripData.itinerary) return;
-  try {
-    var dest = tripData.destination || '';
-    var tripRecord = {
-      user_id: currentUser.id,
-      destination: dest,
-      origin: tripData.origin || '',
-      days: tripData.days || 1,
-      start_date: tripData.startDate ? tripData.startDate.split('T')[0] : null,
-      end_date: tripData.endDate ? tripData.endDate.split('T')[0] : null,
-      travelers: tripData.travelers || 1,
-      interests: tripData.interests || [],
-      transportation: tripData.transportation || [],
-      long_distance: tripData.longDistance || [],
-      local_transport: tripData.localTransport || [],
-      pace: tripData.pace || 'Medium',
-      budget: tripData.budget || '',
-      currency: tripData.currency || 'USD',
-      additional_instructions: tripData.additionalInstructions || '',
-      wants_cheap_tickets: tripData.wantsCheapTickets || false,
-      round_trip: tripData.roundTrip || false,
-      already_booked: tripData.alreadyBooked || [],
-      itinerary: tripData.itinerary,
-      trip_finalized: tripData.tripFinalized || false,
-      packing_list_used: tripData.packingListUsed || false,
-      fun_fact_used: tripData.funFactUsed || false,
-      updates_count: tripData.updatesCount || 0,
-      is_paid_trip: sessionStorage.getItem('currentTripPaid') === 'true'
-    };
-
-    // Check if we already have a saved trip ID for this session
-    if (tripData._supabaseTripId) {
-      var res = await supabaseClient.from('trips').update(tripRecord).eq('id', tripData._supabaseTripId);
-      if (res.error) console.error('Trip update failed:', res.error.message, res.error);
-    } else {
-      var result = await supabaseClient.from('trips').insert(tripRecord).select('id').single();
-      if (result.error) {
-        console.error('Trip insert failed:', result.error.message, result.error);
-      } else if (result.data) {
-        tripData._supabaseTripId = result.data.id;
-      }
-    }
-  } catch (e) { console.error('Trip save exception:', e.message); }
-}
-
-function openMyTrips() {
-  if (!currentUser) { openAuthModal(); return; }
-  document.getElementById('user-menu-dropdown').classList.remove('active');
-  document.getElementById('my-trips-modal').classList.add('active');
-  loadMyTrips();
-}
-
-function closeMyTrips() {
-  document.getElementById('my-trips-modal').classList.remove('active');
-}
-
-async function loadMyTrips() {
-  var listEl = document.getElementById('my-trips-list');
-  listEl.innerHTML = '<p style="text-align:center;color:#94a3b8;padding:20px">Loading trips\u2026</p>';
-  if (!supabaseClient || !currentUser) { listEl.innerHTML = ''; return; }
-
-  try {
-    var result = await supabaseClient
-      .from('trips')
-      .select('id, destination, days, start_date, created_at, trip_finalized')
-      .eq('user_id', currentUser.id)
-      .order('created_at', { ascending: false })
-      .limit(50);
-
-    if (!result.data || result.data.length === 0) { listEl.innerHTML = ''; return; }
-
-    listEl.innerHTML = result.data.map(function(trip) {
-      var date = trip.start_date ? new Date(trip.start_date).toLocaleDateString() : new Date(trip.created_at).toLocaleDateString();
-      var status = trip.trip_finalized ? 'Finalized' : 'Draft';
-      return '<div class="my-trip-item" onclick="loadTrip(\'' + trip.id + '\')">' +
-        '<h4>' + (trip.destination || 'Untitled Trip') + '</h4>' +
-        '<p>' + trip.days + ' days &middot; ' + date + ' &middot; ' + status + '</p>' +
-        '</div>';
-    }).join('');
-  } catch (e) {
-    listEl.innerHTML = '<p style="text-align:center;color:#ef4444;padding:20px">Failed to load trips.</p>';
-  }
-}
-
-async function loadTrip(tripId) {
-  if (!supabaseClient || !currentUser) return;
-  try {
-    var result = await supabaseClient.from('trips').select('*').eq('id', tripId).single();
-    if (!result.data) return;
-    var t = result.data;
-
-    tripData.origin = t.origin || '';
-    tripData.destination = t.destination || '';
-    tripData.days = t.days || 1;
-    tripData.itinerary = t.itinerary || '';
-    tripData.startDate = t.start_date || '';
-    tripData.endDate = t.end_date || '';
-    tripData.transportation = t.transportation || [];
-    tripData.longDistance = t.long_distance || [];
-    tripData.localTransport = t.local_transport || [];
-    tripData.travelers = t.travelers || 1;
-    tripData.interests = t.interests || [];
-    tripData.pace = t.pace || 'Medium';
-    tripData.budget = t.budget || '';
-    tripData.currency = t.currency || 'USD';
-    tripData.additionalInstructions = t.additional_instructions || '';
-    tripData.wantsCheapTickets = t.wants_cheap_tickets || false;
-    tripData.roundTrip = t.round_trip || false;
-    tripData.alreadyBooked = t.already_booked || [];
-    tripData.tripFinalized = t.trip_finalized || false;
-    tripData.packingListUsed = t.packing_list_used || false;
-    tripData.funFactUsed = t.fun_fact_used || false;
-    tripData.updatesCount = t.updates_count || 0;
-    tripData._supabaseTripId = t.id;
-
-    if (t.is_paid_trip) sessionStorage.setItem('currentTripPaid', 'true');
-    saveTripSession();
-
-    closeMyTrips();
-
-    // Render the itinerary
-    var dest = tripData.destination;
-    var days = tripData.days;
-    document.getElementById('results-title').textContent = 'Your Trip: ' + dest + ' (' + days + ' days)';
-    var routeMapHtml = typeof buildLongDistanceRouteMap === 'function' ? buildLongDistanceRouteMap(dest, tripData.longDistance || [], tripData.origin) : '';
-    document.getElementById('content-display').innerHTML = routeMapHtml + linkifyUrls(marked.parse(processDailyRoutes(tripData.itinerary)));
-    restructureItinerary();
-    renderTripOverview();
-    if (typeof renderActiveInstructionsLabel === 'function') renderActiveInstructionsLabel();
-    if (typeof renderBookingSection === 'function') renderBookingSection();
-
-    document.getElementById('home-view').classList.add('hidden');
-    document.getElementById('planning-view').classList.add('hidden');
-    document.getElementById('results-view').classList.remove('hidden');
-    document.getElementById('app-header').style.display = '';
-    document.getElementById('app-footer').style.display = '';
-    document.getElementById('language-select').parentElement.style.display = 'none';
-    if (window.innerWidth <= 768) document.querySelector('.mobile-action-bar').classList.remove('hidden');
-    applyTierUI();
-  } catch (e) { console.warn('Load trip failed:', e.message); }
-}
 
 // Global variables for Extra Tools
 var tripData = {
@@ -2710,7 +2535,6 @@ document.addEventListener('click', function(e) {
   if (e.target.id === 'sign-in-gate-modal') document.getElementById('sign-in-gate-modal').classList.remove('active');
   if (e.target.id === 'guest-or-signin-modal') document.getElementById('guest-or-signin-modal').classList.remove('active');
   if (e.target.id === 'auth-modal') closeAuthModal();
-  if (e.target.id === 'my-trips-modal') closeMyTrips();
   if (e.target.id === 'retry-modal') document.getElementById('retry-modal').classList.remove('active');
 });
 // Close modals on Escape key
@@ -2725,7 +2549,6 @@ document.addEventListener('keydown', function(e) {
     document.getElementById('guest-or-signin-modal').classList.remove('active');
     document.getElementById('retry-modal').classList.remove('active');
     closeAuthModal();
-    closeMyTrips();
   }
 });
 
@@ -3672,10 +3495,6 @@ ROUND TRIP: The traveler is making a round trip${longDistance.length === 1 ? ' b
     const mobileUpdateBtn = mobileBar.querySelector('.grid').children[0];
     if (mobileUpdateBtn) mobileUpdateBtn.classList.remove('tool-btn-disabled');
   }
-
-  // Save trip to Supabase for logged-in users (before rendering, which may throw)
-  tripData._supabaseTripId = null; // New trip, get fresh ID
-  saveCurrentTripToSupabase();
 
   document.getElementById('results-title').textContent = `Your Trip: ${dest} (${days} days)`;
   const routeMapHtml = buildLongDistanceRouteMap(dest, longDistance, origin);
@@ -4936,7 +4755,6 @@ function showPlanningChangesSummary() {
 function finalizeTripExtras() {
   tripData.tripFinalized = true;
   saveTripSession();
-  saveCurrentTripToSupabase();
   document.getElementById('finalize-modal').classList.remove('active');
   // Reset planning page so next Generate starts fresh
   document.getElementById('origin').value = '';
@@ -5100,8 +4918,6 @@ ROUND TRIP: The traveler is making a round trip${(tripData.longDistance || []).l
   if (result) {
     tripData.itinerary = result;
     saveTripSession();
-    // Save updated trip to Supabase (before rendering, which may throw)
-    saveCurrentTripToSupabase();
 
     const routeMapHtml = buildLongDistanceRouteMap(tripData.destination, tripData.longDistance || [], tripData.origin);
     document.getElementById('content-display').innerHTML = routeMapHtml + linkifyUrls(marked.parse(processDailyRoutes(result)));
