@@ -4879,7 +4879,11 @@ ROUND TRIP: The traveler is making a round trip${(tripData.longDistance || []).l
     if (tripData.alreadyBooked.includes('accommodation')) alreadyBookedNote += '\nThe traveler has already booked and paid for accommodation — do NOT include hotel/accommodation costs in the budget breakdown.';
     if (tripData.alreadyBooked.includes('flights')) alreadyBookedNote += '\nThe traveler has already booked and paid for flights — do NOT include flight/airfare costs in the budget breakdown.';
   }
-  const prompt = `Based on this itinerary:\n\n${tripData.itinerary}${originNote}${contextNote}${alreadyBookedNote}\n\nPlease update it with this instruction: ${fullInstruction}\n\nCRITICAL: Keep every activity on the SAME day and in the SAME order as the original itinerary unless the user's instruction explicitly requires moving it to a different day. Only change what the user asked for — do NOT reorganize, reorder, or shuffle other activities across days.${placeDetailsInstruction}${ticketTipsInstruction}`;
+  let budgetSummaryInstruction = '';
+  if (tripData.budget > 0) {
+    budgetSummaryInstruction = `\n\nIMPORTANT: Keep the "## Budget Summary" section at the end of the itinerary (after all days). Update the estimated costs if the changes affect the budget. Break down estimated costs by category (${tripData.alreadyBooked && tripData.alreadyBooked.includes('accommodation') ? 'exclude accommodation, ' : ''}${tripData.alreadyBooked && tripData.alreadyBooked.includes('flights') ? 'exclude flights/airfare, ' : ''}food, transportation, activities, etc.) and show a total. Compare against the ${tripData.budget} ${tripData.currency} budget. Do NOT include cheap ticket tips in this section.`;
+  }
+  const prompt = `Based on this itinerary:\n\n${tripData.itinerary}${originNote}${contextNote}${alreadyBookedNote}\n\nPlease update it with this instruction: ${fullInstruction}\n\nCRITICAL: Keep every activity on the SAME day and in the SAME order as the original itinerary unless the user's instruction explicitly requires moving it to a different day. Only change what the user asked for — do NOT reorganize, reorder, or shuffle other activities across days.${placeDetailsInstruction}${budgetSummaryInstruction}${ticketTipsInstruction}`;
   const result = await callGemini(prompt);
 
   finishProgress();
