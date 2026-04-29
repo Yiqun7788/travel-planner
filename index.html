@@ -1995,9 +1995,9 @@ var tripData = {
 var selectedTravelMode = 'driving';
 
 function saveTripSession() {
-  try { sessionStorage.setItem('tripSession', JSON.stringify(tripData)); } catch {}
   var toSave = Object.assign({}, tripData);
   if (currentUser) toSave._savedByUser = true;
+  try { sessionStorage.setItem('tripSession', JSON.stringify(toSave)); } catch {}
   try { localStorage.setItem('savedTrip', JSON.stringify(toSave)); } catch {}
 }
 
