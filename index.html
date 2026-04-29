@@ -1728,7 +1728,10 @@ try {
     var session = result.data.session;
     if (session && session.user) {
       currentUser = session.user;
-      loadUserProfile().then(function() { updateAuthUI(); });
+      loadUserProfile().then(function() {
+        updateAuthUI();
+        if (typeof restoreSession === 'function') restoreSession();
+      });
     } else {
       var pn = document.getElementById('planning-sign-in-nudge');
       if (pn) pn.style.display = 'flex';
@@ -1742,6 +1745,7 @@ try {
           return migrateLocalDataToProfile();
         }).then(function() {
           updateAuthUI();
+          if (typeof restoreSession === 'function') restoreSession();
           if (typeof pendingPurchasePriceType !== 'undefined' && pendingPurchasePriceType) {
             var pt = pendingPurchasePriceType;
             pendingPurchasePriceType = null;
@@ -1992,7 +1996,9 @@ var selectedTravelMode = 'driving';
 
 function saveTripSession() {
   try { sessionStorage.setItem('tripSession', JSON.stringify(tripData)); } catch {}
-  try { localStorage.setItem('savedTrip', JSON.stringify(tripData)); } catch {}
+  var toSave = Object.assign({}, tripData);
+  if (currentUser) toSave._savedByUser = true;
+  try { localStorage.setItem('savedTrip', JSON.stringify(toSave)); } catch {}
 }
 
 // ─── Tier System ───
@@ -5026,7 +5032,9 @@ function scrollToExample() {
 }
 
 // ─── Restore session on page load ───
-(function restoreSession() {
+var _sessionRestored = false;
+function restoreSession() {
+  if (_sessionRestored) return;
   try {
     var saved = sessionStorage.getItem('tripSession');
     if (!saved) {
@@ -5035,6 +5043,9 @@ function scrollToExample() {
     if (!saved) return;
     const data = JSON.parse(saved);
     if (!data.itinerary || !data.destination) return;
+    // If the trip was saved by a signed-in user, wait until they sign in again
+    if (data._savedByUser && !currentUser) return;
+    _sessionRestored = true;
     Object.assign(tripData, data);
     document.getElementById('results-title').textContent = 'Your Trip: ' + tripData.destination + ' (' + tripData.days + ' days)';
     const routeMapHtml = buildLongDistanceRouteMap(tripData.destination, tripData.longDistance || [], tripData.origin);
@@ -5109,7 +5120,8 @@ function scrollToExample() {
     // Show return-to-itinerary if user goes back
     document.getElementById('return-to-itinerary-btn').classList.remove('hidden');
   } catch {}
-})();
+}
+restoreSession();
 </script>
 
 </body>
