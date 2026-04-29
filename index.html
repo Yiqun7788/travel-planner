@@ -2014,7 +2014,8 @@ var tripData = {
   tripFinalized: false,
   packingListUsed: false,
   funFactUsed: false,
-  isPaidTrip: false
+  isPaidTrip: false,
+  updatesUsed: 0
 };
 var selectedTravelMode = 'driving';
 
@@ -2099,15 +2100,19 @@ function incrementGenerations() {
   saveFreeTierState(s);
 }
 function getUpdatesThisItinerary() {
+  // Use tripData.updatesUsed (persists with the trip in localStorage)
+  if (typeof tripData.updatesUsed === 'number') return tripData.updatesUsed;
   const s = getFreeTierState();
   return s.currentItineraryUpdates || 0;
 }
 function incrementUpdates() {
+  tripData.updatesUsed = (tripData.updatesUsed || 0) + 1;
   const s = getFreeTierState();
-  s.currentItineraryUpdates = (s.currentItineraryUpdates || 0) + 1;
+  s.currentItineraryUpdates = tripData.updatesUsed;
   saveFreeTierState(s);
 }
 function resetUpdatesForNewItinerary() {
+  tripData.updatesUsed = 0;
   const s = getFreeTierState();
   s.currentItineraryUpdates = 0;
   saveFreeTierState(s);
@@ -2529,6 +2534,7 @@ document.getElementById('start-new-trip-confirm').addEventListener('click', func
   tripData.packingListUsed = false;
   tripData.funFactUsed = false;
   tripData.isPaidTrip = false;
+  tripData.updatesUsed = 0;
   try { localStorage.removeItem('savedTrip'); } catch {}
   try { sessionStorage.removeItem('tripSession'); } catch {}
   _sessionRestored = false;
@@ -5157,6 +5163,13 @@ function restoreSession() {
     if (!data.itinerary || !data.destination) return;
     _sessionRestored = true;
     Object.assign(tripData, data);
+    // Infer isPaidTrip for old saved data missing the flag
+    if (!tripData.isPaidTrip && tripData.itinerary) {
+      var destCount = getDestinationCount(tripData.destination || '');
+      if (tripData.days > 3 || destCount > 1 || tripData.wantsCheapTickets) {
+        tripData.isPaidTrip = true;
+      }
+    }
     document.getElementById('results-title').textContent = 'Your Trip: ' + tripData.destination + ' (' + tripData.days + ' days)';
     const routeMapHtml = buildLongDistanceRouteMap(tripData.destination, tripData.longDistance || [], tripData.origin);
     document.getElementById('content-display').innerHTML = routeMapHtml + linkifyUrls(marked.parse(processDailyRoutes(tripData.itinerary)));
