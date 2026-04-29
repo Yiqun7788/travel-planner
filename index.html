@@ -2306,11 +2306,11 @@ function applyTierUI() {
   const genHint = document.getElementById('generate-button-hint');
   const revisionsUsed = getUpdatesThisItinerary();
   const revisionsLeft = limits.maxUpdatesPerItinerary - revisionsUsed;
-  const paidWithActiveTrip = tier === 'paid' && tripData.itinerary;
+  const hasActiveTrip = tripData.itinerary && !tripData.tripFinalized;
   if (tier === 'free' && getGenerationsThisMonth() >= limits.maxGenerations) {
     genBtn.disabled = true; genBtn.style.opacity = '0.45'; genBtn.style.cursor = 'not-allowed';
     genHint.classList.add('hidden');
-  } else if (paidWithActiveTrip) {
+  } else if (hasActiveTrip) {
     genBtn.disabled = true; genBtn.style.opacity = '0.45'; genBtn.style.cursor = 'not-allowed';
     genHint.classList.add('hidden');
   } else {
