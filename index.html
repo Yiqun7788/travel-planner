@@ -1741,7 +1741,6 @@ try {
         loadUserProfile().then(function() {
           return migrateLocalDataToProfile();
         }).then(function() {
-          try { localStorage.removeItem('savedTrip'); } catch {}
           updateAuthUI();
           if (typeof pendingPurchasePriceType !== 'undefined' && pendingPurchasePriceType) {
             var pt = pendingPurchasePriceType;
@@ -1993,9 +1992,7 @@ var selectedTravelMode = 'driving';
 
 function saveTripSession() {
   try { sessionStorage.setItem('tripSession', JSON.stringify(tripData)); } catch {}
-  if (!currentUser) {
-    try { localStorage.setItem('savedTrip', JSON.stringify(tripData)); } catch {}
-  }
+  try { localStorage.setItem('savedTrip', JSON.stringify(tripData)); } catch {}
 }
 
 // ─── Tier System ───
@@ -4724,6 +4721,9 @@ function showPlanningChangesSummary() {
 function finalizeTripExtras() {
   tripData.tripFinalized = true;
   saveTripSession();
+  // Clear saved trip so next visit starts with a fresh planning page
+  try { localStorage.removeItem('savedTrip'); } catch {}
+  try { sessionStorage.removeItem('tripSession'); } catch {}
   document.getElementById('finalize-modal').classList.remove('active');
   // Reset planning page so next Generate starts fresh
   document.getElementById('origin').value = '';
@@ -5029,7 +5029,7 @@ function scrollToExample() {
 (function restoreSession() {
   try {
     var saved = sessionStorage.getItem('tripSession');
-    if (!saved && !currentUser) {
+    if (!saved) {
       saved = localStorage.getItem('savedTrip');
     }
     if (!saved) return;
@@ -5060,8 +5060,41 @@ function scrollToExample() {
       const paceRadio = document.querySelector('input[name="pace"][value="' + tripData.pace + '"]');
       if (paceRadio) paceRadio.checked = true;
     }
+    // Restore budget, currency, travelers
+    if (tripData.budget) document.getElementById('budget-input').value = tripData.budget;
+    if (tripData.currency) document.getElementById('currency-select').value = tripData.currency;
+    if (tripData.travelers) {
+      const travelersInput = document.querySelector('[data-i18n="travelers"]').parentElement.querySelector('input');
+      if (travelersInput) travelersInput.value = tripData.travelers;
+    }
+    // Restore interests checkboxes
+    if (tripData.interests && tripData.interests.length > 0) {
+      const knownInterests = [];
+      document.querySelectorAll('#interests-group input[type="checkbox"]').forEach(function(cb) {
+        if (tripData.interests.includes(cb.value)) { cb.checked = true; knownInterests.push(cb.value); }
+      });
+      // Anything not matched to a checkbox goes into other-interests
+      const otherInterests = tripData.interests.filter(function(i) { return !knownInterests.includes(i); });
+      if (otherInterests.length > 0) document.getElementById('other-interests').value = otherInterests.join(', ');
+    }
+    // Restore long-distance transport checkboxes
+    if (tripData.longDistance && tripData.longDistance.length > 0) {
+      document.querySelectorAll('#long-distance-group input[type="checkbox"]').forEach(function(cb) {
+        if (tripData.longDistance.includes(cb.value)) cb.checked = true;
+      });
+    }
+    // Restore local transport checkboxes
+    if (tripData.localTransport && tripData.localTransport.length > 0) {
+      document.querySelectorAll('#local-transport-group input[type="checkbox"]').forEach(function(cb) {
+        if (tripData.localTransport.includes(cb.value)) cb.checked = true;
+      });
+    }
     // Restore round-trip checkbox and visibility
     document.getElementById('round-trip-checkbox').checked = tripData.roundTrip || false;
+    // Restore cheap tickets checkbox
+    document.getElementById('cheap-tickets-checkbox').checked = tripData.wantsCheapTickets || false;
+    // Restore additional instructions
+    if (tripData.additionalInstructions) document.getElementById('additional-instructions').value = tripData.additionalInstructions;
     // Restore already-booked checkboxes
     if (tripData.budget && tripData.alreadyBooked && tripData.alreadyBooked.length > 0) {
       document.getElementById('already-booked-section').classList.remove('hidden');
