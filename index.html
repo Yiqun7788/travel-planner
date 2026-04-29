@@ -2340,7 +2340,8 @@ function applyTierUI() {
 
   // ─── Re-check update button state ───
   const updateBtn = document.getElementById('update-itinerary-btn');
-  const updateDisabled = tripData.tripFinalized || getUpdatesThisItinerary() >= limits.maxUpdatesPerItinerary;
+  const updatesUsed = getUpdatesThisItinerary();
+  const updateDisabled = tripData.tripFinalized || updatesUsed >= limits.maxUpdatesPerItinerary;
   if (updateDisabled) {
     updateBtn.classList.add('tool-btn-disabled');
   } else {
@@ -2353,6 +2354,22 @@ function applyTierUI() {
       if (updateDisabled) mobileUpdateBtn.classList.add('tool-btn-disabled');
       else mobileUpdateBtn.classList.remove('tool-btn-disabled');
     }
+  }
+
+  // ─── Show revisions remaining ───
+  const revisionsEl = document.getElementById('revisions-remaining');
+  if (revisionsEl && tripData.itinerary && !tripData.tripFinalized) {
+    const revsLeft = limits.maxUpdatesPerItinerary - updatesUsed;
+    if (revsLeft <= 0) {
+      revisionsEl.textContent = 'No revisions remaining';
+      revisionsEl.style.color = '#ef4444';
+    } else {
+      revisionsEl.textContent = revsLeft + ' revision' + (revsLeft > 1 ? 's' : '') + ' remaining';
+      revisionsEl.style.color = '#64748b';
+    }
+    revisionsEl.classList.remove('hidden');
+  } else if (revisionsEl) {
+    revisionsEl.classList.add('hidden');
   }
 }
 
@@ -5017,23 +5034,8 @@ ROUND TRIP: The traveler is making a round trip${(tripData.longDistance || []).l
     document.getElementById('planning-changes-summary').classList.add('hidden');
     // Tier: track update usage
     incrementUpdates();
-    const revisionsLeft = getTierLimits().maxUpdatesPerItinerary - getUpdatesThisItinerary();
-    const revisionsEl = document.getElementById('revisions-remaining');
-    if (revisionsLeft <= 0) {
-      document.getElementById('update-itinerary-btn').classList.add('tool-btn-disabled');
-      const mobileBar = document.querySelector('.mobile-action-bar');
-      if (mobileBar) {
-        const mobileUpdateBtn = mobileBar.querySelector('.grid').children[0];
-        if (mobileUpdateBtn) mobileUpdateBtn.classList.add('tool-btn-disabled');
-      }
-      revisionsEl.textContent = 'No revisions remaining';
-      revisionsEl.style.color = '#ef4444';
-      revisionsEl.classList.remove('hidden');
-    } else {
-      revisionsEl.textContent = revisionsLeft + ' revision' + (revisionsLeft > 1 ? 's' : '') + ' remaining';
-      revisionsEl.style.color = '#64748b';
-      revisionsEl.classList.remove('hidden');
-    }
+    saveTripSession();
+    applyTierUI();
 
     // Free users: show finalize modal after update
     if (getUserTier() === 'free') {
