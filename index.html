@@ -1652,6 +1652,7 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
       <button id="packing-list-btn" class="tool-btn tool-btn-locked" style="background: linear-gradient(135deg, #22c55e, #16a34a);">&#128274; Packing List <span class="tier-badge">&#128274; Trip Pack</span></button>
       <button id="fun-fact-btn" class="tool-btn tool-btn-locked" style="background: linear-gradient(135deg, #a855f7, #7c3aed);">&#128274; Fun Fact <span class="tier-badge">&#128274; Trip Pack</span></button>
     </div>
+    <p id="revisions-remaining" class="hidden" style="margin-top:8px; font-size:0.82rem; color:#64748b; text-align:center;"></p>
     <button id="finalize-trip-btn" class="hidden tool-btn" style="margin-top:12px; width:100%; background:linear-gradient(135deg,#22c55e,#16a34a); font-size:1rem;" onclick="finalizeTripExtras()">&#9989; Finalize Trip &amp; Unlock Extras</button>
     <button id="start-new-trip-btn" class="hidden tool-btn" style="margin-top:12px; width:100%; background:linear-gradient(135deg,#0ea5e9,#0284c7); font-size:1rem;" onclick="document.getElementById('start-new-trip-modal').classList.add('active')">&#10024; Start New Trip</button>
   </div>
@@ -4996,13 +4997,22 @@ ROUND TRIP: The traveler is making a round trip${(tripData.longDistance || []).l
     document.getElementById('planning-changes-summary').classList.add('hidden');
     // Tier: track update usage
     incrementUpdates();
-    if (getUpdatesThisItinerary() >= getTierLimits().maxUpdatesPerItinerary) {
+    const revisionsLeft = getTierLimits().maxUpdatesPerItinerary - getUpdatesThisItinerary();
+    const revisionsEl = document.getElementById('revisions-remaining');
+    if (revisionsLeft <= 0) {
       document.getElementById('update-itinerary-btn').classList.add('tool-btn-disabled');
       const mobileBar = document.querySelector('.mobile-action-bar');
       if (mobileBar) {
         const mobileUpdateBtn = mobileBar.querySelector('.grid').children[0];
         if (mobileUpdateBtn) mobileUpdateBtn.classList.add('tool-btn-disabled');
       }
+      revisionsEl.textContent = 'No revisions remaining';
+      revisionsEl.style.color = '#ef4444';
+      revisionsEl.classList.remove('hidden');
+    } else {
+      revisionsEl.textContent = revisionsLeft + ' revision' + (revisionsLeft > 1 ? 's' : '') + ' remaining';
+      revisionsEl.style.color = '#64748b';
+      revisionsEl.classList.remove('hidden');
     }
 
     // Free users: show finalize modal after update
