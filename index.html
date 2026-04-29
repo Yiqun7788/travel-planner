@@ -5172,6 +5172,11 @@ function restoreSession() {
         tripData.isPaidTrip = true;
       }
     }
+    // Sync updatesUsed from freeTierState for old saved data missing the field
+    if (!data.updatesUsed && !data.hasOwnProperty('updatesUsed')) {
+      var fts = getFreeTierState();
+      tripData.updatesUsed = fts.currentItineraryUpdates || 0;
+    }
     document.getElementById('results-title').textContent = 'Your Trip: ' + tripData.destination + ' (' + tripData.days + ' days)';
     const routeMapHtml = buildLongDistanceRouteMap(tripData.destination, tripData.longDistance || [], tripData.origin);
     document.getElementById('content-display').innerHTML = routeMapHtml + linkifyUrls(marked.parse(processDailyRoutes(tripData.itinerary)));
