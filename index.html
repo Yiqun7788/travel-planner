@@ -2011,7 +2011,8 @@ var tripData = {
   alreadyBooked: [],
   tripFinalized: false,
   packingListUsed: false,
-  funFactUsed: false
+  funFactUsed: false,
+  isPaidTrip: false
 };
 var selectedTravelMode = 'driving';
 
@@ -2043,7 +2044,7 @@ function setTripCredits(n) {
 }
 function getUserTier() {
   if (getTripCredits() > 0) return 'paid';
-  if (sessionStorage.getItem('currentTripPaid') === 'true') return 'paid';
+  if (tripData.isPaidTrip) return 'paid';
   return 'free';
 }
 function getTierLimits() {
@@ -2527,6 +2528,7 @@ document.getElementById('start-new-trip-confirm').addEventListener('click', func
   tripData.tripFinalized = false;
   tripData.packingListUsed = false;
   tripData.funFactUsed = false;
+  tripData.isPaidTrip = false;
   try { localStorage.removeItem('savedTrip'); } catch {}
   try { sessionStorage.removeItem('tripSession'); } catch {}
   _sessionRestored = false;
@@ -2943,6 +2945,7 @@ document.getElementById('budget-input').addEventListener('input', function() {
       tripData.tripFinalized = false;
       tripData.packingListUsed = false;
       tripData.funFactUsed = false;
+      tripData.isPaidTrip = false;
       resetUpdatesForNewItinerary();
 
       // Reset all planning form fields
@@ -3547,10 +3550,10 @@ ROUND TRIP: The traveler is making a round trip${longDistance.length === 1 ? ' b
   if (result) {
     if (hasPaidCredits) {
       setTripCredits(getTripCredits() - 1);
-      sessionStorage.setItem('currentTripPaid', 'true');
+      tripData.isPaidTrip = true;
     } else {
       incrementGenerations();
-      sessionStorage.removeItem('currentTripPaid');
+      tripData.isPaidTrip = false;
     }
   }
   resetUpdatesForNewItinerary();
