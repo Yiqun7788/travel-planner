@@ -1777,6 +1777,7 @@ try {
     } else if (event === 'SIGNED_OUT') {
       currentUser = null;
       userProfile = null;
+      try { sessionStorage.removeItem('tripSession'); } catch {}
       if (typeof _sessionRestored !== 'undefined') _sessionRestored = false;
       updateAuthUI();
     }
@@ -2018,10 +2019,8 @@ var tripData = {
 var selectedTravelMode = 'driving';
 
 function saveTripSession() {
-  var toSave = Object.assign({}, tripData);
-  if (currentUser) toSave._savedByUser = true;
-  try { sessionStorage.setItem('tripSession', JSON.stringify(toSave)); } catch {}
-  try { localStorage.setItem('savedTrip', JSON.stringify(toSave)); } catch {}
+  try { sessionStorage.setItem('tripSession', JSON.stringify(tripData)); } catch {}
+  try { localStorage.setItem('savedTrip', JSON.stringify(tripData)); } catch {}
 }
 
 // ─── Tier System ───
@@ -5148,15 +5147,14 @@ var _sessionRestored = false;
 function restoreSession() {
   if (_sessionRestored) return;
   try {
+    // sessionStorage survives same-tab refresh; localStorage requires sign-in
     var saved = sessionStorage.getItem('tripSession');
-    if (!saved) {
+    if (!saved && currentUser) {
       saved = localStorage.getItem('savedTrip');
     }
     if (!saved) return;
     const data = JSON.parse(saved);
     if (!data.itinerary || !data.destination) return;
-    // If there's a signed-in user context (flag or credits exist), wait until signed in
-    if (!currentUser && (data._savedByUser || data.isPaidTrip)) return;
     _sessionRestored = true;
     Object.assign(tripData, data);
     document.getElementById('results-title').textContent = 'Your Trip: ' + tripData.destination + ' (' + tripData.days + ' days)';
