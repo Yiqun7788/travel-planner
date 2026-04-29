@@ -1777,6 +1777,7 @@ try {
     } else if (event === 'SIGNED_OUT') {
       currentUser = null;
       userProfile = null;
+      if (typeof _sessionRestored !== 'undefined') _sessionRestored = false;
       updateAuthUI();
     }
   });
@@ -5154,8 +5155,8 @@ function restoreSession() {
     if (!saved) return;
     const data = JSON.parse(saved);
     if (!data.itinerary || !data.destination) return;
-    // If the trip was saved by a signed-in user, wait until they sign in again
-    if (data._savedByUser && !currentUser) return;
+    // If there's a signed-in user context (flag or credits exist), wait until signed in
+    if (!currentUser && (data._savedByUser || data.isPaidTrip)) return;
     _sessionRestored = true;
     Object.assign(tripData, data);
     document.getElementById('results-title').textContent = 'Your Trip: ' + tripData.destination + ' (' + tripData.days + ' days)';
