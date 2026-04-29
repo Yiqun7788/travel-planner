@@ -562,13 +562,13 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
   opacity: 0.5; cursor: not-allowed;
 }
 .download-menu-item-locked:hover { background: transparent; }
-#upgrade-modal, #finalize-modal, #confirm-new-trip-modal, #download-gate-modal, #sign-in-gate-modal, #auth-modal, #retry-modal {
+#upgrade-modal, #finalize-modal, #confirm-new-trip-modal, #start-new-trip-modal, #download-gate-modal, #sign-in-gate-modal, #auth-modal, #retry-modal {
   position: fixed; inset: 0; z-index: 1100;
   background: rgba(0,0,0,0.4); backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
   display: none; justify-content: center; align-items: center;
 }
-#upgrade-modal.active, #finalize-modal.active, #confirm-new-trip-modal.active, #download-gate-modal.active, #sign-in-gate-modal.active, #auth-modal.active, #retry-modal.active { display: flex; }
+#upgrade-modal.active, #finalize-modal.active, #confirm-new-trip-modal.active, #start-new-trip-modal.active, #download-gate-modal.active, #sign-in-gate-modal.active, #auth-modal.active, #retry-modal.active { display: flex; }
 #sign-in-gate-modal { z-index: 1300; }
 .upgrade-modal-card {
   background: #fff; border-radius: 18px; padding: 32px 28px;
@@ -1112,6 +1112,24 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
   </div>
 </div>
 
+<!-- Start New Trip Warning Modal -->
+<div id="start-new-trip-modal">
+  <div class="upgrade-modal-card">
+    <h3>&#9888;&#65039; Before you go...</h3>
+    <p style="text-align:left;font-size:0.92rem;line-height:1.7;margin:12px 0 14px">Have you completed everything for this trip?</p>
+    <ul style="text-align:left;font-size:0.9rem;line-height:1.8;margin:0 0 14px;padding-left:20px">
+      <li>&#128229; Download your itinerary (HTML / PDF)</li>
+      <li>&#129507; Generate a Packing List</li>
+      <li>&#128161; Check out Fun Facts</li>
+    </ul>
+    <p style="text-align:left;font-size:0.85rem;color:#dc2626;font-weight:600;margin:0 0 18px">Once you start a new trip, this itinerary will no longer be accessible.</p>
+    <div class="modal-actions">
+      <button class="modal-btn-secondary" id="start-new-trip-cancel">Go Back</button>
+      <button class="modal-btn-primary" id="start-new-trip-confirm" style="background:linear-gradient(135deg,#0ea5e9,#0284c7)">I'm Done, Start New Trip</button>
+    </div>
+  </div>
+</div>
+
 <!-- Download Gate Modal -->
 <div id="download-gate-modal">
   <div class="upgrade-modal-card">
@@ -1635,6 +1653,7 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
       <button id="fun-fact-btn" class="tool-btn tool-btn-locked" style="background: linear-gradient(135deg, #a855f7, #7c3aed);">&#128274; Fun Fact <span class="tier-badge">&#128274; Trip Pack</span></button>
     </div>
     <button id="finalize-trip-btn" class="hidden tool-btn" style="margin-top:12px; width:100%; background:linear-gradient(135deg,#22c55e,#16a34a); font-size:1rem;" onclick="finalizeTripExtras()">&#9989; Finalize Trip &amp; Unlock Extras</button>
+    <button id="start-new-trip-btn" class="hidden tool-btn" style="margin-top:12px; width:100%; background:linear-gradient(135deg,#0ea5e9,#0284c7); font-size:1rem;" onclick="document.getElementById('start-new-trip-modal').classList.add('active')">&#10024; Start New Trip</button>
   </div>
 
   <!-- Mobile sticky action bar (cloned buttons on mobile) -->
@@ -2293,6 +2312,14 @@ function applyTierUI() {
   finalizeBtn.classList.add('hidden');
   if (finalizeBtnMobile) finalizeBtnMobile.classList.add('hidden');
 
+  // ─── Show "Start New Trip" button after finalization ───
+  const startNewTripBtn = document.getElementById('start-new-trip-btn');
+  if (tripData.tripFinalized && tripData.itinerary) {
+    startNewTripBtn.classList.remove('hidden');
+  } else {
+    startNewTripBtn.classList.add('hidden');
+  }
+
   // ─── Re-check update button state ───
   const updateBtn = document.getElementById('update-itinerary-btn');
   const updateDisabled = tripData.tripFinalized || getUpdatesThisItinerary() >= limits.maxUpdatesPerItinerary;
@@ -2460,6 +2487,64 @@ document.getElementById('confirm-new-trip-generate').addEventListener('click', f
   window._confirmNewTripBypass = true;
   document.getElementById('generate-button').click();
 });
+// ─── Start New Trip modal handlers ───
+document.getElementById('start-new-trip-cancel').addEventListener('click', function() {
+  document.getElementById('start-new-trip-modal').classList.remove('active');
+});
+document.getElementById('start-new-trip-confirm').addEventListener('click', function() {
+  document.getElementById('start-new-trip-modal').classList.remove('active');
+  // Clear trip data
+  tripData.itinerary = '';
+  tripData.destination = '';
+  tripData.origin = '';
+  tripData.days = 0;
+  tripData.startDate = '';
+  tripData.endDate = '';
+  tripData.interests = [];
+  tripData.transportation = [];
+  tripData.longDistance = [];
+  tripData.localTransport = [];
+  tripData.travelers = 1;
+  tripData.budget = '';
+  tripData.currency = 'USD';
+  tripData.pace = 'Medium';
+  tripData.additionalInstructions = '';
+  tripData.wantsCheapTickets = false;
+  tripData.roundTrip = false;
+  tripData.alreadyBooked = [];
+  tripData.tripFinalized = false;
+  tripData.packingListUsed = false;
+  tripData.funFactUsed = false;
+  try { localStorage.removeItem('savedTrip'); } catch {}
+  try { sessionStorage.removeItem('tripSession'); } catch {}
+  _sessionRestored = false;
+  // Reset planning page inputs
+  document.getElementById('origin').value = '';
+  document.getElementById('destination').value = '';
+  destChips.clear();
+  document.getElementById('start-date').value = '';
+  document.getElementById('end-date').value = '';
+  document.getElementById('budget-input').value = '';
+  document.getElementById('currency-select').value = 'USD';
+  var travelersInput = document.querySelector('[data-i18n="travelers"]').parentElement.querySelector('input');
+  if (travelersInput) travelersInput.value = '';
+  document.querySelector('input[name="pace"][value="Medium"]').checked = true;
+  document.getElementById('additional-instructions').value = '';
+  document.getElementById('other-interests').value = '';
+  document.getElementById('cheap-tickets-checkbox').checked = false;
+  document.getElementById('round-trip-checkbox').checked = false;
+  document.getElementById('already-booked-accommodation').checked = false;
+  document.getElementById('already-booked-flights').checked = false;
+  document.getElementById('already-booked-section').classList.add('hidden');
+  document.querySelectorAll('#interests-group input[type="checkbox"]').forEach(function(cb) { cb.checked = false; });
+  document.querySelectorAll('#long-distance-group input[type="checkbox"], #local-transport-group input[type="checkbox"]').forEach(function(cb) { cb.checked = false; });
+  // Reset UI state
+  resetUpdatesForNewItinerary();
+  document.getElementById('start-new-trip-btn').classList.add('hidden');
+  document.getElementById('return-to-itinerary-btn').classList.add('hidden');
+  showView('planning');
+  applyTierUI();
+});
 // ─── Retry Modal handlers ───
 document.getElementById('retry-modal-retry').addEventListener('click', function() {
   document.getElementById('retry-modal').classList.remove('active');
@@ -2505,6 +2590,7 @@ document.addEventListener('click', function(e) {
   if (e.target.id === 'upgrade-modal') document.getElementById('upgrade-modal').classList.remove('active');
   if (e.target.id === 'finalize-modal') document.getElementById('finalize-modal').classList.remove('active');
   if (e.target.id === 'confirm-new-trip-modal') document.getElementById('confirm-new-trip-modal').classList.remove('active');
+  if (e.target.id === 'start-new-trip-modal') document.getElementById('start-new-trip-modal').classList.remove('active');
   if (e.target.id === 'download-gate-modal') document.getElementById('download-gate-modal').classList.remove('active');
   if (e.target.id === 'sign-in-gate-modal') document.getElementById('sign-in-gate-modal').classList.remove('active');
   if (e.target.id === 'auth-modal') closeAuthModal();
@@ -2517,6 +2603,7 @@ document.addEventListener('keydown', function(e) {
     document.getElementById('upgrade-modal').classList.remove('active');
     document.getElementById('finalize-modal').classList.remove('active');
     document.getElementById('confirm-new-trip-modal').classList.remove('active');
+    document.getElementById('start-new-trip-modal').classList.remove('active');
     document.getElementById('download-gate-modal').classList.remove('active');
     document.getElementById('sign-in-gate-modal').classList.remove('active');
     document.getElementById('retry-modal').classList.remove('active');
