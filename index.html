@@ -2568,7 +2568,7 @@ document.getElementById('retry-modal-close').addEventListener('click', function(
 // ─── Download Gate Modal handlers ───
 function showDownloadGateModal() {
   document.getElementById('download-gate-title').innerHTML = '&#128229; Downloads Locked';
-  document.getElementById('download-gate-message').innerHTML = 'Downloads are available after you confirm your updates are complete.<br><br>Are you done with your updates?';
+  document.getElementById('download-gate-message').innerHTML = 'Downloads, Packing List, and Fun Facts are available after you confirm your updates are complete.<br><br>Are you done with your updates?';
   document.getElementById('download-gate-actions').innerHTML = '<button class="modal-btn-primary" id="download-gate-finalize">Yes, I\'m done</button><button class="modal-btn-secondary" id="download-gate-cancel">Not yet</button>';
   document.getElementById('download-gate-modal').classList.add('active');
 }
@@ -2578,7 +2578,7 @@ document.getElementById('download-gate-modal').addEventListener('click', functio
     finalizeTripExtras();
   } else if (e.target.id === 'download-gate-cancel') {
     document.getElementById('download-gate-title').innerHTML = '&#128712; Almost There';
-    document.getElementById('download-gate-message').innerHTML = 'Downloads will be available after you confirm your updates are done.<br><br>When you\'re ready, click <strong>"Yes, I\'m done"</strong> on the finalize prompt, or tap a Download button again.';
+    document.getElementById('download-gate-message').innerHTML = 'Downloads, Packing List, and Fun Facts will be available after you confirm your updates are done.<br><br>When you\'re ready, click <strong>"Finalize Trip &amp; Unlock Extras"</strong>, or tap a Download button again.';
     document.getElementById('download-gate-actions').innerHTML = '<button class="modal-btn-primary" id="download-gate-ok">Got it</button>';
   } else if (e.target.id === 'download-gate-ok') {
     document.getElementById('download-gate-modal').classList.remove('active');
@@ -4898,7 +4898,7 @@ document.getElementById('update-itinerary-btn').addEventListener('click', async 
     if (getUserTier() === 'free') {
       showUpgradeModal('Revision Limit Reached', 'You\u2019ve used your <strong>1 free revision</strong> for this trip.<br><br>Buy a <strong>Trip Pack</strong> for 5 revisions per trip.');
     } else {
-      showUpgradeModal('Revision Limit Reached', `You\u2019ve used all <strong>${getTierLimits().maxUpdatesPerItinerary} revisions</strong> for this trip.`);
+      showUpgradeModal('Revision Limit Reached', `You\u2019ve used all <strong>${getTierLimits().maxUpdatesPerItinerary} revisions</strong> for this trip.<br><br>You can now finalize your trip to unlock downloads, Packing List, and Fun Facts.`);
     }
     return;
   }
