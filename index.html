@@ -1390,24 +1390,22 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
   </div>
 </header>
 
-<!-- HOME VIEW -->
-<div id="home-view">
-
-  <!-- Nav -->
+<!-- Shared Top Photo Banner -->
+<div id="shared-photo-banner" class="home-photo-banner" style="position:relative">
   <nav class="home-nav">
     <span class="home-nav-logo">Travel Planner</span>
     <button class="home-nav-cta" onclick="showPlanningView()" data-i18n="homeNavCta">Create My Trip</button>
   </nav>
+  <img src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=400&h=300&fit=crop" alt="Beach" loading="lazy">
+  <img src="https://images.unsplash.com/photo-1570077188670-e3a8d69ac5ff?w=400&h=300&fit=crop" alt="Santorini" loading="lazy">
+  <img src="https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=400&h=300&fit=crop" alt="Mountains and lake" loading="lazy">
+  <img src="https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=400&h=300&fit=crop" alt="Food" loading="lazy">
+  <img class="hide-mobile" src="https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?w=400&h=300&fit=crop" alt="Kyoto temple" loading="lazy">
+  <img class="hide-mobile" src="https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?w=400&h=300&fit=crop" alt="Venice" loading="lazy">
+</div>
 
-  <!-- Photo Banner -->
-  <div class="home-photo-banner">
-    <img src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=400&h=300&fit=crop" alt="Beach" loading="lazy">
-    <img src="https://images.unsplash.com/photo-1570077188670-e3a8d69ac5ff?w=400&h=300&fit=crop" alt="Santorini" loading="lazy">
-    <img src="https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=400&h=300&fit=crop" alt="Mountains and lake" loading="lazy">
-    <img src="https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=400&h=300&fit=crop" alt="Food" loading="lazy">
-    <img class="hide-mobile" src="https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?w=400&h=300&fit=crop" alt="Kyoto temple" loading="lazy">
-    <img class="hide-mobile" src="https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?w=400&h=300&fit=crop" alt="Venice" loading="lazy">
-  </div>
+<!-- HOME VIEW -->
+<div id="home-view">
 
   <!-- Hero -->
   <section class="home-hero">
@@ -1542,22 +1540,6 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
         </div>
       </div>
 
-    </div>
-  </div>
-
-  <!-- Bottom CTA -->
-  <div class="home-bottom-cta">
-    <div class="cta-photos">
-      <img src="https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=400&h=280&fit=crop" alt="Nature valley" loading="lazy">
-      <img src="https://images.unsplash.com/photo-1528127269322-539801943592?w=400&h=280&fit=crop" alt="Thailand boats" loading="lazy">
-      <img src="https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=400&h=280&fit=crop" alt="Paris" loading="lazy">
-      <img src="https://images.unsplash.com/photo-1516483638261-f4dbaf036963?w=400&h=280&fit=crop" alt="Italy coast" loading="lazy">
-      <img class="hide-mobile" src="https://images.unsplash.com/photo-1530789253388-582c481c54b0?w=400&h=280&fit=crop" alt="Travel map" loading="lazy">
-      <img class="hide-mobile" src="https://images.unsplash.com/photo-1501785888041-af3ef285b470?w=400&h=280&fit=crop" alt="Lake mountains" loading="lazy">
-    </div>
-    <div class="cta-overlay">
-      <h2 data-i18n="homeCtaBottom">Plan your trip your way &mdash; no group tours, no guesswork</h2>
-      <button class="hero-btn-primary" onclick="showPlanningView()" style="background:#10b981;color:#fff;font-size:1.1rem;padding:16px 36px;box-shadow:0 4px 20px rgba(0,0,0,0.3);">&#9992; Travel Planner</button>
     </div>
   </div>
 
@@ -1859,6 +1841,22 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
 <footer id="app-footer" class="text-center py-6 text-slate-400 text-xs font-medium tracking-wide" style="display:none">
   Travel Planner
 </footer>
+
+<!-- Shared Bottom Photo CTA -->
+<div id="shared-bottom-cta" class="home-bottom-cta">
+  <div class="cta-photos">
+    <img src="https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=400&h=280&fit=crop" alt="Nature valley" loading="lazy">
+    <img src="https://images.unsplash.com/photo-1528127269322-539801943592?w=400&h=280&fit=crop" alt="Thailand boats" loading="lazy">
+    <img src="https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=400&h=280&fit=crop" alt="Paris" loading="lazy">
+    <img src="https://images.unsplash.com/photo-1516483638261-f4dbaf036963?w=400&h=280&fit=crop" alt="Italy coast" loading="lazy">
+    <img class="hide-mobile" src="https://images.unsplash.com/photo-1530789253388-582c481c54b0?w=400&h=280&fit=crop" alt="Travel map" loading="lazy">
+    <img class="hide-mobile" src="https://images.unsplash.com/photo-1501785888041-af3ef285b470?w=400&h=280&fit=crop" alt="Lake mountains" loading="lazy">
+  </div>
+  <div class="cta-overlay">
+    <h2 data-i18n="homeCtaBottom">Plan your trip your way &mdash; no group tours, no guesswork</h2>
+    <button class="hero-btn-primary" onclick="showPlanningView()" style="background:#10b981;color:#fff;font-size:1.1rem;padding:16px 36px;box-shadow:0 4px 20px rgba(0,0,0,0.3);">&#9992; Travel Planner</button>
+  </div>
+</div>
 
 <script>
 const translations = {
@@ -5300,6 +5298,8 @@ function showView(viewName) {
   var header = document.getElementById('app-header');
   var footer = document.getElementById('app-footer');
   var mobileBar = document.querySelector('.mobile-action-bar');
+  var sharedBanner = document.getElementById('shared-photo-banner');
+  var sharedBottomCta = document.getElementById('shared-bottom-cta');
 
   home.classList.add('hidden');
   planning.classList.add('hidden');
@@ -5309,18 +5309,25 @@ function showView(viewName) {
     home.classList.remove('hidden');
     header.style.display = 'none';
     footer.style.display = 'none';
+    sharedBanner.style.display = '';
+    sharedBottomCta.style.display = '';
     switchHomeTab('audience');
     window.scrollTo(0, 0);
   } else if (viewName === 'planning') {
     planning.classList.remove('hidden');
-    header.style.display = '';
-    footer.style.display = '';
+    header.style.display = 'none';
+    footer.style.display = 'none';
+    sharedBanner.style.display = '';
+    sharedBottomCta.style.display = '';
     document.getElementById('language-select').parentElement.style.display = '';
     if (mobileBar) mobileBar.classList.add('hidden');
+    window.scrollTo(0, 0);
   } else if (viewName === 'results') {
     results.classList.remove('hidden');
     header.style.display = '';
     footer.style.display = '';
+    sharedBanner.style.display = 'none';
+    sharedBottomCta.style.display = 'none';
     document.getElementById('language-select').parentElement.style.display = 'none';
     if (mobileBar && window.innerWidth <= 768) mobileBar.classList.remove('hidden');
   }
