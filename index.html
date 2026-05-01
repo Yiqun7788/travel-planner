@@ -1733,7 +1733,7 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
     <!-- Generate Button -->
     <button type="button" id="generate-button" class="btn-primary" data-i18n="generate">Generate Itinerary</button>
     <p id="generate-button-hint" class="hidden" style="margin-top:8px; padding:10px 14px; background:linear-gradient(135deg,#fef3c7,#fde68a); border:1px solid #f59e0b; border-radius:10px; font-size:0.85rem; color:#92400e; line-height:1.5; text-align:center;"></p>
-    <button type="button" id="return-to-itinerary-btn" class="btn-primary hidden" style="margin-top: 10px; background: linear-gradient(135deg, #64748b, #475569);" onclick="document.getElementById('home-view').classList.add('hidden'); document.getElementById('planning-view').classList.add('hidden'); document.getElementById('results-view').classList.remove('hidden'); document.getElementById('app-header').style.display=''; document.getElementById('app-footer').style.display=''; document.getElementById('shared-photo-banner').style.display='none'; document.getElementById('shared-bottom-cta').style.display='none'; document.getElementById('language-select').parentElement.style.display='none'; if(window.innerWidth<=768) document.querySelector('.mobile-action-bar').classList.remove('hidden'); showPlanningChangesSummary(); applyTierUI();">&#8592; Return to Itinerary</button>
+    <button type="button" id="return-to-itinerary-btn" class="btn-primary hidden" style="margin-top: 10px; background: linear-gradient(135deg, #64748b, #475569);" onclick="document.getElementById('home-view').style.display='none'; document.getElementById('planning-view').classList.add('hidden'); document.getElementById('results-view').classList.remove('hidden'); document.getElementById('app-header').style.display=''; document.getElementById('app-footer').style.display=''; document.getElementById('shared-photo-banner').style.display='none'; document.getElementById('shared-bottom-cta').style.display='none'; document.getElementById('language-select').parentElement.style.display='none'; if(window.innerWidth<=768) document.querySelector('.mobile-action-bar').classList.remove('hidden'); showPlanningChangesSummary(); applyTierUI();">&#8592; Return to Itinerary</button>
 
   </form>
 </div>
@@ -2697,7 +2697,7 @@ async function purchaseCredits(priceType) {
 // Confirm New Trip modal buttons
 document.getElementById('confirm-new-trip-revision').addEventListener('click', function() {
   document.getElementById('confirm-new-trip-modal').classList.remove('active');
-  document.getElementById('home-view').classList.add('hidden');
+  document.getElementById('home-view').style.display='none';
   document.getElementById('planning-view').classList.add('hidden');
   document.getElementById('results-view').classList.remove('hidden');
   document.getElementById('app-header').style.display = '';
@@ -3185,7 +3185,7 @@ document.getElementById('budget-input').addEventListener('input', function() {
 
       applyTierUI();
       // Reset to planning view so user can start a new trip with their credits
-      document.getElementById('home-view').classList.add('hidden');
+      document.getElementById('home-view').style.display='none';
       document.getElementById('results-view').classList.add('hidden');
       document.getElementById('planning-view').classList.remove('hidden');
       document.getElementById('app-header').style.display = 'none';
@@ -3793,7 +3793,7 @@ ROUND TRIP: The traveler is making a round trip${longDistance.length === 1 ? ' b
   renderActiveInstructionsLabel();
   renderBookingSection();
 
-  document.getElementById('home-view').classList.add('hidden');
+  document.getElementById('home-view').style.display='none';
   document.getElementById('planning-view').classList.add('hidden');
   document.getElementById('results-view').classList.remove('hidden');
   document.getElementById('app-header').style.display = '';
@@ -4712,7 +4712,7 @@ document.addEventListener('click', function(e) {
 });
 
 document.getElementById('back-button').addEventListener('click', () => {
-  document.getElementById('home-view').classList.add('hidden');
+  document.getElementById('home-view').style.display='none';
   document.getElementById('results-view').classList.add('hidden');
   document.getElementById('planning-view').classList.remove('hidden');
   document.getElementById('app-header').style.display = 'none';
@@ -5311,12 +5311,12 @@ function showView(viewName) {
   var sharedBanner = document.getElementById('shared-photo-banner');
   var sharedBottomCta = document.getElementById('shared-bottom-cta');
 
-  home.classList.add('hidden');
+  home.style.display = 'none';
   planning.classList.add('hidden');
   results.classList.add('hidden');
 
   if (viewName === 'home') {
-    home.classList.remove('hidden');
+    home.style.display = '';
     header.style.display = 'none';
     footer.style.display = 'none';
     sharedBanner.style.display = '';
@@ -5394,7 +5394,7 @@ function restoreSession() {
     renderTripOverview();
     renderActiveInstructionsLabel();
     renderBookingSection();
-    document.getElementById('home-view').classList.add('hidden');
+    document.getElementById('home-view').style.display='none';
     document.getElementById('planning-view').classList.add('hidden');
     document.getElementById('results-view').classList.remove('hidden');
     document.getElementById('app-header').style.display = '';
