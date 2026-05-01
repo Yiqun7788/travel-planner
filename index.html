@@ -885,7 +885,7 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
 }
 
 /* ─── Home Page ─── */
-#home-view { font-family: 'Inter', sans-serif; position: relative; }
+#home-view { font-family: 'Inter', sans-serif; position: relative; display: flex; flex-direction: column; min-height: 100vh; }
 .home-nav {
   position: absolute; top: 0; left: 0; right: 0; z-index: 10;
   display: flex; align-items: center; justify-content: space-between;
@@ -927,8 +927,8 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
   color: #0f172a;
 }
 .home-hero p.hero-sub {
-  font-size: clamp(1rem, 2vw, 1.15rem); margin: 16px auto 0;
-  max-width: 580px; color: #64748b; line-height: 1.6;
+  font-size: clamp(1.05rem, 2.2vw, 1.25rem); margin: 18px auto 0;
+  max-width: 620px; color: #64748b; line-height: 1.65;
 }
 .hero-btns { display: flex; gap: 14px; justify-content: center; margin-top: 36px; flex-wrap: wrap; }
 .hero-btn-primary {
@@ -950,8 +950,8 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
 .hero-trust-badge {
   display: inline-flex; align-items: center; gap: 6px;
   background: linear-gradient(135deg, #10b981, #059669); color: #fff;
-  font-size: 0.85rem; font-weight: 600; padding: 8px 18px;
-  border-radius: 20px; white-space: nowrap;
+  font-size: 0.95rem; font-weight: 600; padding: 10px 20px;
+  border-radius: 22px; white-space: nowrap;
 }
 
 .home-section {
@@ -1062,15 +1062,16 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
   padding: 0 0 12px;
 }
 .home-tab-nav-header {
-  padding: 20px 22px 14px; font-size: 1.1rem; font-weight: 800;
+  padding: 22px 22px 16px; font-size: 1.25rem; font-weight: 800;
   color: #0f172a; letter-spacing: -0.01em;
   border-bottom: 2px solid #e2e8f0; margin-bottom: 8px;
 }
 .home-tab-nav-item {
-  padding: 14px 22px; font-size: 0.92rem; font-weight: 500;
+  padding: 15px 22px; font-size: 1.02rem; font-weight: 500;
   color: #475569; cursor: pointer; border: none; background: none;
   text-align: left; border-left: 3px solid transparent;
   transition: background 0.15s, color 0.15s, border-color 0.15s;
+  line-height: 1.4;
 }
 .home-tab-nav-item:hover { background: #eef2ff; color: #4338ca; }
 .home-tab-nav-item.active {
@@ -1079,17 +1080,20 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
 }
 .home-tab-content {
   flex: 1; padding: 36px 40px; max-height: 700px; overflow-y: auto;
+  font-size: 1.05rem; line-height: 1.7;
 }
+.home-tab-content h2 { font-size: clamp(1.5rem, 2.5vw, 2rem); }
+.home-tab-content .section-sub { font-size: 1.1rem; }
 .home-tab-panel { display: none; }
 .home-tab-panel.active { display: block; }
 .home-bottom-cta {
   background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
-  padding: 40px 28px; text-align: center; color: #fff;
-  border-radius: 16px; max-width: 1100px; margin: 32px auto 0;
+  padding: 44px 28px; text-align: center; color: #fff;
+  margin-top: auto;
 }
 .home-bottom-cta h2 {
-  font-size: clamp(1.3rem, 2.5vw, 1.7rem); font-weight: 800;
-  letter-spacing: -0.02em; margin-bottom: 20px;
+  font-size: clamp(1.4rem, 2.8vw, 1.9rem); font-weight: 800;
+  letter-spacing: -0.02em; margin-bottom: 22px;
 }
 .home-bottom-cta .hero-btns { justify-content: center; }
 .home-pricing-inline .pricing-grid { margin-top: 20px; }
@@ -1101,14 +1105,15 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
     overflow-x: auto; border-right: none; border-bottom: 1px solid #e2e8f0;
     padding: 0; -webkit-overflow-scrolling: touch;
   }
+  .home-tab-nav-header { display: none; }
   .home-tab-nav-item {
     white-space: nowrap; border-left: none;
     border-bottom: 3px solid transparent; padding: 12px 18px;
-    font-size: 0.84rem; flex-shrink: 0;
+    font-size: 0.88rem; flex-shrink: 0;
   }
   .home-tab-nav-item.active { border-left-color: transparent; border-bottom-color: #6366f1; }
   .home-tab-content { padding: 24px 20px; max-height: none; }
-  .home-bottom-cta { margin: 24px 12px 0; }
+  .home-bottom-cta { margin-top: auto; }
 }
 
 /* Home footer */
