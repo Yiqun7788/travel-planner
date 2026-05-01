@@ -985,11 +985,14 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
   font-size: 1.5rem; color: #64748b; margin-bottom: 24px; line-height: 1.7;
 }
 .problem-solution-row .pain-list { gap: 12px; }
-.problem-solution-row .pain-item { padding: 16px 18px; font-size: 1.45rem; }
-.problem-solution-row .benefit-card { padding: 20px 22px; }
-.problem-solution-row .benefit-card .benefit-icon { font-size: 1.8rem; margin-bottom: 8px; }
-.problem-solution-row .benefit-card h3 { font-size: 1.45rem; margin-bottom: 6px; }
-.problem-solution-row .benefit-card p { font-size: 1.4rem; }
+.problem-solution-row .pain-item { padding: 10px 14px; font-size: 1.45rem; }
+.problem-solution-row .benefit-card {
+  padding: 12px 16px; display: flex; align-items: flex-start; gap: 12px;
+  flex-direction: row;
+}
+.problem-solution-row .benefit-card .benefit-icon { font-size: 1.6rem; margin-bottom: 0; flex-shrink: 0; margin-top: 2px; }
+.problem-solution-row .benefit-card h3 { font-size: 1.45rem; margin-bottom: 2px; }
+.problem-solution-row .benefit-card p { font-size: 1.35rem; }
 .problem-solution-row .benefits-grid { gap: 10px; }
 @media (max-width: 720px) {
   .problem-solution-row { grid-template-columns: 1fr; gap: 48px; }
