@@ -991,8 +991,9 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
   flex-direction: row;
 }
 .problem-solution-row .benefit-card .benefit-icon { font-size: 1.6rem; margin-bottom: 0; flex-shrink: 0; margin-top: 2px; }
-.problem-solution-row .benefit-card h3 { font-size: 1.45rem; margin-bottom: 2px; }
-.problem-solution-row .benefit-card p { font-size: 1.35rem; }
+.problem-solution-row .benefit-card h3 { font-size: 1.45rem; margin-bottom: 0; display: inline; }
+.problem-solution-row .benefit-card h3::after { content: ': '; }
+.problem-solution-row .benefit-card p { font-size: 1.35rem; display: inline; }
 .problem-solution-row .benefits-grid { gap: 10px; }
 @media (max-width: 720px) {
   .problem-solution-row { grid-template-columns: 1fr; gap: 48px; }
@@ -1444,10 +1445,10 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
             <h2 data-i18n="homeSolutionTitle">One tool. One complete trip plan.</h2>
             <p class="ps-sub" data-i18n="homeSolutionSub">Travel Planner turns your destination and dates into a detailed, ready-to-follow itinerary.</p>
             <div class="benefits-grid" style="grid-template-columns:1fr">
-              <div class="benefit-card"><div class="benefit-icon">&#128197;</div><h3 data-i18n="homeSolCard1Title">Day-by-day schedule</h3><p data-i18n="homeSolCard1Desc">Every activity timed and ordered so you never wonder "what's next?"</p></div>
-              <div class="benefit-card"><div class="benefit-icon">&#128205;</div><h3 data-i18n="homeSolCard2Title">Maps &amp; directions</h3><p data-i18n="homeSolCard2Desc">One-click Google Maps links between every stop on your route.</p></div>
-              <div class="benefit-card"><div class="benefit-icon">&#9881;&#65039;</div><h3 data-i18n="homeSolCard3Title">Fully customizable</h3><p data-i18n="homeSolCard3Desc">Set your budget, pace, interests, and transport — get a trip that fits you.</p></div>
-              <div class="benefit-card"><div class="benefit-icon">&#9889;</div><h3 data-i18n="homeSolCard4Title">Ready in minutes</h3><p data-i18n="homeSolCard4Desc">No research rabbit holes. Fill in a form, click generate, done.</p></div>
+              <div class="benefit-card"><div class="benefit-icon">&#128197;</div><div><h3 data-i18n="homeSolCard1Title">Day-by-day schedule</h3><p data-i18n="homeSolCard1Desc">Every activity timed and ordered so you never wonder "what's next?"</p></div></div>
+              <div class="benefit-card"><div class="benefit-icon">&#128205;</div><div><h3 data-i18n="homeSolCard2Title">Maps &amp; directions</h3><p data-i18n="homeSolCard2Desc">One-click Google Maps links between every stop on your route.</p></div></div>
+              <div class="benefit-card"><div class="benefit-icon">&#9881;&#65039;</div><div><h3 data-i18n="homeSolCard3Title">Fully customizable</h3><p data-i18n="homeSolCard3Desc">Set your budget, pace, interests, and transport — get a trip that fits you.</p></div></div>
+              <div class="benefit-card"><div class="benefit-icon">&#9889;</div><div><h3 data-i18n="homeSolCard4Title">Ready in minutes</h3><p data-i18n="homeSolCard4Desc">No research rabbit holes. Fill in a form, click generate, done.</p></div></div>
             </div>
           </div>
         </div>
