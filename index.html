@@ -1051,10 +1051,15 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
 }
 
 /* Tabbed layout */
+.home-tabbed-wrap {
+  flex: 1; display: flex; align-items: center; justify-content: center;
+  background: #f8fafc; border-top: 1px solid #e2e8f0;
+}
 .home-tabbed-layout {
-  display: flex; background: #fff;
-  border-top: 1px solid #e2e8f0;
-  flex: 1; min-height: 0;
+  display: flex; background: #fff; width: 100%; max-width: 1100px;
+  border: 1px solid #e2e8f0; border-radius: 16px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.07); overflow: hidden;
+  min-height: 420px;
 }
 .home-tab-nav {
   width: 270px; min-width: 270px; background: #f8fafc;
@@ -1081,7 +1086,6 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
 .home-tab-content {
   flex: 1; padding: 40px 48px; overflow-y: auto;
   font-size: 1.15rem; line-height: 1.75;
-  display: flex; align-items: center;
 }
 .home-tab-content h2 { font-size: clamp(1.6rem, 3vw, 2.2rem); }
 .home-tab-content .section-sub { font-size: 1.2rem; }
@@ -1090,7 +1094,6 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
 .home-bottom-cta {
   background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
   padding: 44px 28px; text-align: center; color: #fff;
-  margin-top: auto;
 }
 .home-bottom-cta h2 {
   font-size: clamp(1.4rem, 2.8vw, 1.9rem); font-weight: 800;
@@ -1100,7 +1103,8 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
 .home-pricing-inline .pricing-grid { margin-top: 20px; }
 .home-pricing-inline .pricing-tier { border-radius: 12px; }
 @media (max-width: 768px) {
-  .home-tabbed-layout { flex-direction: column; min-height: auto; }
+  .home-tabbed-wrap { align-items: stretch; }
+  .home-tabbed-layout { flex-direction: column; min-height: auto; border-radius: 0; border-left: none; border-right: none; }
   .home-tab-nav {
     width: 100%; min-width: 100%; flex-direction: row;
     overflow-x: auto; border-right: none; border-bottom: 1px solid #e2e8f0;
@@ -1397,6 +1401,7 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
   </section>
 
   <!-- Tabbed Layout -->
+  <div class="home-tabbed-wrap">
   <div class="home-tabbed-layout">
     <nav class="home-tab-nav">
       <div class="home-tab-nav-header" data-i18n="homeTabNavHeader">Navigation</div>
@@ -1518,6 +1523,7 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
       </div>
 
     </div>
+  </div>
   </div>
 
   <!-- Bottom CTA -->
