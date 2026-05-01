@@ -885,32 +885,50 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
 }
 
 /* ─── Home Page ─── */
-#home-view { font-family: 'Inter', sans-serif; }
+#home-view { font-family: 'Inter', sans-serif; position: relative; }
 .home-nav {
   position: absolute; top: 0; left: 0; right: 0; z-index: 10;
   display: flex; align-items: center; justify-content: space-between;
-  max-width: 1100px; margin: 0 auto; padding: 24px 28px;
+  max-width: 1100px; margin: 0 auto; padding: 18px 28px;
 }
-.home-nav-logo { font-size: 1.35rem; font-weight: 800; color: #fff; letter-spacing: -0.02em; }
+.home-nav-logo {
+  font-size: 1.35rem; font-weight: 800; color: #fff; letter-spacing: -0.02em;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.3);
+}
 .home-nav-cta {
-  background: #fff; color: #4f46e5; font-weight: 600; font-size: 0.9rem;
+  background: rgba(255,255,255,0.95); color: #4f46e5; font-weight: 600; font-size: 0.9rem;
   padding: 10px 22px; border-radius: 10px; border: none; cursor: pointer;
-  transition: background 0.2s, transform 0.15s;
+  transition: background 0.2s, transform 0.15s; box-shadow: 0 2px 8px rgba(0,0,0,0.15);
 }
-.home-nav-cta:hover { background: #eef2ff; transform: translateY(-1px); }
+.home-nav-cta:hover { background: #fff; transform: translateY(-1px); }
+
+/* Photo collage banner */
+.home-photo-banner {
+  width: 100%; height: 220px; overflow: hidden;
+  display: grid; grid-template-columns: repeat(6, 1fr); gap: 4px;
+}
+.home-photo-banner img {
+  width: 100%; height: 220px; object-fit: cover; display: block;
+}
+@media (max-width: 768px) {
+  .home-photo-banner { height: 140px; grid-template-columns: repeat(4, 1fr); }
+  .home-photo-banner img { height: 140px; }
+  .home-photo-banner .hide-mobile { display: none; }
+}
 
 .home-hero {
   position: relative; overflow: hidden;
-  background: linear-gradient(135deg, #0ea5e9 0%, #6366f1 50%, #8b5cf6 100%);
-  padding: 140px 28px 90px; text-align: center; color: #fff;
+  background: #fff;
+  padding: 60px 28px 50px; text-align: center; color: #0f172a;
 }
 .home-hero h1 {
-  font-size: clamp(2.2rem, 5vw, 3.4rem); font-weight: 800;
+  font-size: clamp(2rem, 4.5vw, 3rem); font-weight: 800;
   line-height: 1.15; letter-spacing: -0.03em; max-width: 720px; margin: 0 auto;
+  color: #0f172a;
 }
 .home-hero p.hero-sub {
-  font-size: clamp(1rem, 2vw, 1.2rem); margin: 18px auto 0;
-  max-width: 560px; color: rgba(255,255,255,0.88); line-height: 1.6;
+  font-size: clamp(1rem, 2vw, 1.15rem); margin: 16px auto 0;
+  max-width: 580px; color: #64748b; line-height: 1.6;
 }
 .hero-btns { display: flex; gap: 14px; justify-content: center; margin-top: 36px; flex-wrap: wrap; }
 .hero-btn-primary {
@@ -926,10 +944,15 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
 }
 .hero-btn-secondary:hover { background: rgba(255,255,255,0.25); }
 .hero-trust {
-  display: flex; gap: 28px; justify-content: center; margin-top: 36px;
-  flex-wrap: wrap; font-size: 0.88rem; color: rgba(255,255,255,0.8);
+  display: flex; gap: 12px; justify-content: center; margin-top: 32px;
+  flex-wrap: wrap;
 }
-.hero-trust span { display: flex; align-items: center; gap: 6px; }
+.hero-trust-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: linear-gradient(135deg, #10b981, #059669); color: #fff;
+  font-size: 0.85rem; font-weight: 600; padding: 8px 18px;
+  border-radius: 20px; white-space: nowrap;
+}
 
 .home-section {
   padding: 80px 28px; text-align: center;
@@ -1036,7 +1059,12 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
 .home-tab-nav {
   width: 250px; min-width: 250px; background: #f8fafc;
   border-right: 1px solid #e2e8f0; display: flex; flex-direction: column;
-  padding: 12px 0;
+  padding: 0 0 12px;
+}
+.home-tab-nav-header {
+  padding: 20px 22px 14px; font-size: 1.1rem; font-weight: 800;
+  color: #0f172a; letter-spacing: -0.01em;
+  border-bottom: 2px solid #e2e8f0; margin-bottom: 8px;
 }
 .home-tab-nav-item {
   padding: 14px 22px; font-size: 0.92rem; font-weight: 500;
@@ -1093,10 +1121,11 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
 
 /* Responsive */
 @media (max-width: 640px) {
-  .home-hero { padding: 120px 20px 60px; }
+  .home-hero { padding: 40px 20px 36px; }
   .home-section { padding: 56px 20px; }
-  .home-nav { padding: 16px 20px; }
-  .hero-trust { gap: 16px; font-size: 0.8rem; }
+  .home-nav { padding: 12px 16px; }
+  .hero-trust { gap: 8px; }
+  .hero-trust-badge { font-size: 0.78rem; padding: 6px 14px; }
   .pain-list { grid-template-columns: 1fr; }
 }
 </style>
@@ -1339,24 +1368,32 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
     <button class="home-nav-cta" onclick="showPlanningView()" data-i18n="homeNavCta">Create My Trip</button>
   </nav>
 
+  <!-- Photo Banner -->
+  <div class="home-photo-banner">
+    <img src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=400&h=300&fit=crop" alt="Beach" loading="lazy">
+    <img src="https://images.unsplash.com/photo-1570077188670-e3a8d69ac5ff?w=400&h=300&fit=crop" alt="Santorini" loading="lazy">
+    <img src="https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=400&h=300&fit=crop" alt="Mountains and lake" loading="lazy">
+    <img src="https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=400&h=300&fit=crop" alt="Food" loading="lazy">
+    <img class="hide-mobile" src="https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?w=400&h=300&fit=crop" alt="Kyoto temple" loading="lazy">
+    <img class="hide-mobile" src="https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?w=400&h=300&fit=crop" alt="Venice" loading="lazy">
+  </div>
+
   <!-- Hero -->
   <section class="home-hero">
     <h1 data-i18n="homeHeroTitle">Plan your perfect trip in minutes, not hours</h1>
     <p class="hero-sub" data-i18n="homeHeroSub">Tell us where you're going, and we'll build a complete day-by-day itinerary with routes, maps, and local tips.</p>
-    <div class="hero-btns">
-      <button class="hero-btn-primary" onclick="showPlanningView()" data-i18n="homeHeroFreeCta">Try Free Plan without Sign up</button>
-      <button class="hero-btn-secondary" onclick="showPlanningView()" data-i18n="homeHeroCta">Create My Trip</button>
-    </div>
     <div class="hero-trust">
-      <span>&#10003; <span data-i18n="homeTrust1">Day-by-day itinerary</span></span>
-      <span>&#10003; <span data-i18n="homeTrust2">Routes &amp; maps</span></span>
-      <span>&#10003; <span data-i18n="homeTrust3">Fully customizable</span></span>
+      <span class="hero-trust-badge">&#10003; <span data-i18n="homeTrust1">Day-by-day itinerary</span></span>
+      <span class="hero-trust-badge">&#10003; <span data-i18n="homeTrust2">Routes &amp; maps</span></span>
+      <span class="hero-trust-badge">&#10003; <span data-i18n="homeTrust3">Fully customizable</span></span>
+      <span class="hero-trust-badge">&#10003; <span data-i18n="homeTrust4">Free to use</span></span>
     </div>
   </section>
 
   <!-- Tabbed Layout -->
   <div class="home-tabbed-layout">
     <nav class="home-tab-nav">
+      <div class="home-tab-nav-header" data-i18n="homeTabNavHeader">Navigation</div>
       <button class="home-tab-nav-item active" data-tab="audience" onclick="switchHomeTab('audience')" data-i18n="homeTabAudience">Who Loves this travel planner</button>
       <button class="home-tab-nav-item" data-tab="why" onclick="switchHomeTab('why')" data-i18n="homeTabWhy">Why Travel Planner</button>
       <button class="home-tab-nav-item" data-tab="steps" onclick="switchHomeTab('steps')" data-i18n="homeTabSteps">Simple 3-step Process</button>
@@ -1480,10 +1517,7 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
   <!-- Bottom CTA -->
   <div class="home-bottom-cta">
     <h2 data-i18n="homeCtaBottom">Plan your trip your way &mdash; no group tours, no guesswork</h2>
-    <div class="hero-btns">
-      <button class="hero-btn-primary" onclick="showPlanningView()" data-i18n="homeHeroFreeCta">Try Free Plan without Sign up</button>
-      <button class="hero-btn-secondary" onclick="showPlanningView()" data-i18n="homeHeroCta" style="border-color:rgba(255,255,255,0.4);color:#fff">Create My Trip</button>
-    </div>
+    <button class="hero-btn-primary" onclick="showPlanningView()" style="margin-top:8px;background:#10b981;color:#fff;font-size:1rem;padding:14px 32px;">&#9992; Travel Planner</button>
   </div>
 
   <!-- Home Footer -->
