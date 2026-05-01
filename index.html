@@ -1027,18 +1027,60 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
   .example-embed-wrap iframe { height: 500px; }
 }
 
-/* Final CTA */
-.home-cta-section {
+/* Tabbed layout */
+.home-tabbed-layout {
+  display: flex; max-width: 1100px; margin: 0 auto 0; background: #fff;
+  border: 1px solid #e2e8f0; border-radius: 16px; box-shadow: 0 4px 24px rgba(0,0,0,0.07);
+  overflow: hidden; min-height: 520px;
+}
+.home-tab-nav {
+  width: 250px; min-width: 250px; background: #f8fafc;
+  border-right: 1px solid #e2e8f0; display: flex; flex-direction: column;
+  padding: 12px 0;
+}
+.home-tab-nav-item {
+  padding: 14px 22px; font-size: 0.92rem; font-weight: 500;
+  color: #475569; cursor: pointer; border: none; background: none;
+  text-align: left; border-left: 3px solid transparent;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+.home-tab-nav-item:hover { background: #eef2ff; color: #4338ca; }
+.home-tab-nav-item.active {
+  background: #eef2ff; color: #4338ca; font-weight: 600;
+  border-left-color: #6366f1;
+}
+.home-tab-content {
+  flex: 1; padding: 36px 40px; max-height: 700px; overflow-y: auto;
+}
+.home-tab-panel { display: none; }
+.home-tab-panel.active { display: block; }
+.home-bottom-cta {
   background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
-  padding: 80px 28px; text-align: center; color: #fff;
+  padding: 40px 28px; text-align: center; color: #fff;
+  border-radius: 16px; max-width: 1100px; margin: 32px auto 0;
 }
-.home-cta-section h2 {
-  font-size: clamp(1.6rem, 3vw, 2.2rem); font-weight: 800;
-  letter-spacing: -0.02em; margin-bottom: 12px;
+.home-bottom-cta h2 {
+  font-size: clamp(1.3rem, 2.5vw, 1.7rem); font-weight: 800;
+  letter-spacing: -0.02em; margin-bottom: 20px;
 }
-.home-cta-section p {
-  font-size: 1.05rem; color: rgba(255,255,255,0.85);
-  margin-bottom: 32px; max-width: 500px; margin-left: auto; margin-right: auto;
+.home-bottom-cta .hero-btns { justify-content: center; }
+.home-pricing-inline .pricing-grid { margin-top: 20px; }
+.home-pricing-inline .pricing-tier { border-radius: 12px; }
+@media (max-width: 768px) {
+  .home-tabbed-layout { flex-direction: column; min-height: auto; }
+  .home-tab-nav {
+    width: 100%; min-width: 100%; flex-direction: row;
+    overflow-x: auto; border-right: none; border-bottom: 1px solid #e2e8f0;
+    padding: 0; -webkit-overflow-scrolling: touch;
+  }
+  .home-tab-nav-item {
+    white-space: nowrap; border-left: none;
+    border-bottom: 3px solid transparent; padding: 12px 18px;
+    font-size: 0.84rem; flex-shrink: 0;
+  }
+  .home-tab-nav-item.active { border-left-color: transparent; border-bottom-color: #6366f1; }
+  .home-tab-content { padding: 24px 20px; max-height: none; }
+  .home-bottom-cta { margin: 24px 12px 0; }
 }
 
 /* Home footer */
@@ -1302,8 +1344,8 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
     <h1 data-i18n="homeHeroTitle">Plan your perfect trip in minutes, not hours</h1>
     <p class="hero-sub" data-i18n="homeHeroSub">Tell us where you're going, and we'll build a complete day-by-day itinerary with routes, maps, and local tips.</p>
     <div class="hero-btns">
-      <button class="hero-btn-primary" onclick="showPlanningView()" data-i18n="homeHeroCta">Create My Trip</button>
-      <button class="hero-btn-secondary" onclick="scrollToExample()" data-i18n="homeHeroExample">See Example Trip</button>
+      <button class="hero-btn-primary" onclick="showPlanningView()" data-i18n="homeHeroFreeCta">Try Free Plan without Sign up</button>
+      <button class="hero-btn-secondary" onclick="showPlanningView()" data-i18n="homeHeroCta">Create My Trip</button>
     </div>
     <div class="hero-trust">
       <span>&#10003; <span data-i18n="homeTrust1">Day-by-day itinerary</span></span>
@@ -1312,68 +1354,137 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
     </div>
   </section>
 
-  <!-- Problem + Solution (side by side) -->
-  <section class="home-section">
-    <div class="home-section-inner">
-      <h2 data-i18n="homeAudienceTitle">Who should use this travel planner?</h2>
-      <p class="section-sub" data-i18n="homeAudienceAnswer">Independent explorers and budget travelers</p>
-      <h2 data-i18n="homeWhyTitle" style="margin-top:48px">Why use this travel planner?</h2>
-    </div>
-    <div class="problem-solution-row" style="margin-top:32px">
-      <div class="ps-col">
-        <h2 data-i18n="homeProblemTitle">Planning a trip shouldn't take forever</h2>
-        <p class="ps-sub" data-i18n="homeProblemSub">Sound familiar?</p>
-        <div class="pain-list">
-          <div class="pain-item"><span class="pain-icon">&#128269;</span><span data-i18n="homePain1">Searching dozens of "top things to do" lists</span></div>
-          <div class="pain-item"><span class="pain-icon">&#128214;</span><span data-i18n="homePain2">Reading blog after blog with conflicting advice</span></div>
-          <div class="pain-item"><span class="pain-icon">&#128203;</span><span data-i18n="homePain3">Copying notes into spreadsheets and docs</span></div>
-          <div class="pain-item"><span class="pain-icon">&#128506;</span><span data-i18n="homePain4">Opening Google Maps to figure out a route</span></div>
-          <div class="pain-item"><span class="pain-icon">&#129302;</span><span data-i18n="homePain5">Asking ChatGPT and getting a vague wall of text</span></div>
+  <!-- Tabbed Layout -->
+  <div class="home-tabbed-layout">
+    <nav class="home-tab-nav">
+      <button class="home-tab-nav-item active" data-tab="audience" onclick="switchHomeTab('audience')" data-i18n="homeTabAudience">Who Loves this travel planner</button>
+      <button class="home-tab-nav-item" data-tab="why" onclick="switchHomeTab('why')" data-i18n="homeTabWhy">Why Travel Planner</button>
+      <button class="home-tab-nav-item" data-tab="steps" onclick="switchHomeTab('steps')" data-i18n="homeTabSteps">Simple 3-step Process</button>
+      <button class="home-tab-nav-item" data-tab="preview" onclick="switchHomeTab('preview')" data-i18n="homeTabPreview">Live preview</button>
+      <button class="home-tab-nav-item" data-tab="pricing" onclick="switchHomeTab('pricing')" data-i18n="homeTabPricing">Plans and Fee</button>
+    </nav>
+    <div class="home-tab-content">
+
+      <!-- Tab: Audience -->
+      <div id="tab-panel-audience" class="home-tab-panel active">
+        <h2 data-i18n="homeAudienceTitle">Who should use this travel planner?</h2>
+        <p class="section-sub" data-i18n="homeAudienceAnswer">Independent explorers and budget travelers</p>
+      </div>
+
+      <!-- Tab: Why -->
+      <div id="tab-panel-why" class="home-tab-panel">
+        <h2 data-i18n="homeWhyTitle">Why use this travel planner?</h2>
+        <div class="problem-solution-row" style="margin-top:24px">
+          <div class="ps-col">
+            <h2 data-i18n="homeProblemTitle">Planning a trip shouldn't take forever</h2>
+            <p class="ps-sub" data-i18n="homeProblemSub">Sound familiar?</p>
+            <div class="pain-list">
+              <div class="pain-item"><span class="pain-icon">&#128269;</span><span data-i18n="homePain1">Searching dozens of "top things to do" lists</span></div>
+              <div class="pain-item"><span class="pain-icon">&#128214;</span><span data-i18n="homePain2">Reading blog after blog with conflicting advice</span></div>
+              <div class="pain-item"><span class="pain-icon">&#128203;</span><span data-i18n="homePain3">Copying notes into spreadsheets and docs</span></div>
+              <div class="pain-item"><span class="pain-icon">&#128506;</span><span data-i18n="homePain4">Opening Google Maps to figure out a route</span></div>
+              <div class="pain-item"><span class="pain-icon">&#129302;</span><span data-i18n="homePain5">Asking ChatGPT and getting a vague wall of text</span></div>
+            </div>
+          </div>
+          <div class="ps-col">
+            <h2 data-i18n="homeSolutionTitle">One tool. One complete trip plan.</h2>
+            <p class="ps-sub" data-i18n="homeSolutionSub">Travel Planner turns your destination and dates into a detailed, ready-to-follow itinerary.</p>
+            <div class="benefits-grid" style="grid-template-columns:1fr">
+              <div class="benefit-card"><div class="benefit-icon">&#128197;</div><h3 data-i18n="homeSolCard1Title">Day-by-day schedule</h3><p data-i18n="homeSolCard1Desc">Every activity timed and ordered so you never wonder "what's next?"</p></div>
+              <div class="benefit-card"><div class="benefit-icon">&#128205;</div><h3 data-i18n="homeSolCard2Title">Maps &amp; directions</h3><p data-i18n="homeSolCard2Desc">One-click Google Maps links between every stop on your route.</p></div>
+              <div class="benefit-card"><div class="benefit-icon">&#9881;&#65039;</div><h3 data-i18n="homeSolCard3Title">Fully customizable</h3><p data-i18n="homeSolCard3Desc">Set your budget, pace, interests, and transport — get a trip that fits you.</p></div>
+              <div class="benefit-card"><div class="benefit-icon">&#9889;</div><h3 data-i18n="homeSolCard4Title">Ready in minutes</h3><p data-i18n="homeSolCard4Desc">No research rabbit holes. Fill in a form, click generate, done.</p></div>
+            </div>
+          </div>
         </div>
       </div>
-      <div class="ps-col">
-        <h2 data-i18n="homeSolutionTitle">One tool. One complete trip plan.</h2>
-        <p class="ps-sub" data-i18n="homeSolutionSub">Travel Planner turns your destination and dates into a detailed, ready-to-follow itinerary.</p>
-        <div class="benefits-grid" style="grid-template-columns:1fr">
-          <div class="benefit-card"><div class="benefit-icon">&#128197;</div><h3 data-i18n="homeSolCard1Title">Day-by-day schedule</h3><p data-i18n="homeSolCard1Desc">Every activity timed and ordered so you never wonder "what's next?"</p></div>
-          <div class="benefit-card"><div class="benefit-icon">&#128205;</div><h3 data-i18n="homeSolCard2Title">Maps &amp; directions</h3><p data-i18n="homeSolCard2Desc">One-click Google Maps links between every stop on your route.</p></div>
-          <div class="benefit-card"><div class="benefit-icon">&#9881;&#65039;</div><h3 data-i18n="homeSolCard3Title">Fully customizable</h3><p data-i18n="homeSolCard3Desc">Set your budget, pace, interests, and transport — get a trip that fits you.</p></div>
-          <div class="benefit-card"><div class="benefit-icon">&#9889;</div><h3 data-i18n="homeSolCard4Title">Ready in minutes</h3><p data-i18n="homeSolCard4Desc">No research rabbit holes. Fill in a form, click generate, done.</p></div>
+
+      <!-- Tab: Steps -->
+      <div id="tab-panel-steps" class="home-tab-panel">
+        <h2 data-i18n="homeStepsTitle">How it works</h2>
+        <p class="section-sub" data-i18n="homeStepsSub">Plan like a travel expert — without hours of research.</p>
+        <div class="steps-row">
+          <div class="step-card"><div class="step-num">1</div><h3 data-i18n="homeStep1Title">Enter your details</h3><p data-i18n="homeStep1Desc">Destination, dates, budget, interests, and transportation preferences.</p></div>
+          <div class="step-card"><div class="step-num">2</div><h3 data-i18n="homeStep2Title">We build your trip</h3><p data-i18n="homeStep2Desc">We create a day-by-day itinerary with descriptions, hours, and tips.</p></div>
+          <div class="step-card"><div class="step-num">3</div><h3 data-i18n="homeStep3Title">Review &amp; go</h3><p data-i18n="homeStep3Desc">Browse your plan, open maps, tweak anything, and you're ready to travel.</p></div>
         </div>
       </div>
-    </div>
-  </section>
 
-  <!-- How It Works -->
-  <section class="home-section">
-    <div class="home-section-inner">
-      <h2 data-i18n="homeStepsTitle">How it works</h2>
-      <p class="section-sub" data-i18n="homeStepsSub">Plan like a travel expert — without hours of research.</p>
-      <div class="steps-row">
-        <div class="step-card"><div class="step-num">1</div><h3 data-i18n="homeStep1Title">Enter your details</h3><p data-i18n="homeStep1Desc">Destination, dates, budget, interests, and transportation preferences.</p></div>
-        <div class="step-card"><div class="step-num">2</div><h3 data-i18n="homeStep2Title">We build your trip</h3><p data-i18n="homeStep2Desc">We create a day-by-day itinerary with descriptions, hours, and tips.</p></div>
-        <div class="step-card"><div class="step-num">3</div><h3 data-i18n="homeStep3Title">Review &amp; go</h3><p data-i18n="homeStep3Desc">Browse your plan, open maps, tweak anything, and you're ready to travel.</p></div>
+      <!-- Tab: Preview -->
+      <div id="tab-panel-preview" class="home-tab-panel">
+        <h2 data-i18n="homeExampleTitle">What you'll get</h2>
+        <p class="section-sub" data-i18n="homeExampleSub">Here's a preview from a 5-day Dublin itinerary.</p>
+        <div class="example-embed-wrap">
+          <iframe src="/dublin-example.html" title="Example: 5-day Dublin itinerary" loading="lazy"></iframe>
+        </div>
       </div>
-    </div>
-  </section>
 
-  <!-- Example Output -->
-  <section class="home-section" id="example-output">
-    <div class="home-section-inner">
-      <h2 data-i18n="homeExampleTitle">What you'll get</h2>
-      <p class="section-sub" data-i18n="homeExampleSub">Here's a preview from a 5-day Dublin itinerary.</p>
-      <div class="example-embed-wrap">
-        <iframe src="/dublin-example.html" title="Example: 5-day Dublin itinerary" loading="lazy"></iframe>
+      <!-- Tab: Pricing -->
+      <div id="tab-panel-pricing" class="home-tab-panel home-pricing-inline">
+        <h2 data-i18n="homeTabPricingTitle">Choose Your Plan</h2>
+        <p class="section-sub">Pay per trip, not per month.</p>
+        <p class="section-sub" style="font-size:0.9rem;color:#222;margin-top:2px">Prices in USD. Your card will convert automatically at checkout.</p>
+        <div class="pricing-grid">
+          <div class="pricing-tier">
+            <h4>Free</h4>
+            <div class="pricing-price">$0</div>
+            <ul class="pricing-features">
+              <li class="included">1 destination</li>
+              <li class="included">3 day max trip</li>
+              <li class="included">1 trip/month</li>
+              <li class="included">1 revision</li>
+              <li class="included">PDF download</li>
+              <li class="excluded">Offline HTML</li>
+              <li class="excluded">Packing List</li>
+              <li class="excluded">Cheap Ticket Tips</li>
+              <li class="excluded">Fun Facts</li>
+            </ul>
+            <button class="pricing-btn pricing-btn-current" disabled>Current Plan</button>
+          </div>
+          <div class="pricing-tier recommended">
+            <h4>Trip Pack</h4>
+            <div class="pricing-price">$3.99<span>/ trip</span></div>
+            <ul class="pricing-features">
+              <li class="included">Up to 5 destinations</li>
+              <li class="included">14 day max trip</li>
+              <li class="included">5 revisions included</li>
+              <li class="included">PDF download</li>
+              <li class="included">Offline HTML</li>
+              <li class="included">Packing List</li>
+              <li class="included">Cheap Ticket Tips</li>
+              <li class="included">Fun Facts</li>
+            </ul>
+            <button class="pricing-btn pricing-btn-upgrade" onclick="handleInlinePricing('trip_pack')">Buy Trip Pack</button>
+          </div>
+          <div class="pricing-tier">
+            <h4>3-Trip Bundle</h4>
+            <div class="pricing-price">$8.99<span>/ 3 trips</span></div>
+            <ul class="pricing-features">
+              <li class="included">Up to 5 destinations</li>
+              <li class="included">14 day max trip</li>
+              <li class="included">5 revisions included</li>
+              <li class="included">PDF download</li>
+              <li class="included">Offline HTML</li>
+              <li class="included">Packing List</li>
+              <li class="included">Cheap Ticket Tips</li>
+              <li class="included">Fun Facts</li>
+            </ul>
+            <button class="pricing-btn pricing-btn-upgrade" onclick="handleInlinePricing('bundle')">Buy Bundle &mdash; Save 25%</button>
+          </div>
+        </div>
       </div>
-    </div>
-  </section>
 
-  <!-- Final CTA -->
-  <section class="home-cta-section">
-    <h2 data-i18n="homeCtaTitle">Ready to plan your next trip?</h2>
-    <p data-i18n="homeCtaSub">Try it free — no sign-up required. Sign in to save your trips.</p>
-    <button class="hero-btn-primary" onclick="showPlanningView()" data-i18n="homeHeroCta">Create My Trip</button>
-  </section>
+    </div>
+  </div>
+
+  <!-- Bottom CTA -->
+  <div class="home-bottom-cta">
+    <h2 data-i18n="homeCtaBottom">Plan your trip your way &mdash; no group tours, no guesswork</h2>
+    <div class="hero-btns">
+      <button class="hero-btn-primary" onclick="showPlanningView()" data-i18n="homeHeroFreeCta">Try Free Plan without Sign up</button>
+      <button class="hero-btn-secondary" onclick="showPlanningView()" data-i18n="homeHeroCta" style="border-color:rgba(255,255,255,0.4);color:#fff">Create My Trip</button>
+    </div>
+  </div>
 
   <!-- Home Footer -->
   <footer class="home-footer">
@@ -2475,6 +2586,12 @@ document.getElementById('pricing-btn-bundle').addEventListener('click', function
   pendingPurchasePriceType = 'bundle';
   document.getElementById('sign-in-gate-modal').classList.add('active');
 });
+
+function handleInlinePricing(priceType) {
+  if (currentUser) { purchaseCredits(priceType); return; }
+  pendingPurchasePriceType = priceType;
+  document.getElementById('sign-in-gate-modal').classList.add('active');
+}
 
 async function purchaseCredits(priceType) {
   var btns = document.querySelectorAll('.pricing-btn-upgrade');
@@ -5121,6 +5238,7 @@ function showView(viewName) {
     home.classList.remove('hidden');
     header.style.display = 'none';
     footer.style.display = 'none';
+    switchHomeTab('audience');
     window.scrollTo(0, 0);
   } else if (viewName === 'planning') {
     planning.classList.remove('hidden');
@@ -5145,9 +5263,13 @@ function showHomeView() {
   showView('home');
 }
 
-function scrollToExample() {
-  var el = document.getElementById('example-output');
-  if (el) el.scrollIntoView({ behavior: 'smooth' });
+function switchHomeTab(tabName) {
+  document.querySelectorAll('.home-tab-nav-item').forEach(function(btn) {
+    btn.classList.toggle('active', btn.getAttribute('data-tab') === tabName);
+  });
+  document.querySelectorAll('.home-tab-panel').forEach(function(panel) {
+    panel.classList.toggle('active', panel.id === 'tab-panel-' + tabName);
+  });
 }
 
 // ─── Restore session on page load ───
