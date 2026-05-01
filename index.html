@@ -1095,14 +1095,32 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
 .home-tab-panel.active { display: block; }
 #tab-panel-steps, #tab-panel-audience { align-self: flex-start; padding-top: 0; }
 .home-bottom-cta {
-  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
-  padding: 44px 28px; text-align: center; color: #fff;
+  position: relative; overflow: hidden;
+  padding: 0; text-align: center; color: #fff;
+}
+.home-bottom-cta .cta-photos {
+  display: grid; grid-template-columns: repeat(6, 1fr); gap: 0;
+  width: 100%; height: 200px;
+}
+.home-bottom-cta .cta-photos img {
+  width: 100%; height: 200px; object-fit: cover; display: block;
+}
+.home-bottom-cta .cta-overlay {
+  position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.55);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: 28px;
 }
 .home-bottom-cta h2 {
-  font-size: clamp(1.4rem, 2.8vw, 1.9rem); font-weight: 800;
+  font-size: clamp(1.5rem, 3vw, 2.1rem); font-weight: 800;
   letter-spacing: -0.02em; margin-bottom: 22px;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.3);
 }
-.home-bottom-cta .hero-btns { justify-content: center; }
+@media (max-width: 768px) {
+  .home-bottom-cta .cta-photos { grid-template-columns: repeat(4, 1fr); height: 160px; }
+  .home-bottom-cta .cta-photos img { height: 160px; }
+  .home-bottom-cta .cta-photos .hide-mobile { display: none; }
+}
 .home-pricing-inline .pricing-grid { margin-top: 20px; max-width: 900px; gap: 20px; }
 .home-pricing-inline .pricing-tier { border-radius: 12px; padding: 24px 20px; }
 .home-pricing-inline .pricing-tier h4 { font-size: 1.8rem; margin-bottom: 8px; }
@@ -1535,8 +1553,18 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
 
   <!-- Bottom CTA -->
   <div class="home-bottom-cta">
-    <h2 data-i18n="homeCtaBottom">Plan your trip your way &mdash; no group tours, no guesswork</h2>
-    <button class="hero-btn-primary" onclick="showPlanningView()" style="margin-top:8px;background:#10b981;color:#fff;font-size:1rem;padding:14px 32px;">&#9992; Travel Planner</button>
+    <div class="cta-photos">
+      <img src="https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=400&h=280&fit=crop" alt="Nature valley" loading="lazy">
+      <img src="https://images.unsplash.com/photo-1528127269322-539801943592?w=400&h=280&fit=crop" alt="Thailand boats" loading="lazy">
+      <img src="https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=400&h=280&fit=crop" alt="Paris" loading="lazy">
+      <img src="https://images.unsplash.com/photo-1516483638261-f4dbaf036963?w=400&h=280&fit=crop" alt="Italy coast" loading="lazy">
+      <img class="hide-mobile" src="https://images.unsplash.com/photo-1530789253388-582c481c54b0?w=400&h=280&fit=crop" alt="Travel map" loading="lazy">
+      <img class="hide-mobile" src="https://images.unsplash.com/photo-1501785888041-af3ef285b470?w=400&h=280&fit=crop" alt="Lake mountains" loading="lazy">
+    </div>
+    <div class="cta-overlay">
+      <h2 data-i18n="homeCtaBottom">Plan your trip your way &mdash; no group tours, no guesswork</h2>
+      <button class="hero-btn-primary" onclick="showPlanningView()" style="background:#10b981;color:#fff;font-size:1.1rem;padding:16px 36px;box-shadow:0 4px 20px rgba(0,0,0,0.3);">&#9992; Travel Planner</button>
+    </div>
   </div>
 
   <!-- Home Footer -->
