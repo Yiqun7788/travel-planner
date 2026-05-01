@@ -901,6 +901,18 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
   transition: background 0.2s, transform 0.15s; box-shadow: 0 2px 8px rgba(0,0,0,0.15);
 }
 .home-nav-cta:hover { background: #fff; transform: translateY(-1px); }
+.home-nav-right { display: flex; align-items: center; gap: 8px; }
+.home-nav-badge {
+  background: rgba(255,255,255,0.2); color: #fff; font-weight: 600; font-size: 0.82rem;
+  padding: 7px 14px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.3); cursor: pointer;
+  transition: background 0.2s; text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+}
+.home-nav-badge:hover { background: rgba(255,255,255,0.35); }
+.home-nav-lang {
+  background: rgba(255,255,255,0.2); color: #fff; font-weight: 600; font-size: 0.82rem;
+  padding: 7px 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.3); cursor: pointer;
+}
+.home-nav-lang option { color: #334155; }
 
 /* Photo collage banner */
 .home-photo-banner {
@@ -1154,7 +1166,11 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
 @media (max-width: 640px) {
   .home-hero { padding: 40px 20px 36px; }
   .home-section { padding: 56px 20px; }
-  .home-nav { padding: 12px 16px; }
+  .home-nav { padding: 10px 12px; }
+  .home-nav-right { gap: 4px; flex-wrap: wrap; }
+  .home-nav-badge { font-size: 0.72rem; padding: 5px 8px; }
+  .home-nav-lang { font-size: 0.72rem; padding: 5px 6px; }
+  .home-nav-cta { font-size: 0.78rem; padding: 7px 14px; }
   .hero-trust { gap: 8px; }
   .hero-trust-badge { font-size: 0.78rem; padding: 6px 14px; }
   .pain-list { grid-template-columns: 1fr; }
@@ -1394,7 +1410,26 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
 <div id="shared-photo-banner" class="home-photo-banner" style="position:relative">
   <nav class="home-nav">
     <span class="home-nav-logo">Travel Planner</span>
-    <button class="home-nav-cta" onclick="showPlanningView()" data-i18n="homeNavCta">Create My Trip</button>
+    <div class="home-nav-right">
+      <button id="banner-tier-badge" class="home-nav-badge" onclick="openPricingModal()">Free Plan</button>
+      <button id="banner-sign-in-btn" class="home-nav-badge" onclick="openAuthModal()">Sign In</button>
+      <div style="position:relative;display:inline-block">
+        <button id="banner-user-btn" class="home-nav-badge" style="display:none" onclick="toggleUserMenu()">
+          <span class="user-avatar" id="banner-user-avatar"></span>
+          <span id="banner-user-name"></span>
+        </button>
+      </div>
+      <select id="banner-language-select" class="home-nav-lang" onchange="document.getElementById('language-select').value=this.value; document.getElementById('language-select').dispatchEvent(new Event('change'));">
+        <option value="en">English</option>
+        <option value="zh">简体中文</option>
+        <option value="ja">日本語</option>
+        <option value="de">Deutsch</option>
+        <option value="es">Español</option>
+        <option value="fr">Français</option>
+      </select>
+      <button id="banner-home-btn" class="home-nav-cta" onclick="showHomeView()" style="display:none">&#127968; Home</button>
+      <button id="banner-create-btn" class="home-nav-cta" onclick="showPlanningView()" data-i18n="homeNavCta">Create My Trip</button>
+    </div>
   </nav>
   <img src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=400&h=300&fit=crop" alt="Beach" loading="lazy">
   <img src="https://images.unsplash.com/photo-1570077188670-e3a8d69ac5ff?w=400&h=300&fit=crop" alt="Santorini" loading="lazy">
@@ -2118,6 +2153,10 @@ function updateAuthUI() {
   var planNudge = document.getElementById('planning-sign-in-nudge');
   if (planNudge) planNudge.style.display = currentUser ? 'none' : 'flex';
 
+  var bannerSignIn = document.getElementById('banner-sign-in-btn');
+  var bannerUserBtn = document.getElementById('banner-user-btn');
+  var bannerUserName = document.getElementById('banner-user-name');
+
   if (currentUser && userProfile) {
     signInBtn.style.display = 'none';
     userBtn.style.display = 'flex';
@@ -2128,9 +2167,14 @@ function updateAuthUI() {
     } else {
       avatarEl.textContent = name.charAt(0).toUpperCase();
     }
+    if (bannerSignIn) bannerSignIn.style.display = 'none';
+    if (bannerUserBtn) { bannerUserBtn.style.display = ''; }
+    if (bannerUserName) bannerUserName.textContent = name;
   } else {
     signInBtn.style.display = '';
     userBtn.style.display = 'none';
+    if (bannerSignIn) bannerSignIn.style.display = '';
+    if (bannerUserBtn) bannerUserBtn.style.display = 'none';
   }
   applyTierUI();
 }
@@ -2315,6 +2359,25 @@ function applyTierUI() {
       badge.textContent = 'Trip Pack (' + credits + ' left)';
     } else {
       badge.textContent = 'Free Plan';
+    }
+  }
+
+  // ─── Banner nav badge (shared photo banner) ───
+  var bannerBadge = document.getElementById('banner-tier-badge');
+  var bannerSignIn = document.getElementById('banner-sign-in-btn');
+  var bannerUserBtn = document.getElementById('banner-user-btn');
+  var bannerUserName = document.getElementById('banner-user-name');
+  if (bannerBadge) {
+    bannerBadge.textContent = tier === 'paid' ? 'Trip Pack (' + credits + ' left)' : 'Free Plan';
+  }
+  if (bannerSignIn && bannerUserBtn) {
+    if (typeof firebase !== 'undefined' && firebase.auth().currentUser) {
+      bannerSignIn.style.display = 'none';
+      bannerUserBtn.style.display = '';
+      if (bannerUserName) bannerUserName.textContent = firebase.auth().currentUser.displayName || 'Account';
+    } else {
+      bannerSignIn.style.display = '';
+      bannerUserBtn.style.display = 'none';
     }
   }
 
@@ -5321,6 +5384,8 @@ function showView(viewName) {
     footer.style.display = 'none';
     sharedBanner.style.display = '';
     sharedBottomCta.style.display = '';
+    document.getElementById('banner-create-btn').style.display = '';
+    document.getElementById('banner-home-btn').style.display = 'none';
     switchHomeTab('audience');
     window.scrollTo(0, 0);
   } else if (viewName === 'planning') {
@@ -5329,6 +5394,8 @@ function showView(viewName) {
     footer.style.display = 'none';
     sharedBanner.style.display = '';
     sharedBottomCta.style.display = '';
+    document.getElementById('banner-create-btn').style.display = 'none';
+    document.getElementById('banner-home-btn').style.display = '';
     document.getElementById('language-select').parentElement.style.display = '';
     if (mobileBar) mobileBar.classList.add('hidden');
     window.scrollTo(0, 0);
