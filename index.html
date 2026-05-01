@@ -3321,7 +3321,7 @@ document.getElementById('budget-input').addEventListener('input', function() {
       document.getElementById('app-footer').style.display = 'none';
       document.getElementById('shared-photo-banner').style.display = 'none';
       document.getElementById('shared-bottom-cta').style.display = 'none';
-      document.getElementById('planning-header').style.display = '';
+      document.getElementById('planning-header').style.display = 'block';
       document.getElementById('language-select').parentElement.style.display = '';
       document.querySelector('.mobile-action-bar').classList.add('hidden');
       document.getElementById('return-to-itinerary-btn').classList.add('hidden');
@@ -4850,7 +4850,7 @@ document.getElementById('back-button').addEventListener('click', () => {
   document.getElementById('app-footer').style.display = 'none';
   document.getElementById('shared-photo-banner').style.display = 'none';
   document.getElementById('shared-bottom-cta').style.display = 'none';
-  document.getElementById('planning-header').style.display = '';
+  document.getElementById('planning-header').style.display = 'block';
   document.getElementById('language-select').parentElement.style.display = '';
   document.querySelector('.mobile-action-bar').classList.add('hidden');
   // Show "Return to Itinerary" and update generate button state
@@ -5463,7 +5463,7 @@ function showView(viewName) {
     footer.style.display = 'none';
     sharedBanner.style.display = 'none';
     sharedBottomCta.style.display = 'none';
-    planningHeader.style.display = '';
+    planningHeader.style.display = 'block';
     document.getElementById('language-select').parentElement.style.display = '';
     if (mobileBar) mobileBar.classList.add('hidden');
     window.scrollTo(0, 0);
