@@ -885,7 +885,7 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
 }
 
 /* ─── Home Page ─── */
-#home-view { font-family: 'Inter', sans-serif; position: relative; display: flex; flex-direction: column; }
+#home-view { font-family: 'Inter', sans-serif; position: relative; display: flex; flex-direction: column; flex: 1; min-height: 0; overflow: hidden; }
 .home-nav {
   position: absolute; top: 0; left: 0; right: 0; z-index: 10;
   display: flex; align-items: center; justify-content: space-between;
@@ -1106,8 +1106,6 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
   border-top: 1px solid #e2e8f0;
   flex: 1; min-height: 0;
   padding-left: calc(100% * 2 / 6);
-  max-height: calc(100vh - 150px - 150px - 130px);
-  overflow: hidden;
 }
 .home-tab-nav {
   width: 310px; min-width: 310px; background: #f8fafc;
@@ -1447,6 +1445,9 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
   </div>
 </header>
 
+<!-- Home Page Wrapper (viewport height flex layout) -->
+<div id="home-page-wrapper" style="display:flex;flex-direction:column;height:100vh;overflow:hidden">
+
 <!-- Shared Top Photo Banner -->
 <div id="shared-photo-banner" class="home-photo-banner" style="position:relative">
   <nav class="home-nav">
@@ -1622,6 +1623,25 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
 
 </div>
 <!-- END HOME VIEW -->
+
+<!-- Shared Bottom Photo CTA -->
+<div id="shared-bottom-cta" class="home-bottom-cta">
+  <div class="cta-photos">
+    <img src="https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=400&h=280&fit=crop" alt="Nature valley" loading="lazy">
+    <img src="https://images.unsplash.com/photo-1528127269322-539801943592?w=400&h=280&fit=crop" alt="Thailand boats" loading="lazy">
+    <img src="https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=400&h=280&fit=crop" alt="Paris" loading="lazy">
+    <img src="https://images.unsplash.com/photo-1516483638261-f4dbaf036963?w=400&h=280&fit=crop" alt="Italy coast" loading="lazy">
+    <img class="hide-mobile" src="https://images.unsplash.com/photo-1530789253388-582c481c54b0?w=400&h=280&fit=crop" alt="Travel map" loading="lazy">
+    <img class="hide-mobile" src="https://images.unsplash.com/photo-1501785888041-af3ef285b470?w=400&h=280&fit=crop" alt="Lake mountains" loading="lazy">
+  </div>
+  <div class="cta-overlay">
+    <h2 data-i18n="homeCtaBottom">Plan your trip your way &mdash; no group tours, no guesswork</h2>
+    <button class="hero-btn-primary" onclick="showPlanningView()" style="background:#10b981;color:#fff;font-size:1.1rem;padding:16px 36px;box-shadow:0 4px 20px rgba(0,0,0,0.3);">&#9992; Travel Planner</button>
+  </div>
+</div>
+
+</div>
+<!-- END Home Page Wrapper -->
 
 <!-- Planning Page Header -->
 <div id="planning-header" class="planning-header">
@@ -1834,27 +1854,11 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
     <!-- Generate Button -->
     <button type="button" id="generate-button" class="btn-primary" data-i18n="generate">Generate Itinerary</button>
     <p id="generate-button-hint" class="hidden" style="margin-top:8px; padding:10px 14px; background:linear-gradient(135deg,#fef3c7,#fde68a); border:1px solid #f59e0b; border-radius:10px; font-size:0.85rem; color:#92400e; line-height:1.5; text-align:center;"></p>
-    <button type="button" id="return-to-itinerary-btn" class="btn-primary hidden" style="margin-top: 10px; background: linear-gradient(135deg, #64748b, #475569);" onclick="document.getElementById('home-view').style.display='none'; document.getElementById('planning-view').classList.add('hidden'); document.getElementById('results-view').classList.remove('hidden'); document.getElementById('app-header').style.display=''; document.getElementById('app-footer').style.display=''; document.getElementById('shared-photo-banner').style.display='none'; document.getElementById('shared-bottom-cta').style.display='none'; document.getElementById('planning-header').style.display='none'; document.getElementById('language-select').parentElement.style.display='none'; if(window.innerWidth<=768) document.querySelector('.mobile-action-bar').classList.remove('hidden'); showPlanningChangesSummary(); applyTierUI();">&#8592; Return to Itinerary</button>
+    <button type="button" id="return-to-itinerary-btn" class="btn-primary hidden" style="margin-top: 10px; background: linear-gradient(135deg, #64748b, #475569);" onclick="document.getElementById('home-page-wrapper').style.display='none'; document.getElementById('planning-view').classList.add('hidden'); document.getElementById('results-view').classList.remove('hidden'); document.getElementById('app-header').style.display=''; document.getElementById('app-footer').style.display=''; document.getElementById('planning-header').style.display='none'; document.getElementById('language-select').parentElement.style.display='none'; if(window.innerWidth<=768) document.querySelector('.mobile-action-bar').classList.remove('hidden'); showPlanningChangesSummary(); applyTierUI();">&#8592; Return to Itinerary</button>
 
   </form>
 </div>
 </div>
-</div>
-
-<!-- Shared Bottom Photo CTA -->
-<div id="shared-bottom-cta" class="home-bottom-cta">
-  <div class="cta-photos">
-    <img src="https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=400&h=280&fit=crop" alt="Nature valley" loading="lazy">
-    <img src="https://images.unsplash.com/photo-1528127269322-539801943592?w=400&h=280&fit=crop" alt="Thailand boats" loading="lazy">
-    <img src="https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=400&h=280&fit=crop" alt="Paris" loading="lazy">
-    <img src="https://images.unsplash.com/photo-1516483638261-f4dbaf036963?w=400&h=280&fit=crop" alt="Italy coast" loading="lazy">
-    <img class="hide-mobile" src="https://images.unsplash.com/photo-1530789253388-582c481c54b0?w=400&h=280&fit=crop" alt="Travel map" loading="lazy">
-    <img class="hide-mobile" src="https://images.unsplash.com/photo-1501785888041-af3ef285b470?w=400&h=280&fit=crop" alt="Lake mountains" loading="lazy">
-  </div>
-  <div class="cta-overlay">
-    <h2 data-i18n="homeCtaBottom">Plan your trip your way &mdash; no group tours, no guesswork</h2>
-    <button class="hero-btn-primary" onclick="showPlanningView()" style="background:#10b981;color:#fff;font-size:1.1rem;padding:16px 36px;box-shadow:0 4px 20px rgba(0,0,0,0.3);">&#9992; Travel Planner</button>
-  </div>
 </div>
 
 <div class="max-w-4xl mx-auto px-4 pb-12">
@@ -2827,13 +2831,11 @@ async function purchaseCredits(priceType) {
 // Confirm New Trip modal buttons
 document.getElementById('confirm-new-trip-revision').addEventListener('click', function() {
   document.getElementById('confirm-new-trip-modal').classList.remove('active');
-  document.getElementById('home-view').style.display='none';
+  document.getElementById('home-page-wrapper').style.display='none';
   document.getElementById('planning-view').classList.add('hidden');
   document.getElementById('results-view').classList.remove('hidden');
   document.getElementById('app-header').style.display = '';
   document.getElementById('app-footer').style.display = '';
-  document.getElementById('shared-photo-banner').style.display = 'none';
-  document.getElementById('shared-bottom-cta').style.display = 'none';
   document.getElementById('planning-header').style.display = 'none';
   document.getElementById('language-select').parentElement.style.display = 'none';
   if (window.innerWidth <= 768) document.querySelector('.mobile-action-bar').classList.remove('hidden');
@@ -3316,13 +3318,11 @@ document.getElementById('budget-input').addEventListener('input', function() {
 
       applyTierUI();
       // Reset to planning view so user can start a new trip with their credits
-      document.getElementById('home-view').style.display='none';
+      document.getElementById('home-page-wrapper').style.display='none';
       document.getElementById('results-view').classList.add('hidden');
       document.getElementById('planning-view').classList.remove('hidden');
       document.getElementById('app-header').style.display = 'none';
       document.getElementById('app-footer').style.display = 'none';
-      document.getElementById('shared-photo-banner').style.display = 'none';
-      document.getElementById('shared-bottom-cta').style.display = 'none';
       document.getElementById('planning-header').style.display = 'block';
       document.getElementById('language-select').parentElement.style.display = '';
       document.querySelector('.mobile-action-bar').classList.add('hidden');
@@ -3925,13 +3925,11 @@ ROUND TRIP: The traveler is making a round trip${longDistance.length === 1 ? ' b
   renderActiveInstructionsLabel();
   renderBookingSection();
 
-  document.getElementById('home-view').style.display='none';
+  document.getElementById('home-page-wrapper').style.display='none';
   document.getElementById('planning-view').classList.add('hidden');
   document.getElementById('results-view').classList.remove('hidden');
   document.getElementById('app-header').style.display = '';
   document.getElementById('app-footer').style.display = '';
-  document.getElementById('shared-photo-banner').style.display = 'none';
-  document.getElementById('shared-bottom-cta').style.display = 'none';
   document.getElementById('planning-header').style.display = 'none';
   document.getElementById('language-select').parentElement.style.display = 'none';
   if (window.innerWidth <= 768) document.querySelector('.mobile-action-bar').classList.remove('hidden');
@@ -4845,13 +4843,11 @@ document.addEventListener('click', function(e) {
 });
 
 document.getElementById('back-button').addEventListener('click', () => {
-  document.getElementById('home-view').style.display='none';
+  document.getElementById('home-page-wrapper').style.display='none';
   document.getElementById('results-view').classList.add('hidden');
   document.getElementById('planning-view').classList.remove('hidden');
   document.getElementById('app-header').style.display = 'none';
   document.getElementById('app-footer').style.display = 'none';
-  document.getElementById('shared-photo-banner').style.display = 'none';
-  document.getElementById('shared-bottom-cta').style.display = 'none';
   document.getElementById('planning-header').style.display = 'block';
   document.getElementById('language-select').parentElement.style.display = '';
   document.querySelector('.mobile-action-bar').classList.add('hidden');
@@ -5436,45 +5432,38 @@ document.getElementById('fun-fact-btn').addEventListener('click', async () => {
 
 // ─── Home / Planning / Results view switching ───
 function showView(viewName) {
-  var home = document.getElementById('home-view');
   var planning = document.getElementById('planning-view');
   var results = document.getElementById('results-view');
   var header = document.getElementById('app-header');
   var footer = document.getElementById('app-footer');
   var mobileBar = document.querySelector('.mobile-action-bar');
-  var sharedBanner = document.getElementById('shared-photo-banner');
-  var sharedBottomCta = document.getElementById('shared-bottom-cta');
+  var homeWrapper = document.getElementById('home-page-wrapper');
   var planningHeader = document.getElementById('planning-header');
 
-  home.style.display = 'none';
   planning.classList.add('hidden');
   results.classList.add('hidden');
 
   if (viewName === 'home') {
-    home.style.display = '';
+    homeWrapper.style.display = '';
     header.style.display = 'none';
     footer.style.display = 'none';
-    sharedBanner.style.display = '';
-    sharedBottomCta.style.display = '';
     planningHeader.style.display = 'none';
     switchHomeTab('audience');
     window.scrollTo(0, 0);
   } else if (viewName === 'planning') {
+    homeWrapper.style.display = 'none';
     planning.classList.remove('hidden');
     header.style.display = 'none';
     footer.style.display = 'none';
-    sharedBanner.style.display = 'none';
-    sharedBottomCta.style.display = 'none';
     planningHeader.style.display = 'block';
     document.getElementById('language-select').parentElement.style.display = '';
     if (mobileBar) mobileBar.classList.add('hidden');
     window.scrollTo(0, 0);
   } else if (viewName === 'results') {
+    homeWrapper.style.display = 'none';
     results.classList.remove('hidden');
     header.style.display = '';
     footer.style.display = '';
-    sharedBanner.style.display = 'none';
-    sharedBottomCta.style.display = 'none';
     planningHeader.style.display = 'none';
     document.getElementById('language-select').parentElement.style.display = 'none';
     if (mobileBar && window.innerWidth <= 768) mobileBar.classList.remove('hidden');
@@ -5532,13 +5521,11 @@ function restoreSession() {
     renderTripOverview();
     renderActiveInstructionsLabel();
     renderBookingSection();
-    document.getElementById('home-view').style.display='none';
+    document.getElementById('home-page-wrapper').style.display='none';
     document.getElementById('planning-view').classList.add('hidden');
     document.getElementById('results-view').classList.remove('hidden');
     document.getElementById('app-header').style.display = '';
     document.getElementById('app-footer').style.display = '';
-    document.getElementById('shared-photo-banner').style.display = 'none';
-    document.getElementById('shared-bottom-cta').style.display = 'none';
     document.getElementById('planning-header').style.display = 'none';
     document.getElementById('language-select').parentElement.style.display = 'none';
     if (window.innerWidth <= 768) document.querySelector('.mobile-action-bar').classList.remove('hidden');
