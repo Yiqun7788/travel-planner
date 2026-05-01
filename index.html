@@ -916,6 +916,38 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
 }
 .home-nav-lang option { color: #334155; background: #fff; }
 
+/* Planning page header bar */
+.planning-header {
+  display: none; width: 100%;
+  background: linear-gradient(135deg, #0f172a, #1e293b);
+  padding: 14px 28px; box-sizing: border-box;
+}
+.planning-header-inner {
+  max-width: 900px; margin: 0 auto;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.planning-header-logo {
+  font-size: 1.2rem; font-weight: 800; color: #fff; letter-spacing: -0.02em; cursor: pointer;
+}
+.planning-header-right { display: flex; align-items: center; gap: 8px; }
+.planning-header-badge {
+  background: rgba(255,255,255,0.12); color: #fff; font-weight: 600; font-size: 0.85rem;
+  padding: 7px 14px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.15); cursor: pointer;
+  transition: background 0.2s;
+}
+.planning-header-badge:hover { background: rgba(255,255,255,0.22); }
+.planning-header-lang {
+  background: rgba(255,255,255,0.12); color: #fff; font-weight: 600; font-size: 0.85rem;
+  padding: 7px 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.15); cursor: pointer;
+}
+.planning-header-lang option { color: #334155; background: #fff; }
+.planning-header-home {
+  background: #10b981; color: #fff; font-weight: 700; font-size: 0.85rem;
+  padding: 8px 18px; border-radius: 8px; border: none; cursor: pointer;
+  transition: background 0.2s;
+}
+.planning-header-home:hover { background: #059669; }
+
 /* Photo collage banner */
 .home-photo-banner {
   width: 100%; height: 220px; overflow: hidden;
@@ -1176,6 +1208,11 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
   .hero-trust { gap: 8px; }
   .hero-trust-badge { font-size: 0.78rem; padding: 6px 14px; }
   .pain-list { grid-template-columns: 1fr; }
+  .planning-header { padding: 10px 14px; }
+  .planning-header-right { gap: 4px; flex-wrap: wrap; }
+  .planning-header-badge { font-size: 0.75rem; padding: 5px 8px; }
+  .planning-header-lang { font-size: 0.75rem; padding: 5px 6px; }
+  .planning-header-home { font-size: 0.78rem; padding: 6px 12px; }
 }
 </style>
 </head>
@@ -1584,6 +1621,31 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
 </div>
 <!-- END HOME VIEW -->
 
+<!-- Planning Page Header -->
+<div id="planning-header" class="planning-header">
+  <div class="planning-header-inner">
+    <span class="planning-header-logo" onclick="showHomeView()">Travel Planner</span>
+    <div class="planning-header-right">
+      <button id="ph-tier-badge" class="planning-header-badge" onclick="openPricingModal()">Free Plan</button>
+      <button id="ph-sign-in-btn" class="planning-header-badge" onclick="openAuthModal()">Sign In</button>
+      <div style="position:relative;display:inline-block">
+        <button id="ph-user-btn" class="planning-header-badge" style="display:none" onclick="toggleUserMenu()">
+          <span id="ph-user-name"></span>
+        </button>
+      </div>
+      <select id="ph-language-select" class="planning-header-lang" onchange="document.getElementById('language-select').value=this.value; document.getElementById('language-select').dispatchEvent(new Event('change'));">
+        <option value="en">English</option>
+        <option value="zh">简体中文</option>
+        <option value="ja">日本語</option>
+        <option value="de">Deutsch</option>
+        <option value="es">Español</option>
+        <option value="fr">Français</option>
+      </select>
+      <button class="planning-header-home" onclick="showHomeView()">&#127968; Home</button>
+    </div>
+  </div>
+</div>
+
 <!-- PLANNING VIEW -->
 <div id="planning-view" class="hidden animate-fade-in-up">
 <div class="max-w-4xl mx-auto px-4 py-12">
@@ -1770,7 +1832,7 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
     <!-- Generate Button -->
     <button type="button" id="generate-button" class="btn-primary" data-i18n="generate">Generate Itinerary</button>
     <p id="generate-button-hint" class="hidden" style="margin-top:8px; padding:10px 14px; background:linear-gradient(135deg,#fef3c7,#fde68a); border:1px solid #f59e0b; border-radius:10px; font-size:0.85rem; color:#92400e; line-height:1.5; text-align:center;"></p>
-    <button type="button" id="return-to-itinerary-btn" class="btn-primary hidden" style="margin-top: 10px; background: linear-gradient(135deg, #64748b, #475569);" onclick="document.getElementById('home-view').style.display='none'; document.getElementById('planning-view').classList.add('hidden'); document.getElementById('results-view').classList.remove('hidden'); document.getElementById('app-header').style.display=''; document.getElementById('app-footer').style.display=''; document.getElementById('shared-photo-banner').style.display='none'; document.getElementById('shared-bottom-cta').style.display='none'; document.getElementById('language-select').parentElement.style.display='none'; if(window.innerWidth<=768) document.querySelector('.mobile-action-bar').classList.remove('hidden'); showPlanningChangesSummary(); applyTierUI();">&#8592; Return to Itinerary</button>
+    <button type="button" id="return-to-itinerary-btn" class="btn-primary hidden" style="margin-top: 10px; background: linear-gradient(135deg, #64748b, #475569);" onclick="document.getElementById('home-view').style.display='none'; document.getElementById('planning-view').classList.add('hidden'); document.getElementById('results-view').classList.remove('hidden'); document.getElementById('app-header').style.display=''; document.getElementById('app-footer').style.display=''; document.getElementById('shared-photo-banner').style.display='none'; document.getElementById('shared-bottom-cta').style.display='none'; document.getElementById('planning-header').style.display='none'; document.getElementById('language-select').parentElement.style.display='none'; if(window.innerWidth<=768) document.querySelector('.mobile-action-bar').classList.remove('hidden'); showPlanningChangesSummary(); applyTierUI();">&#8592; Return to Itinerary</button>
 
   </form>
 </div>
@@ -2158,6 +2220,9 @@ function updateAuthUI() {
   var bannerSignIn = document.getElementById('banner-sign-in-btn');
   var bannerUserBtn = document.getElementById('banner-user-btn');
   var bannerUserName = document.getElementById('banner-user-name');
+  var phSignIn = document.getElementById('ph-sign-in-btn');
+  var phUserBtn = document.getElementById('ph-user-btn');
+  var phUserName = document.getElementById('ph-user-name');
 
   if (currentUser && userProfile) {
     signInBtn.style.display = 'none';
@@ -2172,11 +2237,16 @@ function updateAuthUI() {
     if (bannerSignIn) bannerSignIn.style.display = 'none';
     if (bannerUserBtn) { bannerUserBtn.style.display = ''; }
     if (bannerUserName) bannerUserName.textContent = name;
+    if (phSignIn) phSignIn.style.display = 'none';
+    if (phUserBtn) { phUserBtn.style.display = ''; }
+    if (phUserName) phUserName.textContent = name;
   } else {
     signInBtn.style.display = '';
     userBtn.style.display = 'none';
     if (bannerSignIn) bannerSignIn.style.display = '';
     if (bannerUserBtn) bannerUserBtn.style.display = 'none';
+    if (phSignIn) phSignIn.style.display = '';
+    if (phUserBtn) phUserBtn.style.display = 'none';
   }
   applyTierUI();
 }
@@ -2366,21 +2436,14 @@ function applyTierUI() {
 
   // ─── Banner nav badge (shared photo banner) ───
   var bannerBadge = document.getElementById('banner-tier-badge');
-  var bannerSignIn = document.getElementById('banner-sign-in-btn');
-  var bannerUserBtn = document.getElementById('banner-user-btn');
-  var bannerUserName = document.getElementById('banner-user-name');
   if (bannerBadge) {
     bannerBadge.textContent = tier === 'paid' ? 'Trip Pack (' + credits + ' left)' : 'Free Plan';
   }
-  if (bannerSignIn && bannerUserBtn) {
-    if (typeof firebase !== 'undefined' && firebase.auth().currentUser) {
-      bannerSignIn.style.display = 'none';
-      bannerUserBtn.style.display = '';
-      if (bannerUserName) bannerUserName.textContent = firebase.auth().currentUser.displayName || 'Account';
-    } else {
-      bannerSignIn.style.display = '';
-      bannerUserBtn.style.display = 'none';
-    }
+
+  // ─── Planning header badge ───
+  var phBadge = document.getElementById('ph-tier-badge');
+  if (phBadge) {
+    phBadge.textContent = tier === 'paid' ? 'Trip Pack (' + credits + ' left)' : 'Free Plan';
   }
 
   // ─── Banner text ───
@@ -2769,6 +2832,7 @@ document.getElementById('confirm-new-trip-revision').addEventListener('click', f
   document.getElementById('app-footer').style.display = '';
   document.getElementById('shared-photo-banner').style.display = 'none';
   document.getElementById('shared-bottom-cta').style.display = 'none';
+  document.getElementById('planning-header').style.display = 'none';
   document.getElementById('language-select').parentElement.style.display = 'none';
   if (window.innerWidth <= 768) document.querySelector('.mobile-action-bar').classList.remove('hidden');
 });
@@ -3255,8 +3319,9 @@ document.getElementById('budget-input').addEventListener('input', function() {
       document.getElementById('planning-view').classList.remove('hidden');
       document.getElementById('app-header').style.display = 'none';
       document.getElementById('app-footer').style.display = 'none';
-      document.getElementById('shared-photo-banner').style.display = '';
-      document.getElementById('shared-bottom-cta').style.display = '';
+      document.getElementById('shared-photo-banner').style.display = 'none';
+      document.getElementById('shared-bottom-cta').style.display = 'none';
+      document.getElementById('planning-header').style.display = '';
       document.getElementById('language-select').parentElement.style.display = '';
       document.querySelector('.mobile-action-bar').classList.add('hidden');
       document.getElementById('return-to-itinerary-btn').classList.add('hidden');
@@ -3865,6 +3930,7 @@ ROUND TRIP: The traveler is making a round trip${longDistance.length === 1 ? ' b
   document.getElementById('app-footer').style.display = '';
   document.getElementById('shared-photo-banner').style.display = 'none';
   document.getElementById('shared-bottom-cta').style.display = 'none';
+  document.getElementById('planning-header').style.display = 'none';
   document.getElementById('language-select').parentElement.style.display = 'none';
   if (window.innerWidth <= 768) document.querySelector('.mobile-action-bar').classList.remove('hidden');
 
@@ -4782,8 +4848,9 @@ document.getElementById('back-button').addEventListener('click', () => {
   document.getElementById('planning-view').classList.remove('hidden');
   document.getElementById('app-header').style.display = 'none';
   document.getElementById('app-footer').style.display = 'none';
-  document.getElementById('shared-photo-banner').style.display = '';
-  document.getElementById('shared-bottom-cta').style.display = '';
+  document.getElementById('shared-photo-banner').style.display = 'none';
+  document.getElementById('shared-bottom-cta').style.display = 'none';
+  document.getElementById('planning-header').style.display = '';
   document.getElementById('language-select').parentElement.style.display = '';
   document.querySelector('.mobile-action-bar').classList.add('hidden');
   // Show "Return to Itinerary" and update generate button state
@@ -5375,6 +5442,7 @@ function showView(viewName) {
   var mobileBar = document.querySelector('.mobile-action-bar');
   var sharedBanner = document.getElementById('shared-photo-banner');
   var sharedBottomCta = document.getElementById('shared-bottom-cta');
+  var planningHeader = document.getElementById('planning-header');
 
   home.style.display = 'none';
   planning.classList.add('hidden');
@@ -5386,18 +5454,16 @@ function showView(viewName) {
     footer.style.display = 'none';
     sharedBanner.style.display = '';
     sharedBottomCta.style.display = '';
-    document.getElementById('banner-create-btn').style.display = '';
-    document.getElementById('banner-home-btn').style.display = 'none';
+    planningHeader.style.display = 'none';
     switchHomeTab('audience');
     window.scrollTo(0, 0);
   } else if (viewName === 'planning') {
     planning.classList.remove('hidden');
     header.style.display = 'none';
     footer.style.display = 'none';
-    sharedBanner.style.display = '';
-    sharedBottomCta.style.display = '';
-    document.getElementById('banner-create-btn').style.display = 'none';
-    document.getElementById('banner-home-btn').style.display = '';
+    sharedBanner.style.display = 'none';
+    sharedBottomCta.style.display = 'none';
+    planningHeader.style.display = '';
     document.getElementById('language-select').parentElement.style.display = '';
     if (mobileBar) mobileBar.classList.add('hidden');
     window.scrollTo(0, 0);
@@ -5407,6 +5473,7 @@ function showView(viewName) {
     footer.style.display = '';
     sharedBanner.style.display = 'none';
     sharedBottomCta.style.display = 'none';
+    planningHeader.style.display = 'none';
     document.getElementById('language-select').parentElement.style.display = 'none';
     if (mobileBar && window.innerWidth <= 768) mobileBar.classList.remove('hidden');
   }
@@ -5470,6 +5537,7 @@ function restoreSession() {
     document.getElementById('app-footer').style.display = '';
     document.getElementById('shared-photo-banner').style.display = 'none';
     document.getElementById('shared-bottom-cta').style.display = 'none';
+    document.getElementById('planning-header').style.display = 'none';
     document.getElementById('language-select').parentElement.style.display = 'none';
     if (window.innerWidth <= 768) document.querySelector('.mobile-action-bar').classList.remove('hidden');
     // Restore planning page fields so Back button shows correct values
