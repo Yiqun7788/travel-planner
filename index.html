@@ -197,6 +197,43 @@ body { font-family: 'Inter', system-ui, sans-serif; background: #f1f5f9; }
 #content-display a:hover { color: #4f46e5; }
 #content-display hr { border-color: #e2e8f0; margin: 2rem 0; }
 
+/* Desktop: larger text for itinerary page */
+@media (min-width: 769px) {
+  #content-display { font-size: 1.25rem; }
+  #content-display h1 { font-size: 2.1rem; }
+  #content-display h2 { font-size: 1.7rem; }
+  #content-display h3 { font-size: 1.4rem; }
+  #content-display p { font-size: 1.2rem; }
+  #content-display ul, #content-display ol { font-size: 1.2rem; }
+  details.day-section > summary { font-size: 1.6rem; padding: 18px 22px; }
+  .day-chevron { font-size: 1rem; }
+  .day-highlights { font-size: 1.05rem; }
+  .day-overview { font-size: 1.1rem; }
+  #trip-overview { font-size: 1.1rem; }
+  .time-block-label { font-size: 1.3rem; }
+  details.schedule-section > summary { font-size: 1.2rem; padding: 14px 18px; }
+  details.schedule-section > .schedule-content { font-size: 1.15rem; }
+  .stop-header .stop-name { font-size: 1.2rem; }
+  .stop-header .stop-desc-preview { font-size: 1.05rem; }
+  .stop-chip { font-size: 0.88rem; }
+  .stop-map-btn, .stop-web-btn, .stop-details-btn { font-size: 0.95rem; padding: 6px 16px; min-height: 34px; }
+  .stop-details { font-size: 1.1rem; }
+  .stop-detail-label { font-size: 1rem; min-width: 76px; }
+  .stop-detail-value { font-size: 1.1rem; }
+  .stop-extra-notes { font-size: 1.1rem; }
+  .route-map-link { font-size: 1.1rem; padding: 14px 24px; }
+  .tool-btn { font-size: 1.1rem; padding: 16px 24px; }
+  details.cheap-tickets-section > summary { font-size: 1.6rem; }
+  details.budget-summary-section > summary { font-size: 1.6rem; }
+  .download-menu-item { font-size: 1.1rem; }
+  #booking-section h3 { font-size: 1.4rem; }
+  #booking-section p { font-size: 1.1rem; }
+  .booking-card-title { font-size: 1.2rem; }
+  .booking-card-desc { font-size: 1.05rem; }
+  .booking-card-btn { font-size: 1rem; padding: 8px 20px; }
+  .booking-card-icon { font-size: 2.2rem; }
+}
+
 /* Download menu */
 .download-menu-item {
   display: block; width: 100%; text-align: left;
@@ -547,23 +584,6 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
   color: #fff; font-size: 0.78rem; font-weight: 600; border-radius: 8px;
   transition: background 0.2s;
 }
-#sign-in-nudge {
-  display: flex; align-items: center; gap: 12px;
-  padding: 14px 20px; border-radius: 12px;
-  background: linear-gradient(135deg, #eff6ff, #eef2ff);
-  border: 1px solid #bfdbfe;
-  color: #334155; font-size: 0.88rem; line-height: 1.4;
-}
-#sign-in-nudge button {
-  flex-shrink: 0; padding: 6px 16px; border: none; border-radius: 8px;
-  background: linear-gradient(135deg, #3b82f6, #6366f1); color: #fff;
-  font-weight: 600; font-size: 0.82rem; cursor: pointer; transition: opacity 0.2s;
-}
-#sign-in-nudge button:hover { opacity: 0.88; }
-#sign-in-nudge .nudge-dismiss {
-  background: none; color: #94a3b8; font-size: 1.1rem; padding: 2px 6px;
-}
-#sign-in-nudge .nudge-dismiss:hover { color: #64748b; }
 .booking-card:hover .booking-card-btn { background: linear-gradient(135deg, #2563eb, #1d4ed8); }
 
 /* ─── Free Tier: Locked / Upgrade styles ─── */
@@ -701,12 +721,12 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
   transition: background 0.15s;
 }
 #header-sign-in-btn:hover { background: rgba(255,255,255,0.28); }
-#user-menu-dropdown {
+#user-menu-dropdown, .user-menu-dropdown-shared {
   display: none; position: absolute; top: calc(100% + 6px); right: 0;
   background: #fff; border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.15);
   min-width: 180px; z-index: 1200; overflow: hidden;
 }
-#user-menu-dropdown.active { display: block; }
+#user-menu-dropdown.active, .user-menu-dropdown-shared.active { display: block; }
 .user-menu-item {
   display: block; width: 100%; padding: 11px 16px; border: none; background: none;
   text-align: left; font-size: 0.88rem; font-family: inherit; color: #1e293b;
@@ -843,8 +863,27 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
 .upgrade-view-plans:hover { color: #4f46e5; }
 
 @media (max-width: 640px) {
-  .pricing-grid { grid-template-columns: 1fr; }
-  .pricing-modal-card { padding: 24px 16px; }
+  .pricing-grid { grid-template-columns: repeat(3, 1fr); gap: 6px; }
+  .pricing-modal-card { padding: 16px 8px; }
+  .pricing-tier { padding: 10px 6px; border-radius: 10px; }
+  .pricing-tier h4 { font-size: 0.7rem; }
+  .pricing-price { font-size: 0.95rem; margin-bottom: 8px; }
+  .pricing-price span { font-size: 0.55rem; }
+  .pricing-features { font-size: 0.55rem; line-height: 1.7; margin-bottom: 10px; }
+  .pricing-features li { gap: 3px; }
+  .pricing-features li.included::before,
+  .pricing-features li.excluded::before { font-size: 0.6rem; }
+  .pricing-btn { font-size: 0.58rem; padding: 6px 4px; border-radius: 7px; }
+  .pricing-tier.recommended::before { font-size: 0.5rem; padding: 1px 6px; top: -8px; }
+  .pricing-modal-card h3 { font-size: 1rem; }
+  .pricing-modal-card .pricing-subtitle { font-size: 0.75rem; margin-bottom: 14px; }
+  .home-pricing-inline .pricing-tier h4 { font-size: 0.7rem; }
+  .home-pricing-inline .pricing-price { font-size: 0.95rem; }
+  .home-pricing-inline .pricing-price span { font-size: 0.55rem; }
+  .home-pricing-inline .pricing-features { font-size: 0.55rem; line-height: 1.7; }
+  .home-pricing-inline .pricing-features li::before { font-size: 0.6rem; }
+  .home-pricing-inline .pricing-btn { font-size: 0.58rem; padding: 6px 4px; }
+  .home-pricing-inline .pricing-tier.recommended::before { font-size: 0.5rem; padding: 1px 6px; }
 }
 
 /* Destination autocomplete dropdown */
@@ -1201,11 +1240,14 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
 .home-pricing-inline .pricing-btn { font-size: 1.35rem; padding: 16px; border-radius: 12px; }
 .home-pricing-inline .pricing-tier.recommended::before { font-size: 1.05rem; padding: 4px 18px; }
 @media (max-width: 768px) {
+  #home-page-wrapper { height: auto; min-height: 100vh; overflow: visible; }
+  #home-view { overflow: visible; }
   .home-tabbed-layout { flex-direction: column; min-height: auto; padding-left: 0; }
   .home-tab-nav {
     width: 100%; min-width: 100%; flex-direction: row;
     overflow-x: auto; border-right: none; border-bottom: 1px solid #e2e8f0;
     padding: 0; -webkit-overflow-scrolling: touch;
+    position: sticky; top: 0; z-index: 10; background: #f8fafc;
   }
   .home-tab-nav-header { display: none; }
   .home-tab-nav-item {
@@ -1214,11 +1256,89 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
     font-size: 0.88rem; flex-shrink: 0;
   }
   .home-tab-nav-item.active { border-left-color: transparent; border-bottom-color: #6366f1; }
-  .home-tab-content { padding: 24px 20px; }
+  .home-tab-content { padding: 24px 20px; overflow-y: visible; align-items: flex-start; }
   .home-bottom-cta { margin-top: auto; }
 }
 
 
+
+/* Mobile: smaller text across all pages */
+@media (max-width: 768px) {
+  /* Home page */
+  .home-hero h1 { font-size: 1.5rem; }
+  .home-hero p.hero-sub { font-size: 0.92rem; }
+  .hero-btn-primary, .hero-btn-secondary { font-size: 0.88rem; padding: 12px 24px; }
+  .hero-trust-badge { font-size: 0.78rem; padding: 6px 14px; }
+  .home-section h2 { font-size: 1.25rem; }
+  .home-section .section-sub { font-size: 0.88rem; }
+  .benefit-card { padding: 18px 16px; }
+  .benefit-card .benefit-icon { font-size: 1.4rem; margin-bottom: 8px; }
+  .benefit-card h3 { font-size: 1rem; }
+  .benefit-card p { font-size: 0.88rem; }
+  .pain-item { font-size: 0.88rem; padding: 14px 16px; }
+  .pain-item .pain-icon { font-size: 1.2rem; }
+  .problem-solution-row .ps-col h2 { font-size: 1.2rem; }
+  .problem-solution-row .ps-col .ps-sub { font-size: 0.88rem; }
+  .problem-solution-row .pain-item { font-size: 0.88rem; }
+  .problem-solution-row .benefit-card h3 { font-size: 0.95rem; }
+  .problem-solution-row .benefit-card p { font-size: 0.85rem; }
+  .problem-solution-row .benefit-card .benefit-icon { font-size: 1.2rem; }
+  .step-num { width: 40px; height: 40px; font-size: 1.1rem; }
+  .step-card h3 { font-size: 1.05rem; }
+  .step-card p { font-size: 0.88rem; }
+  .home-tab-content { font-size: 0.92rem; padding: 18px 16px; }
+  .home-tab-content h2 { font-size: 1.3rem; }
+  .home-tab-content .section-sub { font-size: 0.9rem; }
+  .home-pricing-inline .pricing-grid { grid-template-columns: repeat(3, 1fr); gap: 6px; }
+  .home-pricing-inline .pricing-tier { padding: 10px 6px; border-radius: 10px; }
+  .home-pricing-inline .pricing-tier h4 { font-size: 0.7rem; }
+  .home-pricing-inline .pricing-price { font-size: 0.95rem; margin-bottom: 8px; }
+  .home-pricing-inline .pricing-price span { font-size: 0.55rem; }
+  .home-pricing-inline .pricing-features { font-size: 0.55rem; line-height: 1.7; }
+  .home-pricing-inline .pricing-features li::before { font-size: 0.6rem; }
+  .home-pricing-inline .pricing-btn { font-size: 0.58rem; padding: 6px 4px; }
+  .home-pricing-inline .pricing-tier.recommended::before { font-size: 0.5rem; padding: 1px 6px; }
+  .home-pricing-inline .pricing-usd-note { font-size: 0.75rem !important; }
+  .home-bottom-cta h2 { font-size: 1rem; }
+
+  /* Planning page */
+  .section-label { font-size: 0.78rem; }
+  .subsection-label { font-size: 0.72rem; }
+  .form-input { font-size: 0.88rem; padding: 10px 14px; }
+  .option-card { font-size: 0.88rem; padding: 10px 14px; }
+  .option-card .option-icon { font-size: 1.1rem; }
+  .btn-primary { font-size: 0.95rem; padding: 14px; }
+
+  /* Itinerary page */
+  #content-display { font-size: 0.88rem; }
+  #content-display h1 { font-size: 1.2rem; }
+  #content-display h2 { font-size: 1.05rem; }
+  #content-display h3 { font-size: 0.95rem; }
+  #content-display p { font-size: 0.85rem; }
+  #content-display ul, #content-display ol { font-size: 0.85rem; }
+  details.day-section > summary { font-size: 1rem; padding: 12px 14px; }
+  .day-chevron { font-size: 0.65rem; }
+  .day-highlights { font-size: 0.75rem; }
+  .day-overview { font-size: 0.78rem; }
+  .time-block-label { font-size: 0.88rem; }
+  details.schedule-section > summary { font-size: 0.85rem; padding: 8px 12px; }
+  .stop-header .stop-name { font-size: 0.85rem; }
+  .stop-header .stop-desc-preview { font-size: 0.75rem; }
+  .stop-chip { font-size: 0.65rem; }
+  .stop-map-btn, .stop-web-btn, .stop-details-btn { font-size: 0.7rem; padding: 3px 10px; min-height: 26px; }
+  .stop-details { font-size: 0.8rem; }
+  .stop-detail-label { font-size: 0.72rem; }
+  .route-map-link { font-size: 0.82rem; padding: 10px 16px; }
+  .tool-btn { font-size: 0.82rem; padding: 12px 16px; }
+  details.cheap-tickets-section > summary { font-size: 1rem; }
+  details.budget-summary-section > summary { font-size: 1rem; }
+  #booking-section h3 { font-size: 1rem; }
+  #booking-section p { font-size: 0.82rem; }
+  .booking-card-title { font-size: 0.88rem; }
+  .booking-card-desc { font-size: 0.75rem; }
+  .booking-card-btn { font-size: 0.72rem; }
+  .booking-card-icon { font-size: 1.5rem; }
+}
 
 /* Responsive */
 @media (max-width: 640px) {
@@ -1448,7 +1568,7 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
       <button id="header-tier-badge" onclick="openPricingModal()">Free Plan</button>
       <button id="header-sign-in-btn" onclick="openAuthModal()">Sign In</button>
       <div style="position:relative">
-        <button id="header-user-btn" onclick="toggleUserMenu()">
+        <button id="header-user-btn" onclick="toggleUserMenu(this)">
           <span class="user-avatar" id="user-avatar-el"></span>
           <span id="user-display-name"></span>
         </button>
@@ -1480,10 +1600,13 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
       <button id="banner-tier-badge" class="home-nav-badge" onclick="openPricingModal()">Free Plan</button>
       <button id="banner-sign-in-btn" class="home-nav-badge" onclick="openAuthModal()">Sign In</button>
       <div style="position:relative;display:inline-block">
-        <button id="banner-user-btn" class="home-nav-badge" style="display:none" onclick="toggleUserMenu()">
+        <button id="banner-user-btn" class="home-nav-badge" style="display:none" onclick="toggleUserMenu(this)">
           <span class="user-avatar" id="banner-user-avatar"></span>
           <span id="banner-user-name"></span>
         </button>
+        <div class="user-menu-dropdown-shared">
+          <button class="user-menu-item danger" onclick="signOut()">Sign Out</button>
+        </div>
       </div>
       <select id="banner-language-select" class="home-nav-lang" onchange="document.getElementById('language-select').value=this.value; document.getElementById('language-select').dispatchEvent(new Event('change'));">
         <option value="en">English</option>
@@ -1590,7 +1713,7 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
       <div id="tab-panel-pricing" class="home-tab-panel home-pricing-inline">
         <h2 data-i18n="homeTabPricingTitle">Choose Your Plan</h2>
         <p class="section-sub">Pay per trip, not per month.</p>
-        <p class="section-sub" style="font-size:1.3rem;color:#222;margin-top:2px">Prices in USD. Your card will convert automatically at checkout.</p>
+        <p class="section-sub pricing-usd-note" style="font-size:1.3rem;color:#222;margin-top:2px">Prices in USD. Your card will convert automatically at checkout.</p>
         <div class="pricing-grid">
           <div class="pricing-tier">
             <h4>Free</h4>
@@ -1675,9 +1798,12 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
       <button id="ph-tier-badge" class="planning-header-badge" onclick="openPricingModal()">Free Plan</button>
       <button id="ph-sign-in-btn" class="planning-header-badge" onclick="openAuthModal()">Sign In</button>
       <div style="position:relative;display:inline-block">
-        <button id="ph-user-btn" class="planning-header-badge" style="display:none" onclick="toggleUserMenu()">
+        <button id="ph-user-btn" class="planning-header-badge" style="display:none" onclick="toggleUserMenu(this)">
           <span id="ph-user-name"></span>
         </button>
+        <div class="user-menu-dropdown-shared">
+          <button class="user-menu-item danger" onclick="signOut()">Sign Out</button>
+        </div>
       </div>
       <select id="ph-language-select" class="planning-header-lang" onchange="document.getElementById('language-select').value=this.value; document.getElementById('language-select').dispatchEvent(new Event('change'));">
         <option value="en">English</option>
@@ -1914,14 +2040,6 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
   <!-- Itinerary Content -->
   <div id="content-display" class="prose max-w-none px-6 sm:px-8 py-6"></div>
 
-  <!-- Sign-in nudge (shown after generation for guests) -->
-  <div id="sign-in-nudge" class="hidden mx-6 sm:mx-8 mb-4">
-    <span style="font-size:1.25rem">&#128274;</span>
-    <span>This trip is saved on this browser only. Sign in to access it anywhere.</span>
-    <button onclick="openAuthModal()">Sign In</button>
-    <button class="nudge-dismiss" onclick="this.parentElement.classList.add('hidden')" aria-label="Dismiss">&times;</button>
-  </div>
-
   <!-- Book Your Trip -->
   <div id="booking-section" class="hidden mx-6 sm:mx-8 mb-6 p-6 bg-gradient-to-br from-sky-50 to-indigo-50 rounded-2xl border border-sky-200">
     <h3 class="text-lg font-bold text-slate-800 mb-1">&#128203; Book Your Trip</h3>
@@ -2077,6 +2195,11 @@ try {
           return migrateLocalDataToProfile();
         }).then(function() {
           updateAuthUI();
+          // If server has a saved trip, clear guest session data so restoreSession picks up the server trip
+          if (userProfile && userProfile.current_trip && userProfile.current_trip.destination) {
+            try { sessionStorage.removeItem('tripSession'); } catch {}
+            try { localStorage.removeItem('savedTrip'); } catch {}
+          }
           if (typeof restoreSession === 'function') restoreSession();
           if (typeof pendingPurchasePriceType !== 'undefined' && pendingPurchasePriceType) {
             var pt = pendingPurchasePriceType;
@@ -2089,6 +2212,10 @@ try {
       currentUser = null;
       userProfile = null;
       try { sessionStorage.removeItem('tripSession'); } catch {}
+      localStorage.removeItem('tripCredits');
+      localStorage.removeItem('freeTierState');
+      localStorage.removeItem('verifiedSessions');
+      localStorage.removeItem('savedTrip');
       if (typeof _sessionRestored !== 'undefined') _sessionRestored = false;
       updateAuthUI();
     }
@@ -2214,24 +2341,46 @@ async function signInWithGoogle() {
 
 async function signOut() {
   if (!supabaseClient) return;
-  toggleUserMenu();
+  document.querySelectorAll('#user-menu-dropdown.active, .user-menu-dropdown-shared.active').forEach(function(d) { d.classList.remove('active'); });
   await supabaseClient.auth.signOut();
   currentUser = null;
   userProfile = null;
+  // Clear all local data so stale trips/credits don't show after sign-out
+  localStorage.removeItem('tripCredits');
+  localStorage.removeItem('freeTierState');
+  localStorage.removeItem('verifiedSessions');
+  localStorage.removeItem('savedTrip');
+  try { sessionStorage.removeItem('tripSession'); } catch {}
+  // Reset in-memory trip state and return to home
+  Object.assign(tripData, { origin:'', destination:'', days:0, itinerary:'', startDate:'', endDate:'', transportation:[], travelers:1, interests:[], pace:'Medium', additionalInstructions:'', wantsCheapTickets:false, roundTrip:false, alreadyBooked:[], tripFinalized:false, packingListUsed:false, funFactUsed:false, isPaidTrip:false, updatesUsed:0 });
+  _sessionRestored = false;
+  showHomeView();
   updateAuthUI();
 }
 
-function toggleUserMenu() {
-  var dropdown = document.getElementById('user-menu-dropdown');
-  dropdown.classList.toggle('active');
+function toggleUserMenu(btn) {
+  // Close all other dropdowns first
+  document.querySelectorAll('#user-menu-dropdown.active, .user-menu-dropdown-shared.active').forEach(function(d) {
+    d.classList.remove('active');
+  });
+  // Open the dropdown next to the clicked button
+  if (btn) {
+    var dropdown = btn.parentElement.querySelector('#user-menu-dropdown, .user-menu-dropdown-shared');
+    if (dropdown) dropdown.classList.toggle('active');
+  } else {
+    var dropdown = document.getElementById('user-menu-dropdown');
+    dropdown.classList.toggle('active');
+  }
 }
 
 // Close user menu when clicking outside
 document.addEventListener('click', function(e) {
-  var dropdown = document.getElementById('user-menu-dropdown');
-  var userBtn = document.getElementById('header-user-btn');
-  if (dropdown && dropdown.classList.contains('active') && !userBtn.contains(e.target)) {
-    dropdown.classList.remove('active');
+  var dropdowns = document.querySelectorAll('#user-menu-dropdown, .user-menu-dropdown-shared');
+  var userBtns = document.querySelectorAll('#header-user-btn, #banner-user-btn, #ph-user-btn');
+  var clickedInside = false;
+  userBtns.forEach(function(btn) { if (btn.contains(e.target)) clickedInside = true; });
+  if (!clickedInside) {
+    dropdowns.forEach(function(d) { d.classList.remove('active'); });
   }
 });
 
@@ -2241,9 +2390,6 @@ function updateAuthUI() {
   var avatarEl = document.getElementById('user-avatar-el');
   var nameEl = document.getElementById('user-display-name');
 
-  // Hide sign-in nudges when user is authenticated
-  var nudgeEl = document.getElementById('sign-in-nudge');
-  if (nudgeEl && currentUser) nudgeEl.classList.add('hidden');
   var planNudge = document.getElementById('planning-sign-in-nudge');
   if (planNudge) planNudge.style.display = currentUser ? 'none' : 'flex';
 
@@ -2350,6 +2496,11 @@ var selectedTravelMode = 'driving';
 function saveTripSession() {
   try { sessionStorage.setItem('tripSession', JSON.stringify(tripData)); } catch {}
   try { localStorage.setItem('savedTrip', JSON.stringify(tripData)); } catch {}
+  if (currentUser && supabaseClient) {
+    supabaseClient.from('user_profiles')
+      .update({ current_trip: tripData })
+      .eq('id', currentUser.id).then(function() {});
+  }
 }
 
 // ─── Tier System ───
@@ -2901,6 +3052,11 @@ document.getElementById('start-new-trip-confirm').addEventListener('click', func
   tripData.updatesUsed = 0;
   try { localStorage.removeItem('savedTrip'); } catch {}
   try { sessionStorage.removeItem('tripSession'); } catch {}
+  if (currentUser && supabaseClient) {
+    supabaseClient.from('user_profiles')
+      .update({ current_trip: null })
+      .eq('id', currentUser.id).then(function() {});
+  }
   _sessionRestored = false;
   // Reset planning page inputs
   document.getElementById('origin').value = '';
@@ -3261,6 +3417,114 @@ document.getElementById('budget-input').addEventListener('input', function() {
   }
 });
 
+// ─── Pre-fill planning form from a trip data object ───
+function prefillPlanningForm(data) {
+  document.getElementById('origin').value = data.origin || '';
+  document.getElementById('destination').value = data.destination || '';
+  if (data.destination) destChips.setFromString(data.destination);
+  document.getElementById('start-date').value = data.startDate || '';
+  document.getElementById('end-date').value = data.endDate || '';
+  if (data.pace) {
+    var paceRadio = document.querySelector('input[name="pace"][value="' + data.pace + '"]');
+    if (paceRadio) paceRadio.checked = true;
+  }
+  if (data.budget) document.getElementById('budget-input').value = data.budget;
+  if (data.currency) document.getElementById('currency-select').value = data.currency;
+  if (data.travelers) {
+    var travelersInput = document.querySelector('[data-i18n="travelers"]').parentElement.querySelector('input');
+    if (travelersInput) travelersInput.value = data.travelers;
+  }
+  if (data.interests && data.interests.length > 0) {
+    var knownInterests = [];
+    document.querySelectorAll('#interests-group input[type="checkbox"]').forEach(function(cb) {
+      if (data.interests.includes(cb.value)) { cb.checked = true; knownInterests.push(cb.value); }
+    });
+    var otherInterests = data.interests.filter(function(i) { return !knownInterests.includes(i); });
+    if (otherInterests.length > 0) document.getElementById('other-interests').value = otherInterests.join(', ');
+  }
+  if (data.longDistance && data.longDistance.length > 0) {
+    document.querySelectorAll('#long-distance-group input[type="checkbox"]').forEach(function(cb) {
+      if (data.longDistance.includes(cb.value)) cb.checked = true;
+    });
+  }
+  if (data.localTransport && data.localTransport.length > 0) {
+    document.querySelectorAll('#local-transport-group input[type="checkbox"]').forEach(function(cb) {
+      if (data.localTransport.includes(cb.value)) cb.checked = true;
+    });
+  }
+  document.getElementById('round-trip-checkbox').checked = data.roundTrip || false;
+  document.getElementById('cheap-tickets-checkbox').checked = data.wantsCheapTickets || false;
+  if (data.additionalInstructions) document.getElementById('additional-instructions').value = data.additionalInstructions;
+  if (data.budget && data.alreadyBooked && data.alreadyBooked.length > 0) {
+    document.getElementById('already-booked-section').classList.remove('hidden');
+    document.getElementById('already-booked-accommodation').checked = data.alreadyBooked.includes('accommodation');
+    document.getElementById('already-booked-flights').checked = data.alreadyBooked.includes('flights');
+  }
+  toggleLongDistance();
+}
+
+// ─── Post-payment UI reset ───
+function postPaymentReset(creditCount, savedTrip) {
+  _sessionRestored = true;
+  // Show success banner
+  var banner = document.createElement('div');
+  banner.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:9999;background:#16a34a;color:white;text-align:center;padding:14px 20px;font-weight:600;font-size:0.95rem;animation:fadeInUp 0.3s ease-out';
+  banner.textContent = 'Payment successful! ' + creditCount + ' trip credit' + (creditCount > 1 ? 's' : '') + ' added to your account.';
+  document.body.appendChild(banner);
+  setTimeout(function() { banner.remove(); }, 5000);
+  // Clear previous trip session
+  sessionStorage.removeItem('tripSession');
+  try { localStorage.removeItem('savedTrip'); } catch {}
+  // Reset in-memory tripData
+  tripData.destination = '';
+  tripData.days = 0;
+  tripData.itinerary = '';
+  tripData.startDate = '';
+  tripData.endDate = '';
+  tripData.transportation = [];
+  tripData.localTransport = [];
+  tripData.longDistance = [];
+  tripData.travelers = 1;
+  tripData.interests = [];
+  tripData.pace = 'Medium';
+  tripData.additionalInstructions = '';
+  tripData.wantsCheapTickets = false;
+  tripData.roundTrip = false;
+  tripData.alreadyBooked = [];
+  tripData.tripFinalized = false;
+  tripData.packingListUsed = false;
+  tripData.funFactUsed = false;
+  tripData.isPaidTrip = false;
+  resetUpdatesForNewItinerary();
+  // Reset all planning form fields
+  document.getElementById('origin').value = '';
+  document.getElementById('destination').value = '';
+  destChips.clear();
+  document.getElementById('start-date').value = '';
+  document.getElementById('end-date').value = '';
+  document.getElementById('currency-select').value = 'USD';
+  var travelersInput = document.querySelector('input[type="number"][min="1"]');
+  if (travelersInput) travelersInput.value = '';
+  document.querySelector('input[name="pace"][value="Medium"]').checked = true;
+  document.getElementById('additional-instructions').value = '';
+  document.getElementById('other-interests').value = '';
+  document.getElementById('cheap-tickets-checkbox').checked = false;
+  document.getElementById('round-trip-checkbox').checked = false;
+  document.getElementById('already-booked-accommodation').checked = false;
+  document.getElementById('already-booked-flights').checked = false;
+  document.getElementById('already-booked-section').classList.add('hidden');
+  document.querySelectorAll('#interests-group input[type="checkbox"]').forEach(function(cb) { cb.checked = false; });
+  document.querySelectorAll('#long-distance-group input[type="checkbox"], #local-transport-group input[type="checkbox"]').forEach(function(cb) { cb.checked = false; });
+  // If there's a saved trip with destination but no itinerary, pre-fill the form
+  if (savedTrip && savedTrip.destination && !savedTrip.itinerary) {
+    prefillPlanningForm(savedTrip);
+    Object.assign(tripData, savedTrip);
+  }
+  applyTierUI();
+  showView('planning');
+  document.getElementById('return-to-itinerary-btn').classList.add('hidden');
+}
+
 // ─── Stripe: verify payment on return from checkout ───
 (async function verifyPaymentOnLoad() {
   const params = new URLSearchParams(window.location.search);
@@ -3282,84 +3546,47 @@ document.getElementById('budget-input').addEventListener('input', function() {
     body: JSON.stringify({ sessionId })
   })
   .then(r => r.json())
-  .then(data => {
+  .then(async function(data) {
     if (data.verified && data.credits > 0) {
-      const current = getTripCredits();
-      setTripCredits(current + data.credits);
-      // Store session ID to prevent replay
       addVerifiedSession(sessionId);
-      // Show success banner
-      const banner = document.createElement('div');
-      banner.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:9999;background:#16a34a;color:white;text-align:center;padding:14px 20px;font-weight:600;font-size:0.95rem;animation:fadeInUp 0.3s ease-out';
-      banner.textContent = 'Payment successful! ' + data.credits + ' trip credit' + (data.credits > 1 ? 's' : '') + ' added to your account.';
-      document.body.appendChild(banner);
-      setTimeout(() => banner.remove(), 5000);
-      // Clear previous trip session so planning page starts fresh
-      sessionStorage.removeItem('tripSession');
-      try { localStorage.removeItem('savedTrip'); } catch {}
-      tripData.destination = '';
-      tripData.days = 0;
-      tripData.itinerary = '';
-      tripData.startDate = '';
-      tripData.endDate = '';
-      tripData.transportation = [];
-      tripData.localTransport = [];
-      tripData.longDistance = [];
-      tripData.travelers = 1;
-      tripData.interests = [];
-      tripData.pace = 'Medium';
-      tripData.additionalInstructions = '';
-      tripData.wantsCheapTickets = false;
-      tripData.roundTrip = false;
-      tripData.alreadyBooked = [];
-      tripData.tripFinalized = false;
-      tripData.packingListUsed = false;
-      tripData.funFactUsed = false;
-      tripData.isPaidTrip = false;
-      resetUpdatesForNewItinerary();
+      // Save server-side trip before resetting (may have unfinished trip to restore)
+      var savedTrip = (userProfile && userProfile.current_trip)
+        ? JSON.parse(JSON.stringify(userProfile.current_trip))
+        : null;
 
-      // Reset all planning form fields
-      document.getElementById('origin').value = '';
-      document.getElementById('destination').value = '';
-      destChips.clear();
-      document.getElementById('start-date').value = '';
-      document.getElementById('end-date').value = '';
-      document.getElementById('currency-select').value = 'USD';
-      var travelersInput = document.querySelector('input[type="number"][min="1"]');
-      if (travelersInput) travelersInput.value = '';
-      document.querySelector('input[name="pace"][value="Medium"]').checked = true;
-      document.getElementById('additional-instructions').value = '';
-      document.getElementById('other-interests').value = '';
-      document.getElementById('cheap-tickets-checkbox').checked = false;
-      document.getElementById('round-trip-checkbox').checked = false;
-      document.getElementById('already-booked-accommodation').checked = false;
-      document.getElementById('already-booked-flights').checked = false;
-      document.getElementById('already-booked-section').classList.add('hidden');
-      // Uncheck all interest checkboxes
-      document.querySelectorAll('#interests-group input[type="checkbox"]').forEach(function(cb) { cb.checked = false; });
-      // Uncheck all transportation checkboxes
-      document.querySelectorAll('#long-distance-group input[type="checkbox"], #local-transport-group input[type="checkbox"]').forEach(function(cb) { cb.checked = false; });
-
-      applyTierUI();
-      // Reset to planning view so user can start a new trip with their credits
-      document.getElementById('home-page-wrapper').style.display='none';
-      document.getElementById('results-view').classList.add('hidden');
-      document.getElementById('planning-view').classList.remove('hidden');
-      document.getElementById('app-header').style.display = 'none';
-      document.getElementById('app-footer').style.display = 'none';
-      document.getElementById('planning-header').style.display = 'block';
-      document.getElementById('language-select').parentElement.style.display = '';
-      document.querySelector('.mobile-action-bar').classList.add('hidden');
-      document.getElementById('return-to-itinerary-btn').classList.add('hidden');
+      if (currentUser && supabaseClient) {
+        // Server already added credits atomically — reload profile to get correct count
+        await loadUserProfile();
+        postPaymentReset(data.credits, savedTrip);
+      } else if (!currentUser && supabaseClient) {
+        // User may have just signed in via redirect; check for session
+        var result = await supabaseClient.auth.getSession();
+        if (result.data.session && result.data.session.user) {
+          currentUser = result.data.session.user;
+          await loadUserProfile();
+          savedTrip = (userProfile && userProfile.current_trip)
+            ? JSON.parse(JSON.stringify(userProfile.current_trip))
+            : null;
+          postPaymentReset(data.credits, savedTrip);
+        } else {
+          // Guest: do client-side credit arithmetic
+          setTripCredits(getTripCredits() + data.credits);
+          postPaymentReset(data.credits, null);
+        }
+      } else {
+        // No supabase at all — guest fallback
+        setTripCredits(getTripCredits() + data.credits);
+        postPaymentReset(data.credits, null);
+      }
     }
     // Clean the URL
-    const clean = new URL(window.location);
+    var clean = new URL(window.location);
     clean.searchParams.delete('session_id');
     window.history.replaceState({}, '', clean.pathname + clean.search);
   })
-  .catch(() => {
+  .catch(function() {
     // Silent fail — credits not added, user can retry
-    const clean = new URL(window.location);
+    var clean = new URL(window.location);
     clean.searchParams.delete('session_id');
     window.history.replaceState({}, '', clean.pathname + clean.search);
   });
@@ -3958,10 +4185,6 @@ ROUND TRIP: The traveler is making a round trip${longDistance.length === 1 ? ' b
   document.getElementById('language-select').parentElement.style.display = 'none';
   if (window.innerWidth <= 768) document.querySelector('.mobile-action-bar').classList.remove('hidden');
 
-  // Show sign-in nudge for guest users
-  var nudge = document.getElementById('sign-in-nudge');
-  if (!currentUser) nudge.classList.remove('hidden');
-  else nudge.classList.add('hidden');
 });
 
 // API calls go through the server-side route — API key is stored securely in Vercel environment variables
@@ -5205,6 +5428,11 @@ function finalizeTripExtras() {
   // Clear saved trip so next visit starts with a fresh planning page
   try { localStorage.removeItem('savedTrip'); } catch {}
   try { sessionStorage.removeItem('tripSession'); } catch {}
+  if (currentUser && supabaseClient) {
+    supabaseClient.from('user_profiles')
+      .update({ current_trip: null })
+      .eq('id', currentUser.id).then(function() {});
+  }
   document.getElementById('finalize-modal').classList.remove('active');
   // Reset planning page so next Generate starts fresh
   document.getElementById('origin').value = '';
@@ -5364,7 +5592,28 @@ ROUND TRIP: The traveler is making a round trip${(tripData.longDistance || []).l
   if (tripData.budget > 0) {
     budgetSummaryInstruction = `\n\nIMPORTANT: Keep the "## Budget Summary" section at the end of the itinerary (after all days). Update the estimated costs if the changes affect the budget. Break down estimated costs by category (${tripData.alreadyBooked && tripData.alreadyBooked.includes('accommodation') ? 'exclude accommodation, ' : ''}${tripData.alreadyBooked && tripData.alreadyBooked.includes('flights') ? 'exclude flights/airfare, ' : ''}food, transportation, activities, etc.) and show a total. Compare against the ${tripData.budget} ${tripData.currency} budget. Do NOT include cheap ticket tips in this section.`;
   }
-  const prompt = `Based on this itinerary:\n\n${tripData.itinerary}${originNote}${contextNote}${alreadyBookedNote}\n\nPlease update it with this instruction: ${fullInstruction}\n\nCRITICAL: Keep every activity on the SAME day and in the SAME order as the original itinerary unless the user's instruction explicitly requires moving it to a different day. Only change what the user asked for — do NOT reorganize, reorder, or shuffle other activities across days.${placeDetailsInstruction}${budgetSummaryInstruction}${ticketTipsInstruction}`;
+
+  // Build day-of-week mapping so Gemini can check opening hours on correct days
+  const updateDayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+  let updateDayOfWeekMap = '';
+  if (tripData.startDate) {
+    for (let i = 0; i < tripData.days; i++) {
+      const d = new Date(tripData.startDate);
+      d.setDate(d.getDate() + i);
+      updateDayOfWeekMap += `Day ${i + 1} = ${updateDayNames[d.getDay()]} (${d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })})${i < tripData.days - 1 ? ', ' : ''}`;
+    }
+  }
+  const availabilityCheck = updateDayOfWeekMap ? `
+
+AVAILABILITY CHECK — The calendar days for this trip are: ${updateDayOfWeekMap}.
+For each place you recommend, consider whether it is typically closed or restricted on that day of the week (e.g., many museums close on Mondays, some markets close early on Sundays, certain restaurants close mid-week, etc.).
+Do NOT schedule a place on a day it is known to be closed or unavailable to tourists. If a must-see attraction is closed on the day it would naturally fit, move it to another day when it is open and briefly note why.
+If a place is closed on ALL days of the trip, mention it as a note but do not include it as a scheduled stop.
+Pay special attention to markets, shops, and restaurants that have reduced hours or early closing on weekends (especially Sundays).
+
+VISIT TIME CHECK — When scheduling each place, ensure the recommended arrival time leaves enough time for a meaningful visit before the place closes. For example, do not schedule a market visit at 5:00 PM if it closes at 4:00 PM on that day of the week. Consider typical visit durations and day-specific closing times (many places close earlier on Sundays and holidays). Schedule each place so the traveler arrives with enough time to enjoy it fully before closing.` : '';
+
+  const prompt = `Based on this itinerary:\n\n${tripData.itinerary}${originNote}${contextNote}${alreadyBookedNote}\n\nPlease update it with this instruction: ${fullInstruction}\n\nCRITICAL: Keep every activity on the SAME day and in the SAME order as the original itinerary unless the user's instruction explicitly requires moving it to a different day. Only change what the user asked for — do NOT reorganize, reorder, or shuffle other activities across days.${placeDetailsInstruction}${availabilityCheck}${budgetSummaryInstruction}${ticketTipsInstruction}`;
   const result = await callGemini(prompt);
 
   finishProgress();
@@ -5516,14 +5765,24 @@ var _sessionRestored = false;
 function restoreSession() {
   if (_sessionRestored) return;
   try {
-    // sessionStorage survives same-tab refresh; localStorage requires sign-in
+    // sessionStorage survives same-tab refresh; Supabase is cross-device source; localStorage is guest fallback
     var saved = sessionStorage.getItem('tripSession');
+    if (!saved && currentUser && userProfile && userProfile.current_trip) {
+      saved = JSON.stringify(userProfile.current_trip);
+    }
     if (!saved && currentUser) {
       saved = localStorage.getItem('savedTrip');
     }
     if (!saved) return;
     const data = JSON.parse(saved);
-    if (!data.itinerary || !data.destination) return;
+    if (!data.destination) return;
+    if (!data.itinerary) {
+      // Trip has form data but no generated itinerary — pre-fill planning form
+      prefillPlanningForm(data);
+      Object.assign(tripData, data);
+      _sessionRestored = true;
+      return;
+    }
     _sessionRestored = true;
     Object.assign(tripData, data);
     // Infer isPaidTrip for old saved data missing the flag
@@ -5607,8 +5866,6 @@ function restoreSession() {
     toggleLongDistance();
     // Restore all button states (generate gate, finalize, extras)
     applyTierUI();
-    // Show sign-in nudge for guest users on restore
-    if (!currentUser) document.getElementById('sign-in-nudge').classList.remove('hidden');
     // Show return-to-itinerary if user goes back
     document.getElementById('return-to-itinerary-btn').classList.remove('hidden');
   } catch {}
