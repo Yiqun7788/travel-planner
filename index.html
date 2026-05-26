@@ -199,6 +199,20 @@ body { font-family: 'Inter', system-ui, sans-serif; background: #f1f5f9; }
   #secondary-interests { grid-template-columns: repeat(3, 1fr) !important; }
 }
 
+/* Section card grouping */
+.section-card {
+  padding: 20px;
+  border-radius: 12px;
+  border-left: 3px solid;
+}
+.section-card-blue { background: #f0f7ff; border-left-color: #3b82f6; }
+.section-card-emerald { background: #ecfdf5; border-left-color: #10b981; }
+.section-card-amber { background: #fffbeb; border-left-color: #f59e0b; }
+.section-card-violet { background: #f5f3ff; border-left-color: #8b5cf6; }
+.section-card-rose { background: #fff1f2; border-left-color: #f43f5e; }
+.section-card-cyan { background: #ecfeff; border-left-color: #06b6d4; }
+.section-card-slate { background: #f8fafc; border-left-color: #64748b; }
+
 /* Results prose styling */
 #content-display h1 { color: #1e293b; font-size: 1.5rem; font-weight: 800; margin-top: 1.5rem; }
 #content-display h2 { color: #334155; font-size: 1.25rem; font-weight: 700; margin-top: 1.25rem; border-bottom: 2px solid #e2e8f0; padding-bottom: 6px; }
@@ -1852,7 +1866,7 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
 
   <form id="itinerary-form" class="px-6 sm:px-8 pb-8 space-y-7">
 
-    <div class="desktop-2col">
+    <div class="section-card section-card-blue desktop-2col">
     <!-- Origin (optional) -->
     <div>
       <label class="section-label" data-i18n="origin">Where are you coming from?</label>
@@ -1877,6 +1891,7 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
     </div>
     </div>
 
+    <div class="section-card section-card-emerald">
     <!-- Budget / Currency / Travelers -->
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
       <div>
@@ -1902,7 +1917,9 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
       <label class="inline-flex items-center gap-1 mr-4 text-sm cursor-pointer"><input type="checkbox" id="already-booked-accommodation"> <span>Accommodation</span></label>
       <label class="inline-flex items-center gap-1 text-sm cursor-pointer"><input type="checkbox" id="already-booked-flights"> <span>Flights</span></label>
     </div>
+    </div>
 
+    <div class="section-card section-card-amber">
     <!-- Dates -->
     <div class="grid grid-cols-2 gap-4">
       <div>
@@ -1918,11 +1935,9 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
         <span id="date-range-warning" class="date-range-warning">&#128274; Free plan supports up to 3 days.</span>
       </div>
     </div>
+    </div>
 
-    <!-- Divider -->
-    <hr class="border-slate-100">
-
-    <div class="desktop-2col">
+    <div class="section-card section-card-violet desktop-2col">
     <!-- Long-Distance Transportation -->
     <div id="long-distance-section">
       <label class="section-label" data-i18n="longDistanceTransport">Long-Distance Transportation</label>
@@ -1956,7 +1971,7 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
     </div>
     </div>
 
-    <div class="desktop-2col">
+    <div class="section-card section-card-rose desktop-2col">
     <!-- Pace -->
     <div>
       <label class="section-label" data-i18n="pace">Trip Pace</label>
@@ -1978,11 +1993,8 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
     </div>
     </div>
 
-    <!-- Divider -->
-    <hr class="border-slate-100">
-
     <!-- Interests -->
-    <div>
+    <div class="section-card section-card-cyan">
       <label class="section-label" data-i18n="interests">Interests / Theme</label>
       <div id="interests-group">
         <label class="subsection-label" data-i18n="primaryInterests">Primary Interests</label>
@@ -2014,7 +2026,7 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
     </div>
 
     <!-- Additional Instructions -->
-    <div>
+    <div class="section-card section-card-slate">
       <label class="section-label" data-i18n="additionalInstructions">Additional Instructions</label>
       <textarea id="additional-instructions" class="form-input resize-none" rows="3" data-i18n-placeholder="additionalInstructionsPlaceholder" placeholder="Enter specific instructions or details to guide your selections (e.g., 'Food: hidden restaurants popular with locals, not tourists.')"></textarea>
     </div>
