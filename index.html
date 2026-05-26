@@ -187,6 +187,18 @@ body { font-family: 'Inter', system-ui, sans-serif; background: #f1f5f9; }
   #planning-view .date-range-warning { font-size: 1.05rem; }
 }
 
+@media (min-width: 1024px) {
+  /* Widen the planning form container */
+  #planning-view .planning-wide { max-width: 1200px; }
+  /* Widen the planning header to match */
+  .planning-header-inner { max-width: 1200px; }
+  /* Two-column row for paired form sections */
+  .desktop-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 1.75rem; }
+  /* Interests: 3 columns instead of 2 on large screens */
+  #primary-interests { grid-template-columns: repeat(3, 1fr) !important; }
+  #secondary-interests { grid-template-columns: repeat(3, 1fr) !important; }
+}
+
 /* Results prose styling */
 #content-display h1 { color: #1e293b; font-size: 1.5rem; font-weight: 800; margin-top: 1.5rem; }
 #content-display h2 { color: #334155; font-size: 1.25rem; font-weight: 700; margin-top: 1.25rem; border-bottom: 2px solid #e2e8f0; padding-bottom: 6px; }
@@ -1820,7 +1832,7 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
 
 <!-- PLANNING VIEW -->
 <div id="planning-view" class="hidden animate-fade-in-up">
-<div class="max-w-4xl mx-auto px-4 py-12">
+<div class="planning-wide max-w-4xl mx-auto px-4 py-12">
 <div class="bg-white rounded-2xl shadow-xl shadow-slate-200/50 overflow-hidden">
 
   <!-- Form Header -->
@@ -1840,6 +1852,7 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
 
   <form id="itinerary-form" class="px-6 sm:px-8 pb-8 space-y-7">
 
+    <div class="desktop-2col">
     <!-- Origin (optional) -->
     <div>
       <label class="section-label" data-i18n="origin">Where are you coming from?</label>
@@ -1861,6 +1874,7 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
         <ul id="dest-suggestions" class="dest-suggestions"></ul>
       </div>
       <span id="dest-tooltip" class="input-tooltip">&#128274; Free plan supports a single destination only.</span>
+    </div>
     </div>
 
     <!-- Budget / Currency / Travelers -->
@@ -1908,6 +1922,7 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
     <!-- Divider -->
     <hr class="border-slate-100">
 
+    <div class="desktop-2col">
     <!-- Long-Distance Transportation -->
     <div id="long-distance-section">
       <label class="section-label" data-i18n="longDistanceTransport">Long-Distance Transportation</label>
@@ -1939,7 +1954,9 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
         <label class="option-card"><input type="checkbox" value="Walking"> <span class="option-icon">&#128694;</span> <span data-i18n="walking">Foot (walking)</span></label>
       </div>
     </div>
+    </div>
 
+    <div class="desktop-2col">
     <!-- Pace -->
     <div>
       <label class="section-label" data-i18n="pace">Trip Pace</label>
@@ -1948,6 +1965,17 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
         <label class="option-card"><input type="radio" name="pace" value="Medium" checked> <span class="option-icon">&#128694;</span> <span data-i18n="medium">Medium</span></label>
         <label class="option-card"><input type="radio" name="pace" value="Fast"> <span class="option-icon">&#9889;</span> <span data-i18n="fast">Fast</span></label>
       </div>
+    </div>
+
+    <!-- Cheap Tickets (locked for free tier) -->
+    <div>
+      <label class="option-card" style="opacity: 0.55; cursor: not-allowed;" onclick="event.preventDefault(); showUpgradeModal('Cheap Ticket Tips', 'Get <strong>money-saving tips</strong> for booking transport, attraction passes, and activity discounts &mdash; tailored to your selected transportation and interests.<br><br><em>Available with a Trip Pack.</em>');">
+        <input type="checkbox" id="cheap-tickets-checkbox" disabled style="pointer-events: none;">
+        <span class="option-icon">&#128274;</span>
+        <span data-i18n="cheapTickets">Tips to Buy Cheap Tickets</span>
+        <span class="tier-badge" style="background: rgba(0,0,0,0.1); color: #64748b;">&#128274; Trip Pack</span>
+      </label>
+    </div>
     </div>
 
     <!-- Divider -->
@@ -1983,16 +2011,6 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
         </div>
       </div>
       <input id="other-interests" class="form-input mt-3" data-i18n-placeholder="otherInterests" placeholder="Other interests...">
-    </div>
-
-    <!-- Cheap Tickets (locked for free tier) -->
-    <div>
-      <label class="option-card" style="opacity: 0.55; cursor: not-allowed;" onclick="event.preventDefault(); showUpgradeModal('Cheap Ticket Tips', 'Get <strong>money-saving tips</strong> for booking transport, attraction passes, and activity discounts \u2014 tailored to your selected transportation and interests.<br><br><em>Available with a Trip Pack.</em>');">
-        <input type="checkbox" id="cheap-tickets-checkbox" disabled style="pointer-events: none;">
-        <span class="option-icon">&#128274;</span>
-        <span data-i18n="cheapTickets">Tips to Buy Cheap Tickets</span>
-        <span class="tier-badge" style="background: rgba(0,0,0,0.1); color: #64748b;">&#128274; Trip Pack</span>
-      </label>
     </div>
 
     <!-- Additional Instructions -->
