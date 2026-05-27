@@ -1170,23 +1170,23 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
 .problem-solution-row .ps-col .pain-list,
 .problem-solution-row .ps-col .benefits-grid { flex: 1; }
 .problem-solution-row .ps-col h2 {
-  font-size: 1.6rem; font-weight: 800; color: #0f172a;
-  letter-spacing: -0.02em; margin-bottom: 8px;
+  font-size: 1.15rem; font-weight: 800; color: #0f172a;
+  letter-spacing: -0.02em; margin-bottom: 6px;
 }
 .problem-solution-row .ps-col .ps-sub {
-  font-size: 1.5rem; color: #64748b; margin-bottom: 24px; line-height: 1.7;
+  font-size: 0.95rem; color: #64748b; margin-bottom: 16px; line-height: 1.6;
 }
-.problem-solution-row .pain-list { gap: 12px; }
-.problem-solution-row .pain-item { padding: 10px 14px; font-size: 1.45rem; }
+.problem-solution-row .pain-list { gap: 8px; }
+.problem-solution-row .pain-item { padding: 8px 12px; font-size: 0.95rem; }
 .problem-solution-row .benefit-card {
-  padding: 12px 16px; display: flex; align-items: flex-start; gap: 12px;
+  padding: 8px 12px; display: flex; align-items: flex-start; gap: 10px;
   flex-direction: row;
 }
-.problem-solution-row .benefit-card .benefit-icon { font-size: 1.6rem; margin-bottom: 0; flex-shrink: 0; margin-top: 2px; }
-.problem-solution-row .benefit-card h3 { font-size: 1.45rem; margin-bottom: 0; display: inline; }
+.problem-solution-row .benefit-card .benefit-icon { font-size: 1.1rem; margin-bottom: 0; flex-shrink: 0; margin-top: 2px; }
+.problem-solution-row .benefit-card h3 { font-size: 0.95rem; margin-bottom: 0; display: inline; }
 .problem-solution-row .benefit-card h3::after { content: ': '; }
-.problem-solution-row .benefit-card p { font-size: 1.35rem; display: inline; }
-.problem-solution-row .benefits-grid { gap: 10px; }
+.problem-solution-row .benefit-card p { font-size: 0.9rem; display: inline; }
+.problem-solution-row .benefits-grid { gap: 6px; }
 @media (max-width: 720px) {
   .problem-solution-row { grid-template-columns: 1fr; gap: 48px; }
 }
@@ -1197,40 +1197,40 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
   gap: 12px; text-align: left;
 }
 .pain-item {
-  display: flex; align-items: flex-start; gap: 14px;
-  background: #fff; border: 1px solid #e2e8f0; border-radius: 12px;
-  padding: 20px 22px; font-size: 1.45rem; color: #334155; line-height: 1.7;
+  display: flex; align-items: flex-start; gap: 12px;
+  background: #fff; border: 1px solid #e2e8f0; border-radius: 10px;
+  padding: 10px 14px; font-size: 0.95rem; color: #334155; line-height: 1.6;
 }
-.pain-item .pain-icon { font-size: 1.7rem; flex-shrink: 0; margin-top: 2px; }
+.pain-item .pain-icon { font-size: 1.15rem; flex-shrink: 0; margin-top: 2px; }
 
 /* Benefits grid */
 .benefits-grid {
   display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 20px;
+  gap: 14px;
 }
 .benefit-card {
-  background: #fff; border: 1px solid #e2e8f0; border-radius: 16px;
-  padding: 28px 24px; text-align: left; transition: box-shadow 0.2s;
+  background: #fff; border: 1px solid #e2e8f0; border-radius: 12px;
+  padding: 16px 18px; text-align: left; transition: box-shadow 0.2s;
 }
 .benefit-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,0.06); }
-.benefit-card .benefit-icon { font-size: 2rem; margin-bottom: 12px; }
-.benefit-card h3 { font-size: 1.5rem; font-weight: 700; color: #0f172a; margin-bottom: 8px; }
-.benefit-card p { font-size: 1.4rem; color: #64748b; line-height: 1.7; }
+.benefit-card .benefit-icon { font-size: 1.3rem; margin-bottom: 8px; }
+.benefit-card h3 { font-size: 1rem; font-weight: 700; color: #0f172a; margin-bottom: 6px; }
+.benefit-card p { font-size: 0.9rem; color: #64748b; line-height: 1.6; }
 
 /* Steps */
 .steps-row {
   display: flex; flex-direction: column;
-  gap: 20px; counter-reset: step;
+  gap: 16px; counter-reset: step;
 }
-.step-card { text-align: left; position: relative; display: flex; align-items: flex-start; gap: 16px; }
+.step-card { text-align: left; position: relative; display: flex; align-items: flex-start; gap: 14px; }
 .step-num {
   display: inline-flex; align-items: center; justify-content: center;
-  width: 56px; height: 56px; border-radius: 50%; flex-shrink: 0;
+  width: 40px; height: 40px; border-radius: 50%; flex-shrink: 0;
   background: linear-gradient(135deg, #6366f1, #8b5cf6);
-  color: #fff; font-weight: 800; font-size: 1.5rem; margin-bottom: 0;
+  color: #fff; font-weight: 800; font-size: 1.1rem; margin-bottom: 0;
 }
-.step-card h3 { font-size: 1.8rem; font-weight: 700; color: #0f172a; margin-bottom: 6px; }
-.step-card p { font-size: 1.6rem; color: #64748b; line-height: 1.7; }
+.step-card h3 { font-size: 1.1rem; font-weight: 700; color: #0f172a; margin-bottom: 4px; }
+.step-card p { font-size: 0.95rem; color: #64748b; line-height: 1.6; }
 
 /* Example output embed */
 .example-embed-wrap {
@@ -1254,17 +1254,17 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
   padding-left: calc(100% * 2 / 6);
 }
 .home-tab-nav {
-  width: 310px; min-width: 310px; background: #f8fafc;
+  width: 240px; min-width: 240px; background: #f8fafc;
   border-right: 1px solid #e2e8f0; display: flex; flex-direction: column;
   justify-content: flex-start; padding: 0;
 }
 .home-tab-nav-header {
-  padding: 18px 22px 12px; font-size: 1.5rem; font-weight: 800;
+  padding: 16px 20px 10px; font-size: 1.05rem; font-weight: 800;
   color: #0f172a; letter-spacing: -0.01em;
   border-bottom: 2px solid #e2e8f0; margin-bottom: 4px;
 }
 .home-tab-nav-item {
-  padding: 14px 22px; font-size: 1.25rem; font-weight: 500;
+  padding: 12px 20px; font-size: 0.95rem; font-weight: 500;
   color: #475569; cursor: pointer; border: none; background: none;
   text-align: left; border-left: 3px solid transparent;
   transition: background 0.15s, color 0.15s, border-color 0.15s;
@@ -1277,15 +1277,14 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
 }
 .home-tab-content {
   flex: 1; padding: 24px 36px; overflow-y: auto;
-  font-size: 1.25rem; line-height: 1.6;
-  display: flex; align-items: center;
+  font-size: 1rem; line-height: 1.6;
+  display: flex; align-items: flex-start;
   text-align: left;
 }
-.home-tab-content h2 { font-size: clamp(1.8rem, 3.5vw, 2.5rem); font-weight: 800; }
-.home-tab-content .section-sub { font-size: 1.55rem; }
+.home-tab-content h2 { font-size: clamp(1.1rem, 2vw, 1.4rem); font-weight: 800; }
+.home-tab-content .section-sub { font-size: 1rem; }
 .home-tab-panel { display: none; width: 100%; }
 .home-tab-panel.active { display: block; }
-#tab-panel-steps, #tab-panel-audience { align-self: flex-start; padding-top: 0; }
 .home-bottom-cta {
   position: relative; overflow: hidden;
   padding: 0; text-align: center; color: #fff;
@@ -1313,15 +1312,15 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
   .home-bottom-cta .cta-photos img { height: 120px; }
   .home-bottom-cta .cta-photos .hide-mobile { display: none; }
 }
-.home-pricing-inline .pricing-grid { margin-top: 20px; max-width: 900px; gap: 20px; }
-.home-pricing-inline .pricing-tier { border-radius: 12px; padding: 24px 20px; }
-.home-pricing-inline .pricing-tier h4 { font-size: 1.8rem; margin-bottom: 8px; }
-.home-pricing-inline .pricing-price { font-size: 2.6rem; margin-bottom: 20px; }
-.home-pricing-inline .pricing-price span { font-size: 1.3rem; }
-.home-pricing-inline .pricing-features { font-size: 1.4rem; line-height: 2.2; }
-.home-pricing-inline .pricing-features li::before { font-size: 1.4rem; }
-.home-pricing-inline .pricing-btn { font-size: 1.35rem; padding: 16px; border-radius: 12px; }
-.home-pricing-inline .pricing-tier.recommended::before { font-size: 1.05rem; padding: 4px 18px; }
+.home-pricing-inline .pricing-grid { margin-top: 16px; max-width: 900px; gap: 16px; }
+.home-pricing-inline .pricing-tier { border-radius: 12px; padding: 18px 16px; }
+.home-pricing-inline .pricing-tier h4 { font-size: 1.1rem; margin-bottom: 6px; }
+.home-pricing-inline .pricing-price { font-size: 1.6rem; margin-bottom: 14px; }
+.home-pricing-inline .pricing-price span { font-size: 0.9rem; }
+.home-pricing-inline .pricing-features { font-size: 0.9rem; line-height: 2; }
+.home-pricing-inline .pricing-features li::before { font-size: 0.9rem; }
+.home-pricing-inline .pricing-btn { font-size: 0.95rem; padding: 12px; border-radius: 10px; }
+.home-pricing-inline .pricing-tier.recommended::before { font-size: 0.8rem; padding: 4px 14px; }
 @media (max-width: 768px) {
   #home-page-wrapper { height: auto; min-height: 100vh; overflow: visible; }
   #home-view { overflow: visible; }
@@ -1796,7 +1795,7 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
       <div id="tab-panel-pricing" class="home-tab-panel home-pricing-inline">
         <h2 data-i18n="homeTabPricingTitle">Choose Your Plan</h2>
         <p class="section-sub">Pay per trip, not per month.</p>
-        <p class="section-sub pricing-usd-note" style="font-size:1.3rem;color:#222;margin-top:2px">Prices in USD. Your card will convert automatically at checkout.</p>
+        <p class="section-sub pricing-usd-note" style="font-size:0.85rem;color:#222;margin-top:2px">Prices in USD. Your card will convert automatically at checkout.</p>
         <div class="pricing-grid">
           <div class="pricing-tier">
             <h4>Free</h4>
