@@ -102,7 +102,7 @@ body { font-family: 'Inter', system-ui, sans-serif; background: #f1f5f9; }
   flex-direction: column; align-items: center;
   text-align: center; padding: 10px 6px;
   position: relative; gap: 2px;
-  height: 70px; font-size: 1rem; justify-content: center;
+  height: 70px; font-size: 1rem; justify-content: center; overflow: hidden;
 }
 #long-distance-group .option-card input,
 #local-transport-group .option-card input,
@@ -114,7 +114,8 @@ body { font-family: 'Inter', system-ui, sans-serif; background: #f1f5f9; }
 #pace-group .option-card .option-icon {
   font-size: 1.3rem;
 }
-.narrow-text { font-stretch: condensed; font-family: 'Inter', Arial Narrow, sans-serif; letter-spacing: -0.03em; }
+.narrow-text { font-stretch: condensed; font-family: 'Inter', Arial Narrow, sans-serif; letter-spacing: -0.03em; font-size: 0.85em; line-height: 1.2; }
+.option-card:has(.narrow-text) .option-icon { font-size: 1.1rem !important; }
 
 /* Input styling */
 .form-input {
