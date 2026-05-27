@@ -102,7 +102,7 @@ body { font-family: 'Inter', system-ui, sans-serif; background: #f1f5f9; }
   flex-direction: column; align-items: center;
   text-align: center; padding: 10px 6px;
   position: relative; gap: 2px;
-  min-height: 70px; font-size: 1rem;
+  height: 70px; font-size: 1rem; justify-content: center;
 }
 #long-distance-group .option-card input,
 #local-transport-group .option-card input,
@@ -114,6 +114,7 @@ body { font-family: 'Inter', system-ui, sans-serif; background: #f1f5f9; }
 #pace-group .option-card .option-icon {
   font-size: 1.3rem;
 }
+.narrow-text { font-stretch: condensed; font-family: 'Inter', Arial Narrow, sans-serif; letter-spacing: -0.03em; }
 
 /* Input styling */
 .form-input {
@@ -196,7 +197,7 @@ body { font-family: 'Inter', system-ui, sans-serif; background: #f1f5f9; }
   #planning-view .option-card input[type="radio"] { width: 20px; height: 20px; }
   #planning-view #long-distance-group .option-card,
   #planning-view #local-transport-group .option-card,
-  #planning-view #pace-group .option-card { min-height: 80px; padding: 10px 8px; font-size: 1.2rem; }
+  #planning-view #pace-group .option-card { height: 85px; padding: 10px 8px; font-size: 1.2rem; }
   #planning-view #long-distance-group .option-card .option-icon,
   #planning-view #local-transport-group .option-card .option-icon,
   #planning-view #pace-group .option-card .option-icon { font-size: 1.5rem; }
@@ -1989,7 +1990,7 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
         <label class="option-card"><input type="checkbox" value="Train"> <span class="option-icon">&#128646;</span> <span data-i18n="train">Train</span></label>
         <label class="option-card"><input type="checkbox" value="Car"> <span class="option-icon">&#128663;</span> <span data-i18n="car">Car</span></label>
         <label class="option-card"><input type="checkbox" value="Bike"> <span class="option-icon">&#128690;</span> <span data-i18n="bike">Bike</span></label>
-        <label class="option-card"><input type="checkbox" value="Long-Distance Bus"> <span class="option-icon">&#128653;</span> <span data-i18n="longDistanceBus">Long-Distance Bus</span></label>
+        <label class="option-card"><input type="checkbox" value="Long-Distance Bus"> <span class="option-icon">&#128653;</span> <span class="narrow-text" data-i18n="longDistanceBus">Long-Distance Bus</span></label>
         <label class="option-card"><input type="checkbox" value="Boat"> <span class="option-icon">&#9973;</span> <span data-i18n="boat">Boat</span></label>
       </div>
       <div id="round-trip-option" class="hidden mt-2">
