@@ -228,7 +228,7 @@ body { font-family: 'Inter', system-ui, sans-serif; background: #f1f5f9; }
   .planning-header-inner { max-width: 1200px; }
   /* Two-column row for paired form sections */
   .desktop-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 1.75rem; }
-  .desktop-2col-origin { display: grid; grid-template-columns: 1fr 2fr; gap: 1.75rem; }
+
   /* Interests: 3 columns instead of 2 on large screens */
   #primary-interests { grid-template-columns: repeat(3, 1fr) !important; }
   #secondary-interests { grid-template-columns: repeat(3, 1fr) !important; }
@@ -1921,16 +1921,8 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
 
   <form id="itinerary-form" class="px-6 sm:px-8 pb-8 space-y-7">
 
-    <div class="section-card section-card-blue desktop-2col-origin">
-    <!-- Origin (optional) -->
-    <div>
-      <label class="section-label" data-i18n="origin">Where are you coming from?</label>
-      <div class="dest-autocomplete-wrap">
-        <input id="origin" class="form-input" autocomplete="off" placeholder="(Optional) e.g. Georgetown, Ontario">
-        <ul id="origin-suggestions" class="dest-suggestions"></ul>
-      </div>
-    </div>
-
+    <input type="hidden" id="origin" value="">
+    <div class="section-card section-card-blue">
     <!-- Destination -->
     <div>
       <label class="section-label" data-i18n="destination">Where are you going?</label>
