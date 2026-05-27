@@ -215,6 +215,8 @@ body { font-family: 'Inter', system-ui, sans-serif; background: #f1f5f9; }
   #planning-view .free-tier-banner .banner-link { font-size: 1.3rem; }
   #planning-view .free-tier-banner .banner-icon { font-size: 1.6rem; }
   #planning-view .tier-badge { font-size: 1.05rem; }
+  #planning-view .already-booked-label { font-size: 1.45rem; }
+  #planning-view .already-booked-label input { width: 20px; height: 20px; }
   #planning-view .input-tooltip { font-size: 1.05rem; }
   #planning-view .date-range-warning { font-size: 1.05rem; }
 }
@@ -264,6 +266,7 @@ body { font-family: 'Inter', system-ui, sans-serif; background: #f1f5f9; }
 .section-card .input-tooltip,
 .section-card .date-range-warning { color: #d1d5db; }
 .section-card .subsection-label { color: #e5e7eb; }
+.already-booked-label { font-size: 1.1rem; font-weight: 500; color: #f3f4f6; }
 
 /* Results prose styling */
 #content-display h1 { color: #1e293b; font-size: 1.5rem; font-weight: 800; margin-top: 1.5rem; }
@@ -1966,8 +1969,8 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
     <!-- Already Booked (visible only when budget is entered) -->
     <div id="already-booked-section" class="hidden" style="margin-top:-0.25rem;">
       <span class="text-xs text-slate-400 mr-2">Already booked:</span>
-      <label class="inline-flex items-center gap-1 mr-4 text-sm cursor-pointer"><input type="checkbox" id="already-booked-accommodation"> <span>Accommodation</span></label>
-      <label class="inline-flex items-center gap-1 text-sm cursor-pointer"><input type="checkbox" id="already-booked-flights"> <span>Flights</span></label>
+      <label class="already-booked-label inline-flex items-center gap-2 mr-4 cursor-pointer"><input type="checkbox" id="already-booked-accommodation"> <span>Accommodation</span></label>
+      <label class="already-booked-label inline-flex items-center gap-2 cursor-pointer"><input type="checkbox" id="already-booked-flights"> <span>Flights</span></label>
     </div>
     </div>
 
