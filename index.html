@@ -186,11 +186,34 @@ body { font-family: 'Inter', system-ui, sans-serif; background: #f1f5f9; }
   text-transform: uppercase; letter-spacing: 0.5px;
 }
 
-/* Desktop: vertical card sizing for planning page */
+/* Desktop: planning page sizing */
 @media (min-width: 769px) {
+  #planning-view { font-size: 0.85rem; }
+  #planning-view .section-label { font-size: 0.7rem; letter-spacing: 0.05em; }
+  #planning-view .subsection-label { font-size: 0.65rem; }
+  #planning-view .form-input { font-size: 0.8rem; padding: 10px 14px; }
+  #planning-view .option-card { font-size: 0.8rem; padding: 10px 14px; gap: 8px; }
+  #planning-view .option-card .option-icon { font-size: 1.1rem; }
+  #planning-view .option-card input[type="checkbox"],
+  #planning-view .option-card input[type="radio"] { width: 14px; height: 14px; }
   #planning-view #long-distance-group .option-card,
   #planning-view #local-transport-group .option-card,
-  #planning-view #pace-group .option-card { height: 70px; padding: 8px 6px; }
+  #planning-view #pace-group .option-card { height: 62px; padding: 6px 4px; font-size: 0.7rem; }
+  #planning-view #long-distance-group .option-card .option-icon,
+  #planning-view #local-transport-group .option-card .option-icon,
+  #planning-view #pace-group .option-card .option-icon { font-size: 1rem; }
+  #planning-view .btn-primary { font-size: 0.9rem; padding: 14px; }
+  #planning-view h2 { font-size: 1.15rem; }
+  #planning-view p.text-sm,
+  #planning-view span.text-sm { font-size: 0.75rem; }
+  #planning-view .text-xs { font-size: 0.65rem; }
+  #planning-view .free-tier-banner { font-size: 0.75rem; padding: 8px 14px; gap: 8px; }
+  #planning-view .free-tier-banner .banner-link { font-size: 0.75rem; }
+  #planning-view .free-tier-banner .banner-icon { font-size: 0.9rem; }
+  #planning-view .tier-badge { font-size: 0.65rem; }
+  #planning-view .already-booked-label { font-size: 0.75rem; }
+  #planning-view .input-tooltip { font-size: 0.65rem; }
+  #planning-view .date-range-warning { font-size: 0.65rem; }
 }
 
 @media (min-width: 1024px) {
