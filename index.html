@@ -100,25 +100,19 @@ body { font-family: 'Inter', system-ui, sans-serif; background: #f1f5f9; }
 #local-transport-group .option-card,
 #pace-group .option-card {
   flex-direction: column; align-items: center;
-  text-align: center; padding: 14px 8px;
-  position: relative; gap: 4px;
+  text-align: center; padding: 10px 6px;
+  position: relative; gap: 2px;
+  min-height: 70px; font-size: 0.85rem;
 }
 #long-distance-group .option-card input,
 #local-transport-group .option-card input,
 #pace-group .option-card input {
-  position: absolute; top: 8px; left: 8px;
+  position: absolute; top: 6px; left: 6px;
 }
 #long-distance-group .option-card .option-icon,
 #local-transport-group .option-card .option-icon,
 #pace-group .option-card .option-icon {
-  font-size: 1.6rem;
-}
-#long-distance-group .option-card,
-#local-transport-group .option-card {
-  min-height: 90px;
-}
-#pace-group .option-card {
-  min-height: 80px;
+  font-size: 1.3rem;
 }
 
 /* Input styling */
@@ -201,11 +195,11 @@ body { font-family: 'Inter', system-ui, sans-serif; background: #f1f5f9; }
   #planning-view .option-card input[type="checkbox"],
   #planning-view .option-card input[type="radio"] { width: 20px; height: 20px; }
   #planning-view #long-distance-group .option-card,
-  #planning-view #local-transport-group .option-card { min-height: 100px; padding: 16px 10px; }
-  #planning-view #pace-group .option-card { min-height: 90px; padding: 16px 10px; }
+  #planning-view #local-transport-group .option-card,
+  #planning-view #pace-group .option-card { min-height: 80px; padding: 10px 8px; font-size: 1rem; }
   #planning-view #long-distance-group .option-card .option-icon,
   #planning-view #local-transport-group .option-card .option-icon,
-  #planning-view #pace-group .option-card .option-icon { font-size: 2rem; }
+  #planning-view #pace-group .option-card .option-icon { font-size: 1.5rem; }
   #planning-view .btn-primary { font-size: 1.35rem; padding: 20px; }
   #planning-view h2 { font-size: 2.2rem; }
   #planning-view p.text-sm,
