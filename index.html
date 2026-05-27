@@ -76,9 +76,8 @@ body { font-family: 'Inter', system-ui, sans-serif; background: #f1f5f9; }
   padding: 12px 16px; background: white;
   border: 2px solid #e2e8f0; border-radius: 12px;
   cursor: pointer; transition: all 0.2s ease;
-  user-select: none; min-width: 0;
+  user-select: none;
 }
-.option-card > span:last-child { min-width: 0; overflow-wrap: break-word; word-break: break-word; }
 .option-card:hover {
   border-color: #93c5fd;
   box-shadow: 0 4px 12px rgba(0,0,0,0.06);
@@ -95,6 +94,32 @@ body { font-family: 'Inter', system-ui, sans-serif; background: #f1f5f9; }
   width: 16px; height: 16px; flex-shrink: 0;
 }
 .option-card .option-icon { font-size: 1.25rem; flex-shrink: 0; }
+
+/* Vertical card layout for transport & pace */
+#long-distance-group .option-card,
+#local-transport-group .option-card,
+#pace-group .option-card {
+  flex-direction: column; align-items: center;
+  text-align: center; padding: 14px 8px;
+  position: relative; gap: 4px;
+}
+#long-distance-group .option-card input,
+#local-transport-group .option-card input,
+#pace-group .option-card input {
+  position: absolute; top: 8px; left: 8px;
+}
+#long-distance-group .option-card .option-icon,
+#local-transport-group .option-card .option-icon,
+#pace-group .option-card .option-icon {
+  font-size: 1.6rem;
+}
+#long-distance-group .option-card,
+#local-transport-group .option-card {
+  min-height: 90px;
+}
+#pace-group .option-card {
+  min-height: 80px;
+}
 
 /* Input styling */
 .form-input {
@@ -176,8 +201,11 @@ body { font-family: 'Inter', system-ui, sans-serif; background: #f1f5f9; }
   #planning-view .option-card input[type="checkbox"],
   #planning-view .option-card input[type="radio"] { width: 20px; height: 20px; }
   #planning-view #long-distance-group .option-card,
-  #planning-view #local-transport-group .option-card { min-height: 90px; }
-  #planning-view .grid.grid-cols-3 .option-card { min-height: 70px; }
+  #planning-view #local-transport-group .option-card { min-height: 100px; padding: 16px 10px; }
+  #planning-view #pace-group .option-card { min-height: 90px; padding: 16px 10px; }
+  #planning-view #long-distance-group .option-card .option-icon,
+  #planning-view #local-transport-group .option-card .option-icon,
+  #planning-view #pace-group .option-card .option-icon { font-size: 2rem; }
   #planning-view .btn-primary { font-size: 1.35rem; padding: 20px; }
   #planning-view h2 { font-size: 2rem; }
   #planning-view p.text-sm,
@@ -1972,7 +2000,7 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
         <label class="option-card"><input type="checkbox" value="Train"> <span class="option-icon">&#128646;</span> <span data-i18n="train">Train</span></label>
         <label class="option-card"><input type="checkbox" value="Car"> <span class="option-icon">&#128663;</span> <span data-i18n="car">Car</span></label>
         <label class="option-card"><input type="checkbox" value="Bike"> <span class="option-icon">&#128690;</span> <span data-i18n="bike">Bike</span></label>
-        <label class="option-card"><input type="checkbox" value="Long-Distance Bus"> <span class="option-icon">&#128653;</span> <span class="flex flex-col leading-tight"><span data-i18n="longDistanceBus">Long-Distance Bus</span><span class="text-xs text-slate-400" data-i18n="longDistanceBusDesc">(e.g., FlixBus, coach services)</span></span></label>
+        <label class="option-card"><input type="checkbox" value="Long-Distance Bus"> <span class="option-icon">&#128653;</span> <span data-i18n="longDistanceBus">Long-Distance Bus</span></label>
         <label class="option-card"><input type="checkbox" value="Boat"> <span class="option-icon">&#9973;</span> <span data-i18n="boat">Boat</span></label>
       </div>
       <div id="round-trip-option" class="hidden mt-2">
@@ -1999,7 +2027,7 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
     <!-- Pace -->
     <div>
       <label class="section-label" data-i18n="pace">Trip Pace</label>
-      <div class="grid grid-cols-3 gap-3">
+      <div id="pace-group" class="grid grid-cols-3 gap-3">
         <label class="option-card"><input type="radio" name="pace" value="Slow"> <span class="option-icon">&#128034;</span> <span data-i18n="slow">Slow</span></label>
         <label class="option-card"><input type="radio" name="pace" value="Medium" checked> <span class="option-icon">&#128694;</span> <span data-i18n="medium">Medium</span></label>
         <label class="option-card"><input type="radio" name="pace" value="Fast"> <span class="option-icon">&#9889;</span> <span data-i18n="fast">Fast</span></label>
