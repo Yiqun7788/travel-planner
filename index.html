@@ -102,7 +102,7 @@ body { font-family: 'Inter', system-ui, sans-serif; background: #f1f5f9; }
   flex-direction: column; align-items: center;
   text-align: center; padding: 10px 6px;
   position: relative; gap: 2px;
-  height: 70px; font-size: 1rem; justify-content: center; overflow: hidden;
+  height: 65px; font-size: 0.8rem; justify-content: center; overflow: hidden;
 }
 #long-distance-group .option-card input,
 #local-transport-group .option-card input,
@@ -112,7 +112,7 @@ body { font-family: 'Inter', system-ui, sans-serif; background: #f1f5f9; }
 #long-distance-group .option-card .option-icon,
 #local-transport-group .option-card .option-icon,
 #pace-group .option-card .option-icon {
-  font-size: 1.3rem;
+  font-size: 1.15rem;
 }
 .narrow-text { font-stretch: condensed; font-family: 'Inter', Arial Narrow, sans-serif; letter-spacing: -0.03em; font-size: 0.85em; line-height: 1.2; }
 .option-card:has(.narrow-text) .option-icon { font-size: 1.1rem !important; }
@@ -120,7 +120,7 @@ body { font-family: 'Inter', system-ui, sans-serif; background: #f1f5f9; }
 /* Input styling */
 .form-input {
   width: 100%; border: 2px solid #e2e8f0; border-radius: 12px;
-  padding: 12px 16px; font-size: 1.15rem;
+  padding: 12px 16px; font-size: 0.95rem;
   transition: all 0.2s ease; background: white;
   outline: none;
 }
@@ -188,33 +188,33 @@ body { font-family: 'Inter', system-ui, sans-serif; background: #f1f5f9; }
 
 /* Desktop: larger text for planning page */
 @media (min-width: 769px) {
-  #planning-view { font-size: 1.35rem; }
-  #planning-view .section-label { font-size: 1.3rem; letter-spacing: 0.03em; }
-  #planning-view .subsection-label { font-size: 1.15rem; }
-  #planning-view .form-input { font-size: 1.6rem; padding: 18px 22px; }
-  #planning-view .option-card { font-size: 1.25rem; padding: 16px 20px; gap: 12px; }
-  #planning-view .option-card .option-icon { font-size: 1.7rem; }
+  #planning-view { font-size: 1rem; }
+  #planning-view .section-label { font-size: 0.95rem; letter-spacing: 0.03em; }
+  #planning-view .subsection-label { font-size: 0.9rem; }
+  #planning-view .form-input { font-size: 1.1rem; padding: 14px 16px; }
+  #planning-view .option-card { font-size: 0.95rem; padding: 12px 16px; gap: 10px; }
+  #planning-view .option-card .option-icon { font-size: 1.3rem; }
   #planning-view .option-card input[type="checkbox"],
-  #planning-view .option-card input[type="radio"] { width: 20px; height: 20px; }
+  #planning-view .option-card input[type="radio"] { width: 16px; height: 16px; }
   #planning-view #long-distance-group .option-card,
   #planning-view #local-transport-group .option-card,
-  #planning-view #pace-group .option-card { height: 85px; padding: 10px 8px; font-size: 1.2rem; }
+  #planning-view #pace-group .option-card { height: 75px; padding: 8px 6px; font-size: 0.9rem; }
   #planning-view #long-distance-group .option-card .option-icon,
   #planning-view #local-transport-group .option-card .option-icon,
-  #planning-view #pace-group .option-card .option-icon { font-size: 1.5rem; }
-  #planning-view .btn-primary { font-size: 1.35rem; padding: 20px; }
-  #planning-view h2 { font-size: 2.2rem; }
+  #planning-view #pace-group .option-card .option-icon { font-size: 1.3rem; }
+  #planning-view .btn-primary { font-size: 1.05rem; padding: 16px; }
+  #planning-view h2 { font-size: 1.5rem; }
   #planning-view p.text-sm,
-  #planning-view span.text-sm { font-size: 1.3rem; }
-  #planning-view .text-xs { font-size: 1.2rem; }
-  #planning-view .free-tier-banner { font-size: 1.3rem; padding: 16px 22px; gap: 14px; }
-  #planning-view .free-tier-banner .banner-link { font-size: 1.3rem; }
-  #planning-view .free-tier-banner .banner-icon { font-size: 1.6rem; }
-  #planning-view .tier-badge { font-size: 1.05rem; }
-  #planning-view .already-booked-label { font-size: 1.45rem; }
-  #planning-view .already-booked-label input { width: 20px; height: 20px; }
-  #planning-view .input-tooltip { font-size: 1.05rem; }
-  #planning-view .date-range-warning { font-size: 1.05rem; }
+  #planning-view span.text-sm { font-size: 0.9rem; }
+  #planning-view .text-xs { font-size: 0.85rem; }
+  #planning-view .free-tier-banner { font-size: 0.92rem; padding: 10px 16px; gap: 8px; }
+  #planning-view .free-tier-banner .banner-link { font-size: 0.92rem; }
+  #planning-view .free-tier-banner .banner-icon { font-size: 1.1rem; }
+  #planning-view .tier-badge { font-size: 0.8rem; }
+  #planning-view .already-booked-label { font-size: 1rem; }
+  #planning-view .already-booked-label input { width: 16px; height: 16px; }
+  #planning-view .input-tooltip { font-size: 0.85rem; }
+  #planning-view .date-range-warning { font-size: 0.85rem; }
 }
 
 @media (min-width: 1024px) {
@@ -262,7 +262,7 @@ body { font-family: 'Inter', system-ui, sans-serif; background: #f1f5f9; }
 .section-card .input-tooltip,
 .section-card .date-range-warning { color: #d1d5db; }
 .section-card .subsection-label { color: #e5e7eb; }
-.already-booked-label { font-size: 1.1rem; font-weight: 500; color: #f3f4f6; }
+.already-booked-label { font-size: 0.88rem; font-weight: 500; color: #f3f4f6; }
 
 /* Results prose styling */
 #content-display h1 { color: #1e293b; font-size: 1.5rem; font-weight: 800; margin-top: 1.5rem; }
@@ -909,7 +909,7 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
   display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
   background: #3b1f6e; border: 1px solid #5b21b6;
   border-radius: 10px; padding: 10px 16px; margin-top: 12px;
-  font-size: 0.95rem; color: #e9d5ff; line-height: 1.4;
+  font-size: 0.82rem; color: #e9d5ff; line-height: 1.4;
 }
 .free-tier-banner .banner-icon {
   font-size: 1rem; flex-shrink: 0;
@@ -923,7 +923,7 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
 .free-tier-banner .banner-link {
   color: #fbbf24; font-weight: 700; cursor: pointer;
   text-decoration: underline; text-underline-offset: 2px;
-  background: none; border: none; font-size: 0.95rem; padding: 0;
+  background: none; border: none; font-size: 0.82rem; padding: 0;
 }
 .free-tier-banner .banner-link:hover {
   color: #fde68a;
@@ -998,17 +998,17 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
   border-color: #818cf8; box-shadow: 0 0 0 3px rgba(129,140,248,0.15);
 }
 .dest-chip {
-  display: inline-flex; align-items: center; gap: 8px;
+  display: inline-flex; align-items: center; gap: 4px;
   background: #eef2ff; color: #4338ca; border: 1px solid #c7d2fe;
-  border-radius: 9999px; padding: 8px 16px 8px 18px;
-  font-size: 1.5rem; font-weight: 600; white-space: nowrap;
-  max-width: 280px;
+  border-radius: 9999px; padding: 4px 10px 4px 12px;
+  font-size: 0.95rem; font-weight: 500; white-space: nowrap;
+  max-width: 200px;
 }
 .dest-chip-name { overflow: hidden; text-overflow: ellipsis; }
 .dest-chip-remove {
   display: inline-flex; align-items: center; justify-content: center;
-  width: 26px; height: 26px; border-radius: 50%; border: none;
-  background: transparent; color: #6366f1; font-size: 18px; line-height: 1;
+  width: 18px; height: 18px; border-radius: 50%; border: none;
+  background: transparent; color: #6366f1; font-size: 14px; line-height: 1;
   cursor: pointer; padding: 0; transition: background 0.15s;
 }
 .dest-chip-remove:hover { background: #c7d2fe; }
