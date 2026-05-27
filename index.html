@@ -76,7 +76,12 @@ body { font-family: 'Inter', system-ui, sans-serif; background: #f1f5f9; }
   padding: 12px 16px; background: white;
   border: 2px solid #e2e8f0; border-radius: 12px;
   cursor: pointer; transition: all 0.2s ease;
-  user-select: none;
+  user-select: none; overflow: hidden;
+}
+/* Equal-height transport cards */
+#long-distance-group .option-card,
+#local-transport-group .option-card {
+  min-height: 72px;
 }
 .option-card:hover {
   border-color: #93c5fd;
@@ -98,7 +103,7 @@ body { font-family: 'Inter', system-ui, sans-serif; background: #f1f5f9; }
 /* Input styling */
 .form-input {
   width: 100%; border: 2px solid #e2e8f0; border-radius: 12px;
-  padding: 12px 16px; font-size: 0.95rem;
+  padding: 12px 16px; font-size: 1.15rem;
   transition: all 0.2s ease; background: white;
   outline: none;
 }
@@ -169,11 +174,13 @@ body { font-family: 'Inter', system-ui, sans-serif; background: #f1f5f9; }
   #planning-view { font-size: 1.35rem; }
   #planning-view .section-label { font-size: 1.3rem; letter-spacing: 0.03em; }
   #planning-view .subsection-label { font-size: 1.15rem; }
-  #planning-view .form-input { font-size: 1.25rem; padding: 16px 20px; }
+  #planning-view .form-input { font-size: 1.6rem; padding: 18px 22px; }
   #planning-view .option-card { font-size: 1.25rem; padding: 16px 20px; gap: 12px; }
   #planning-view .option-card .option-icon { font-size: 1.7rem; }
   #planning-view .option-card input[type="checkbox"],
   #planning-view .option-card input[type="radio"] { width: 20px; height: 20px; }
+  #planning-view #long-distance-group .option-card,
+  #planning-view #local-transport-group .option-card { min-height: 88px; }
   #planning-view .btn-primary { font-size: 1.35rem; padding: 20px; }
   #planning-view h2 { font-size: 2rem; }
   #planning-view p.text-sm,
@@ -194,6 +201,7 @@ body { font-family: 'Inter', system-ui, sans-serif; background: #f1f5f9; }
   .planning-header-inner { max-width: 1200px; }
   /* Two-column row for paired form sections */
   .desktop-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 1.75rem; }
+  .desktop-2col-origin { display: grid; grid-template-columns: 1fr 2fr; gap: 1.75rem; }
   /* Interests: 3 columns instead of 2 on large screens */
   #primary-interests { grid-template-columns: repeat(3, 1fr) !important; }
   #secondary-interests { grid-template-columns: repeat(3, 1fr) !important; }
@@ -205,13 +213,32 @@ body { font-family: 'Inter', system-ui, sans-serif; background: #f1f5f9; }
   border-radius: 12px;
   border-left: 3px solid;
 }
-.section-card-blue { background: #f0f7ff; border-left-color: #3b82f6; }
-.section-card-emerald { background: #ecfdf5; border-left-color: #10b981; }
-.section-card-amber { background: #fffbeb; border-left-color: #f59e0b; }
-.section-card-violet { background: #f5f3ff; border-left-color: #8b5cf6; }
-.section-card-rose { background: #fff1f2; border-left-color: #f43f5e; }
-.section-card-cyan { background: #ecfeff; border-left-color: #06b6d4; }
-.section-card-slate { background: #f8fafc; border-left-color: #64748b; }
+.section-card-blue,
+.section-card-emerald,
+.section-card-amber,
+.section-card-violet,
+.section-card-rose,
+.section-card-cyan,
+.section-card-slate { background: #374151; border-left-color: #6b7280; }
+.section-card-blue .section-label,
+.section-card-emerald .section-label,
+.section-card-amber .section-label,
+.section-card-violet .section-label,
+.section-card-rose .section-label,
+.section-card-cyan .section-label,
+.section-card-slate .section-label { color: #f3f4f6; }
+.section-card-blue .text-xs.text-slate-400,
+.section-card-emerald .text-xs.text-slate-400,
+.section-card-amber .text-xs.text-slate-400,
+.section-card-violet .text-xs.text-slate-400,
+.section-card-rose .text-xs.text-slate-400,
+.section-card-cyan .text-xs.text-slate-400,
+.section-card-slate .text-xs.text-slate-400 { color: #d1d5db !important; }
+.section-card .text-sm,
+.section-card .text-xs { color: #d1d5db; }
+.section-card .input-tooltip,
+.section-card .date-range-warning { color: #d1d5db; }
+.section-card .subsection-label { color: #e5e7eb; }
 
 /* Results prose styling */
 #content-display h1 { color: #1e293b; font-size: 1.5rem; font-weight: 800; margin-top: 1.5rem; }
@@ -963,7 +990,7 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
 .dest-chip-remove:hover { background: #c7d2fe; }
 .dest-chip-input {
   flex: 1 1 80px; min-width: 80px; border: none; outline: none;
-  background: transparent; font-size: 0.95rem; padding: 4px 0;
+  background: transparent; font-size: inherit; padding: 4px 0;
   font-family: inherit;
 }
 .dest-chip-input::placeholder { color: #94a3b8; }
@@ -1866,7 +1893,7 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
 
   <form id="itinerary-form" class="px-6 sm:px-8 pb-8 space-y-7">
 
-    <div class="section-card section-card-blue desktop-2col">
+    <div class="section-card section-card-blue desktop-2col-origin">
     <!-- Origin (optional) -->
     <div>
       <label class="section-label" data-i18n="origin">Where are you coming from?</label>
