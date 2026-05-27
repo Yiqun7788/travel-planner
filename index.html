@@ -186,12 +186,14 @@ body { font-family: 'Inter', system-ui, sans-serif; background: #f1f5f9; }
   text-transform: uppercase; letter-spacing: 0.5px;
 }
 
-/* Force small text on planning form */
-#planning-view { font-size: 0.75rem !important; }
-#planning-view .section-label { font-size: 0.65rem !important; }
-#planning-view .form-input { font-size: 0.7rem !important; padding: 8px 12px !important; }
-#planning-view h2 { font-size: 1rem !important; }
-#planning-view .free-tier-banner { font-size: 0.7rem !important; }
+/* Mobile: planning form sizing */
+@media (max-width: 768px) {
+  #planning-view { font-size: 0.75rem; }
+  #planning-view .section-label { font-size: 0.65rem; }
+  #planning-view .form-input { font-size: 0.7rem; padding: 8px 12px; }
+  #planning-view h2 { font-size: 1rem; }
+  #planning-view .free-tier-banner { font-size: 0.7rem; }
+}
 
 /* Desktop: planning page sizing */
 @media (min-width: 769px) {
@@ -224,16 +226,14 @@ body { font-family: 'Inter', system-ui, sans-serif; background: #f1f5f9; }
 }
 
 @media (min-width: 1024px) {
-  /* Planning form container width */
-  #planning-view .planning-wide { max-width: 700px !important; }
-  /* Planning header to match */
-  .planning-header-inner { max-width: 700px !important; }
+  /* Planning form and header container width */
+  #planning-view .planning-wide { max-width: 700px; }
+  .planning-header-inner { max-width: 700px; }
   /* Two-column row for paired form sections */
   .desktop-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 1.75rem; }
-
   /* Interests: 3 columns instead of 2 on large screens */
-  #primary-interests { grid-template-columns: repeat(3, 1fr) !important; }
-  #secondary-interests { grid-template-columns: repeat(3, 1fr) !important; }
+  #primary-interests { grid-template-columns: repeat(3, 1fr); }
+  #secondary-interests { grid-template-columns: repeat(3, 1fr); }
 }
 
 /* Section card grouping */
@@ -1069,7 +1069,7 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
   padding: 14px 28px; box-sizing: border-box;
 }
 .planning-header-inner {
-  max-width: 900px; margin: 0 auto;
+  max-width: 700px; margin: 0 auto;
   display: flex; align-items: center; justify-content: space-between;
 }
 .planning-header-logo {
@@ -1903,7 +1903,7 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
 
 <!-- PLANNING VIEW -->
 <div id="planning-view" class="hidden animate-fade-in-up">
-<div class="planning-wide max-w-4xl mx-auto px-4 py-12">
+<div class="planning-wide mx-auto px-4 py-12">
 <div class="bg-white rounded-2xl shadow-xl shadow-slate-200/50 overflow-hidden">
 
   <!-- Form Header -->
