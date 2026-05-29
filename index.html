@@ -1033,32 +1033,29 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
 #home-page-wrapper { display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
 #home-view { font-family: 'Inter', sans-serif; position: relative; display: flex; flex-direction: column; flex: 1; min-height: 0; overflow: hidden; }
 .home-nav {
-  position: absolute; top: 0; left: 0; right: 0; z-index: 10;
   display: flex; align-items: center; justify-content: space-between;
-  padding: 14px 28px;
-  background: linear-gradient(to bottom, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.15) 80%, transparent 100%);
+  padding: 10px 28px;
+  background: #0f172a;
 }
 .home-nav-logo {
-  font-size: 1.35rem; font-weight: 800; color: #fff; letter-spacing: -0.02em;
-  text-shadow: 0 1px 4px rgba(0,0,0,0.3);
+  font-size: 1.1rem; font-weight: 800; color: #fff; letter-spacing: -0.02em;
 }
 .home-nav-cta {
-  background: rgba(255,255,255,0.95); color: #4f46e5; font-weight: 600; font-size: 0.9rem;
-  padding: 10px 22px; border-radius: 10px; border: none; cursor: pointer;
-  transition: background 0.2s, transform 0.15s; box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  background: #10b981; color: #fff; font-weight: 600; font-size: 0.85rem;
+  padding: 6px 18px; border-radius: 8px; border: none; cursor: pointer;
+  transition: background 0.2s, transform 0.15s;
 }
-.home-nav-cta:hover { background: #fff; transform: translateY(-1px); }
+.home-nav-cta:hover { background: #059669; transform: translateY(-1px); }
 .home-nav-right { display: flex; align-items: center; gap: 8px; }
 .home-nav-badge {
-  background: rgba(0,0,0,0.5); color: #fff; font-weight: 600; font-size: 0.9rem;
-  padding: 8px 16px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.25); cursor: pointer;
-  transition: background 0.2s; backdrop-filter: blur(4px);
+  background: rgba(255,255,255,0.1); color: #fff; font-weight: 600; font-size: 0.85rem;
+  padding: 6px 14px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); cursor: pointer;
+  transition: background 0.2s;
 }
-.home-nav-badge:hover { background: rgba(0,0,0,0.65); }
+.home-nav-badge:hover { background: rgba(255,255,255,0.2); }
 .home-nav-lang {
-  background: rgba(0,0,0,0.5); color: #fff; font-weight: 600; font-size: 0.9rem;
-  padding: 8px 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.25); cursor: pointer;
-  backdrop-filter: blur(4px);
+  background: rgba(255,255,255,0.1); color: #fff; font-weight: 600; font-size: 0.85rem;
+  padding: 6px 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); cursor: pointer;
 }
 .home-nav-lang option { color: #334155; background: #fff; }
 
@@ -1674,34 +1671,36 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
 <!-- Home Page Wrapper (viewport height flex layout) -->
 <div id="home-page-wrapper">
 
-<!-- Shared Top Photo Banner -->
-<div id="shared-photo-banner" class="home-photo-banner" style="position:relative">
-  <nav class="home-nav">
-    <span class="home-nav-logo">Travel Planner</span>
-    <div class="home-nav-right">
-      <button id="banner-tier-badge" class="home-nav-badge" onclick="openPricingModal()">Free Plan</button>
-      <button id="banner-sign-in-btn" class="home-nav-badge" onclick="openAuthModal()">Sign In</button>
-      <div style="position:relative;display:inline-block">
-        <button id="banner-user-btn" class="home-nav-badge" style="display:none" onclick="toggleUserMenu(this)">
-          <span class="user-avatar" id="banner-user-avatar"></span>
-          <span id="banner-user-name"></span>
-        </button>
-        <div class="user-menu-dropdown-shared">
-          <button class="user-menu-item danger" onclick="signOut()">Sign Out</button>
-        </div>
+<!-- Navigation Bar -->
+<nav class="home-nav">
+  <span class="home-nav-logo">Travel Planner</span>
+  <div class="home-nav-right">
+    <button id="banner-tier-badge" class="home-nav-badge" onclick="openPricingModal()">Free Plan</button>
+    <button id="banner-sign-in-btn" class="home-nav-badge" onclick="openAuthModal()">Sign In</button>
+    <div style="position:relative;display:inline-block">
+      <button id="banner-user-btn" class="home-nav-badge" style="display:none" onclick="toggleUserMenu(this)">
+        <span class="user-avatar" id="banner-user-avatar"></span>
+        <span id="banner-user-name"></span>
+      </button>
+      <div class="user-menu-dropdown-shared">
+        <button class="user-menu-item danger" onclick="signOut()">Sign Out</button>
       </div>
-      <select id="banner-language-select" class="home-nav-lang" onchange="document.getElementById('language-select').value=this.value; document.getElementById('language-select').dispatchEvent(new Event('change'));">
-        <option value="en">English</option>
-        <option value="zh">简体中文</option>
-        <option value="ja">日本語</option>
-        <option value="de">Deutsch</option>
-        <option value="es">Español</option>
-        <option value="fr">Français</option>
-      </select>
-      <button id="banner-home-btn" class="home-nav-cta" onclick="showHomeView()" style="display:none">&#127968; Home</button>
-      <button id="banner-create-btn" class="home-nav-cta" onclick="showPlanningView()" data-i18n="homeNavCta">Create My Trip</button>
     </div>
-  </nav>
+    <select id="banner-language-select" class="home-nav-lang" onchange="document.getElementById('language-select').value=this.value; document.getElementById('language-select').dispatchEvent(new Event('change'));">
+      <option value="en">English</option>
+      <option value="zh">简体中文</option>
+      <option value="ja">日本語</option>
+      <option value="de">Deutsch</option>
+      <option value="es">Español</option>
+      <option value="fr">Français</option>
+    </select>
+    <button id="banner-home-btn" class="home-nav-cta" onclick="showHomeView()" style="display:none">&#127968; Home</button>
+    <button id="banner-create-btn" class="home-nav-cta" onclick="showPlanningView()" data-i18n="homeNavCta">Create My Trip</button>
+  </div>
+</nav>
+
+<!-- Shared Top Photo Banner -->
+<div id="shared-photo-banner" class="home-photo-banner">
   <img src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=400&h=300&fit=crop" alt="Beach" loading="lazy">
   <img src="https://images.unsplash.com/photo-1570077188670-e3a8d69ac5ff?w=400&h=300&fit=crop" alt="Santorini" loading="lazy">
   <img src="https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=400&h=300&fit=crop" alt="Mountains and lake" loading="lazy">
