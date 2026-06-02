@@ -3855,6 +3855,9 @@ initPhotonAutocomplete('dest-chip-input', 'dest-suggestions', false, function(na
 document.getElementById('language-select').addEventListener('change', (e) => {
   currentLang = e.target.value;
   updateLanguage(currentLang);
+  // Sync all language dropdowns
+  document.getElementById('banner-language-select').value = currentLang;
+  document.getElementById('ph-language-select').value = currentLang;
 });
 
 // --- Progress bar helper ---
