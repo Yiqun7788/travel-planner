@@ -1,7 +1,7 @@
 {
-  "name": "travel-planner",
+  "name": "wise-itinerary",
   "version": "1.0.0",
-  "description": "Multilingual AI-powered travel planner using Gemini API",
+  "description": "Multilingual AI-powered itinerary generator using Gemini API",
   "private": true,
   "dependencies": {
     "@supabase/supabase-js": "^2.49.0",
