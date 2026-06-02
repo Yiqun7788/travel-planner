@@ -29,6 +29,8 @@ function cleanOldEntries() {
 }
 
 const ALLOWED_ORIGINS = [
+  'https://wiseitinerary.com',
+  'https://www.wiseitinerary.com',
   'https://travel-planner-livid-two.vercel.app',
   'http://localhost',
   'http://127.0.0.1'
