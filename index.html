@@ -5753,8 +5753,11 @@ VISIT TIME CHECK — When scheduling each place, ensure the recommended arrival 
     saveTripSession();
     applyTierUI();
 
-    // Free users: show finalize modal after update
+    // Free users: auto-finalize and show simple info modal
     if (getUserTier() === 'free') {
+      finalizeTripExtras();
+      document.getElementById('finalize-modal-message').innerHTML = '&#128161; <em>You can download your itinerary anytime using the Download button.</em>';
+      document.getElementById('finalize-modal').querySelector('.modal-actions').innerHTML = '<button class="modal-btn-primary" onclick="document.getElementById(\'finalize-modal\').classList.remove(\'active\')">Close</button>';
       document.getElementById('finalize-modal').classList.add('active');
     }
   }
