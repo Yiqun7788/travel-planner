@@ -5612,7 +5612,7 @@ document.getElementById('update-itinerary-btn').addEventListener('click', async 
     if (getUserTier() === 'free') {
       showUpgradeModal('Revision Limit Reached', 'You\u2019ve used your <strong>1 free revision</strong> for this trip.<br><br>Buy a <strong>Trip Pack</strong> for 5 revisions per trip.');
     } else {
-      showUpgradeModal('Revision Limit Reached', `You\u2019ve used all <strong>${getTierLimits().maxUpdatesPerItinerary} revisions</strong> for this trip.<br><br>You can now finalize your trip to unlock downloads, Packing List, and Fun Facts.`);
+      showUpgradeModal('Revision Limit Reached', `You\u2019ve used all <strong>${getTierLimits().maxUpdatesPerItinerary} revisions</strong> for this trip.<br><br>Your downloads, Packing List, and Fun Facts are already unlocked.`);
     }
     return;
   }
@@ -5746,10 +5746,14 @@ VISIT TIME CHECK — When scheduling each place, ensure the recommended arrival 
     saveTripSession();
     applyTierUI();
 
-    // Free users: auto-finalize and show simple info modal
-    if (getUserTier() === 'free') {
+    // Auto-finalize and show info modal when all revisions are used up
+    var revisionsLeft = getTierLimits().maxUpdatesPerItinerary - getUpdatesThisItinerary();
+    if (revisionsLeft <= 0) {
       finalizeTripExtras();
-      document.getElementById('finalize-modal-message').innerHTML = '&#128161; <em>You can download your itinerary anytime using the Download button.</em>';
+      var doneMsg = tripData.isPaidTrip
+        ? '&#128161; <em>You can now download your itinerary, generate a Packing List, and check out Fun Facts.</em>'
+        : '&#128161; <em>You can download your itinerary anytime using the Download button.</em>';
+      document.getElementById('finalize-modal-message').innerHTML = doneMsg;
       document.getElementById('finalize-modal').querySelector('.modal-actions').innerHTML = '<button class="modal-btn-primary" onclick="document.getElementById(\'finalize-modal\').classList.remove(\'active\')">Close</button>';
       document.getElementById('finalize-modal').classList.add('active');
     }
