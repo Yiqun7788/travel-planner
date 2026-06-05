@@ -3216,13 +3216,6 @@ document.getElementById('download-gate-modal').addEventListener('click', functio
     document.getElementById('download-gate-modal').classList.remove('active');
     finalizeTripExtras();
   } else if (e.target.id === 'download-gate-cancel') {
-    document.getElementById('download-gate-title').innerHTML = '&#128712; Almost There';
-    var almostMsg = tripData.isPaidTrip
-      ? 'Downloads, Packing List, and Fun Facts will be available after you confirm your updates are done.<br><br>When you\'re ready, click <strong>"Finalize Trip &amp; Unlock Extras"</strong>, or tap a Download button again.'
-      : 'Downloads will be available after you confirm your updates are done.<br><br>When you\'re ready, click <strong>"Finalize Trip &amp; Unlock Downloads"</strong>, or tap a Download button again.';
-    document.getElementById('download-gate-message').innerHTML = almostMsg;
-    document.getElementById('download-gate-actions').innerHTML = '<button class="modal-btn-primary" id="download-gate-ok">Got it</button>';
-  } else if (e.target.id === 'download-gate-ok') {
     document.getElementById('download-gate-modal').classList.remove('active');
   }
 });
