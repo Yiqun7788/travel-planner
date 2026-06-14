@@ -5883,7 +5883,7 @@ function restoreSession() {
     if (!saved && currentUser && userProfile && userProfile.current_trip) {
       saved = JSON.stringify(userProfile.current_trip);
     }
-    if (!saved && currentUser) {
+    if (!saved) {
       saved = localStorage.getItem('savedTrip');
     }
     if (!saved) return;
