@@ -4251,15 +4251,14 @@ ROUND TRIP: The traveler is making a round trip${longDistance.length === 1 ? ' b
   saveTripSession();
 
   // Tier: track generation + credit consumption + reset update counter
-  if (hasPaidCredits) {
-    if (result) {
+  if (result) {
+    if (hasPaidCredits) {
       setTripCredits(getTripCredits() - 1);
       tripData.isPaidTrip = true;
+    } else {
+      incrementGenerations();
+      tripData.isPaidTrip = false;
     }
-    // On API failure, don't deduct credit — user didn't get personalized itinerary
-  } else {
-    incrementGenerations();
-    tripData.isPaidTrip = false;
   }
   resetUpdatesForNewItinerary();
   tripData.tripFinalized = false;
