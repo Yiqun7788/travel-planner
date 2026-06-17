@@ -3004,8 +3004,13 @@ function renderTripOverview() {
   }
   if (tripData.interests && tripData.interests.length > 0) {
     const shown = tripData.interests.slice(0, 4).join(', ');
-    const extra = tripData.interests.length > 4 ? ' +' + (tripData.interests.length - 4) + ' more' : '';
-    chips.push('&#127919; ' + shown + extra);
+    if (tripData.interests.length > 4) {
+      const all = tripData.interests.join(', ');
+      const extraCount = tripData.interests.length - 4;
+      chips.push('&#127919; <span class="interests-text" data-short="' + shown + '" data-full="' + all + '">' + shown + '</span> <a href="#" class="interests-toggle" style="color:#6366f1;font-weight:500;cursor:pointer;text-decoration:none" data-expanded="false">+' + extraCount + ' more</a>');
+    } else {
+      chips.push('&#127919; ' + shown);
+    }
   }
   const transport = (tripData.localTransport || []).concat(tripData.longDistance || []);
   if (transport.length > 0) {
@@ -5229,6 +5234,25 @@ document.getElementById('download-button').addEventListener('click', (e) => {
 // Close menu when clicking outside
 document.addEventListener('click', () => {
   document.getElementById('download-menu').classList.add('hidden');
+});
+
+// Delegated handler for interests "+N more" / "show less" toggle
+document.addEventListener('click', function(e) {
+  var link = e.target.closest('.interests-toggle');
+  if (!link) return;
+  e.preventDefault();
+  var textEl = link.parentElement.querySelector('.interests-text');
+  var expanded = link.getAttribute('data-expanded') === 'true';
+  if (expanded) {
+    textEl.textContent = textEl.getAttribute('data-short');
+    var count = textEl.getAttribute('data-full').split(', ').length - textEl.getAttribute('data-short').split(', ').length;
+    link.textContent = '+' + count + ' more';
+    link.setAttribute('data-expanded', 'false');
+  } else {
+    textEl.textContent = textEl.getAttribute('data-full');
+    link.textContent = 'show less';
+    link.setAttribute('data-expanded', 'true');
+  }
 });
 
 // Download as Offline HTML (Clickable)
