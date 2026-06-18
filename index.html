@@ -3073,9 +3073,19 @@ function renderActiveInstructionsLabel() {
   }
 }
 
-function showUpgradeModal(title, message) {
+function showUpgradeModal(title, message, infoOnly) {
   document.getElementById('upgrade-modal-title').textContent = title;
   document.getElementById('upgrade-modal-message').innerHTML = message;
+  var card = document.querySelector('#upgrade-modal > .upgrade-modal-card');
+  var viewPlansBtn = card.querySelector('.upgrade-view-plans');
+  var secondaryBtn = card.querySelector('.modal-btn-secondary');
+  if (infoOnly) {
+    if (viewPlansBtn) viewPlansBtn.style.display = 'none';
+    if (secondaryBtn) secondaryBtn.style.display = 'none';
+  } else {
+    if (viewPlansBtn) viewPlansBtn.style.display = '';
+    if (secondaryBtn) secondaryBtn.style.display = '';
+  }
   document.getElementById('upgrade-modal').classList.add('active');
 }
 // Tier: detect premium feature keywords in freeform text (only blocks features the user's tier doesn't have)
@@ -4019,7 +4029,11 @@ document.getElementById('generate-button').addEventListener('click', async () =>
 
   const days = Math.floor((new Date(end) - new Date(start)) / (1000*3600*24)) + 1;
   if (days > getTierLimits().maxDays) {
-    showUpgradeModal('Day Limit', `Your plan supports up to <strong>${getTierLimits().maxDays} days</strong>.<br><br>Get a <strong>Trip Pack</strong> for up to 14 days and 5 destinations.`);
+    if (getUserTier() === 'paid') {
+      showUpgradeModal('Day Limit', `Your plan supports up to <strong>${getTierLimits().maxDays} days</strong>.`, true);
+    } else {
+      showUpgradeModal('Day Limit', `Your plan supports up to <strong>${getTierLimits().maxDays} days</strong>.<br><br>Get a <strong>Trip Pack</strong> for up to 14 days and 5 destinations.`);
+    }
     return;
   }
 
@@ -5655,7 +5669,7 @@ document.getElementById('update-itinerary-btn').addEventListener('click', async 
     // Check for "N days" where N > maxDays (e.g., "make it 20 days")
     const dayMention = instruction.match(/(\d+)\s*(?:days?|nights?)/i);
     if (dayMention && parseInt(dayMention[1]) > getTierLimits().maxDays) {
-      showUpgradeModal('Day Limit', `Your plan supports up to <strong>${getTierLimits().maxDays} days</strong>.`);
+      showUpgradeModal('Day Limit', `Your plan supports up to <strong>${getTierLimits().maxDays} days</strong>.`, true);
       return;
     }
 
@@ -5672,7 +5686,7 @@ document.getElementById('update-itinerary-btn').addEventListener('click', async 
       if (wordFirstMatch) addCount = wordNums[wordFirstMatch[1]];
 
       if (tripData.days + addCount > getTierLimits().maxDays) {
-        showUpgradeModal('Day Limit', `Your trip already has <strong>${tripData.days} days</strong>. The maximum is <strong>${getTierLimits().maxDays} days</strong>.`);
+        showUpgradeModal('Day Limit', `Your trip already has <strong>${tripData.days} days</strong>. The maximum is <strong>${getTierLimits().maxDays} days</strong>.`, true);
         return;
       }
     }
@@ -5680,7 +5694,7 @@ document.getElementById('update-itinerary-btn').addEventListener('click', async 
 
   // Also block if planning page dates exceed day limit
   if (newInputs.days > getTierLimits().maxDays) {
-    showUpgradeModal('Day Limit', `Your plan supports up to <strong>${getTierLimits().maxDays} days</strong>.<br><br>Get a <strong>Trip Pack</strong> for up to 14 days and 5 destinations.`);
+    showUpgradeModal('Day Limit', `Your plan supports up to <strong>${getTierLimits().maxDays} days</strong>.`, true);
     return;
   }
 
@@ -5698,7 +5712,7 @@ document.getElementById('update-itinerary-btn').addEventListener('click', async 
     if (getUserTier() === 'free') {
       showUpgradeModal('Revision Limit Reached', 'You\u2019ve used your <strong>1 free revision</strong> for this trip.<br><br>Buy a <strong>Trip Pack</strong> for 3 revisions per trip.');
     } else {
-      showUpgradeModal('Revision Limit Reached', `You\u2019ve used all <strong>${getTierLimits().maxUpdatesPerItinerary} revisions</strong> for this trip.<br><br>Your downloads, Packing List, and Fun Facts are already unlocked.`);
+      showUpgradeModal('Revision Limit Reached', `You\u2019ve used all <strong>${getTierLimits().maxUpdatesPerItinerary} revisions</strong> for this trip.<br><br>Your downloads, Packing List, and Fun Facts are already unlocked.`, true);
     }
     return;
   }
