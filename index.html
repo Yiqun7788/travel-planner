@@ -2734,7 +2734,9 @@ function applyTierUI() {
   const limits = getTierLimits();
   const credits = getTripCredits();
   const hasPurchased = !!(getFreeTierState().hasPurchased);
-  const badgeText = (tier === 'paid' || hasPurchased) ? 'Trip Pack (' + credits + ' left)' : 'Free Plan';
+  const freeUsedUp = currentUser && getGenerationsThisMonth() >= TIER_LIMITS.free.maxGenerations;
+  const showPaidBadge = tier === 'paid' || hasPurchased || freeUsedUp;
+  const badgeText = showPaidBadge ? 'Trip Pack (' + credits + ' left)' : 'Free Plan';
 
   // ─── Header badge ───
   const badge = document.getElementById('header-tier-badge');
@@ -2759,7 +2761,7 @@ function applyTierUI() {
   if (banner) {
     const bannerText = banner.querySelector('.banner-text');
     if (bannerText) {
-      if (tier === 'free' && !hasPurchased) {
+      if (!showPaidBadge) {
         bannerText.innerHTML = '<strong>Free Plan</strong> \u2014 1 destination, up to 3 days, 1 trip per month, 1 revision. <button class="banner-link" onclick="openPricingModal()">View Plans</button>';
       } else {
         bannerText.innerHTML = '<strong>Trip Pack</strong> \u2014 Up to 5 destinations, 14 day trips, 3 revisions per trip. <button class="banner-link" onclick="openPricingModal()">View Plans</button>';
