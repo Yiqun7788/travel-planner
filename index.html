@@ -2722,27 +2722,25 @@ function applyTierUI() {
   const tier = getUserTier();
   const limits = getTierLimits();
   const credits = getTripCredits();
+  const hasPurchased = !!(getFreeTierState().hasPurchased);
+  const badgeText = (tier === 'paid' || hasPurchased) ? 'Trip Pack (' + credits + ' left)' : 'Free Plan';
 
   // ─── Header badge ───
   const badge = document.getElementById('header-tier-badge');
   if (badge) {
-    if (tier === 'paid') {
-      badge.textContent = 'Trip Pack (' + credits + ' left)';
-    } else {
-      badge.textContent = 'Free Plan';
-    }
+    badge.textContent = badgeText;
   }
 
   // ─── Banner nav badge (shared photo banner) ───
   var bannerBadge = document.getElementById('banner-tier-badge');
   if (bannerBadge) {
-    bannerBadge.textContent = tier === 'paid' ? 'Trip Pack (' + credits + ' left)' : 'Free Plan';
+    bannerBadge.textContent = badgeText;
   }
 
   // ─── Planning header badge ───
   var phBadge = document.getElementById('ph-tier-badge');
   if (phBadge) {
-    phBadge.textContent = tier === 'paid' ? 'Trip Pack (' + credits + ' left)' : 'Free Plan';
+    phBadge.textContent = badgeText;
   }
 
   // ─── Banner text ───
@@ -2750,7 +2748,7 @@ function applyTierUI() {
   if (banner) {
     const bannerText = banner.querySelector('.banner-text');
     if (bannerText) {
-      if (tier === 'free') {
+      if (tier === 'free' && !hasPurchased) {
         bannerText.innerHTML = '<strong>Free Plan</strong> \u2014 1 destination, up to 3 days, 1 trip per month, 1 revision. <button class="banner-link" onclick="openPricingModal()">View Plans</button>';
       } else {
         bannerText.innerHTML = '<strong>Trip Pack</strong> \u2014 Up to 5 destinations, 14 day trips, 3 revisions per trip. <button class="banner-link" onclick="openPricingModal()">View Plans</button>';
@@ -3630,6 +3628,10 @@ function prefillPlanningForm(data) {
 // ─── Post-payment UI reset ───
 function postPaymentReset(creditCount, savedTrip) {
   _sessionRestored = true;
+  // Mark that this user has purchased credits (persists across sign-out/sign-in)
+  var fts = getFreeTierState();
+  fts.hasPurchased = true;
+  saveFreeTierState(fts);
   // Show success banner
   var banner = document.createElement('div');
   banner.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:9999;background:#16a34a;color:white;text-align:center;padding:14px 20px;font-weight:600;font-size:0.95rem;animation:fadeInUp 0.3s ease-out';
