@@ -2299,6 +2299,8 @@ try {
       localStorage.removeItem('verifiedSessions');
       localStorage.removeItem('savedTrip');
       if (typeof _sessionRestored !== 'undefined') _sessionRestored = false;
+      // Reset in-memory trip state so stale data isn't restored by a racing SIGNED_IN event
+      Object.assign(tripData, { origin:'', destination:'', days:0, itinerary:'', startDate:'', endDate:'', transportation:[], travelers:1, interests:[], pace:'Medium', additionalInstructions:'', wantsCheapTickets:false, roundTrip:false, alreadyBooked:[], tripFinalized:false, packingListUsed:false, funFactUsed:false, isPaidTrip:false, updatesUsed:0, longDistance:[], localTransport:[], budget:0, currency:'USD' });
       updateAuthUI();
     }
   });
@@ -2424,6 +2426,14 @@ async function signInWithGoogle() {
 async function signOut() {
   if (!supabaseClient) return;
   document.querySelectorAll('#user-menu-dropdown.active, .user-menu-dropdown-shared.active').forEach(function(d) { d.classList.remove('active'); });
+  // Clear current_trip from Supabase BEFORE signing out (we need auth for the DB update)
+  if (currentUser) {
+    try {
+      await supabaseClient.from('user_profiles')
+        .update({ current_trip: null })
+        .eq('id', currentUser.id);
+    } catch {}
+  }
   await supabaseClient.auth.signOut();
   currentUser = null;
   userProfile = null;
@@ -2434,7 +2444,7 @@ async function signOut() {
   localStorage.removeItem('savedTrip');
   try { sessionStorage.removeItem('tripSession'); } catch {}
   // Reset in-memory trip state and return to home
-  Object.assign(tripData, { origin:'', destination:'', days:0, itinerary:'', startDate:'', endDate:'', transportation:[], travelers:1, interests:[], pace:'Medium', additionalInstructions:'', wantsCheapTickets:false, roundTrip:false, alreadyBooked:[], tripFinalized:false, packingListUsed:false, funFactUsed:false, isPaidTrip:false, updatesUsed:0 });
+  Object.assign(tripData, { origin:'', destination:'', days:0, itinerary:'', startDate:'', endDate:'', transportation:[], travelers:1, interests:[], pace:'Medium', additionalInstructions:'', wantsCheapTickets:false, roundTrip:false, alreadyBooked:[], tripFinalized:false, packingListUsed:false, funFactUsed:false, isPaidTrip:false, updatesUsed:0, longDistance:[], localTransport:[], budget:0, currency:'USD' });
   _sessionRestored = false;
   // Reset planning form fields
   document.getElementById('origin').value = '';
