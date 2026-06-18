@@ -5649,10 +5649,32 @@ document.getElementById('update-itinerary-btn').addEventListener('click', async 
 
   // Tier: block requests to extend beyond day limit
   if (instruction) {
-    const dayExtendMatch = instruction.match(/(\d+)\s*(?:days?|nights?)/i);
-    if (dayExtendMatch && parseInt(dayExtendMatch[1]) > getTierLimits().maxDays) {
-      showUpgradeModal('Day Limit', `Your plan supports up to <strong>${getTierLimits().maxDays} days</strong>.<br><br>Get a <strong>Trip Pack</strong> for up to 14 days and 5 destinations.`);
+    const lower = instruction.toLowerCase();
+    const wordNums = {'one':1,'two':2,'three':3,'four':4,'five':5,'six':6,'seven':7,'eight':8,'nine':9,'ten':10};
+
+    // Check for "N days" where N > maxDays (e.g., "make it 20 days")
+    const dayMention = instruction.match(/(\d+)\s*(?:days?|nights?)/i);
+    if (dayMention && parseInt(dayMention[1]) > getTierLimits().maxDays) {
+      showUpgradeModal('Day Limit', `Your plan supports up to <strong>${getTierLimits().maxDays} days</strong>.`);
       return;
+    }
+
+    // Check for requests to add more days that would exceed limit
+    if (/\b(?:add|extend|extra|more|another|additional|longer)\b/i.test(lower) && /\b(?:days?|nights?)\b/i.test(lower)) {
+      let addCount = 1; // default for "another day" / "one more day"
+      const addDigitMatch = lower.match(/(?:add|extend\s+by)\s+(\d+)/);
+      if (addDigitMatch) addCount = parseInt(addDigitMatch[1]);
+      const addWordMatch = lower.match(/(?:add|extend\s+by)\s+(one|two|three|four|five|six|seven|eight|nine|ten)\b/);
+      if (addWordMatch) addCount = wordNums[addWordMatch[1]];
+      const numFirstMatch = lower.match(/\b(\d+)\s+(?:more|extra|additional)\s+(?:days?|nights?)/);
+      if (numFirstMatch) addCount = parseInt(numFirstMatch[1]);
+      const wordFirstMatch = lower.match(/\b(one|two|three|four|five|six|seven|eight|nine|ten)\s+(?:more|extra|additional)\s+(?:days?|nights?)/);
+      if (wordFirstMatch) addCount = wordNums[wordFirstMatch[1]];
+
+      if (tripData.days + addCount > getTierLimits().maxDays) {
+        showUpgradeModal('Day Limit', `Your trip already has <strong>${tripData.days} days</strong>. The maximum is <strong>${getTierLimits().maxDays} days</strong>.`);
+        return;
+      }
     }
   }
 
@@ -5787,7 +5809,8 @@ Pay special attention to markets, shops, and restaurants that have reduced hours
 
 VISIT TIME CHECK — When scheduling each place, ensure the recommended arrival time leaves enough time for a meaningful visit before the place closes. For example, do not schedule a market visit at 5:00 PM if it closes at 4:00 PM on that day of the week. Consider typical visit durations and day-specific closing times (many places close earlier on Sundays and holidays). Schedule each place so the traveler arrives with enough time to enjoy it fully before closing.` : '';
 
-  const prompt = `Based on this itinerary:\n\n${tripData.itinerary}${originNote}${contextNote}${alreadyBookedNote}\n\nPlease update it with this instruction: ${fullInstruction}\n\nCRITICAL: Keep every activity on the SAME day and in the SAME order as the original itinerary unless the user's instruction explicitly requires moving it to a different day. Only change what the user asked for — do NOT reorganize, reorder, or shuffle other activities across days.${placeDetailsInstruction}${availabilityCheck}${budgetSummaryInstruction}${ticketTipsInstruction}`;
+  const dayLimitInstruction = `\n\nDAY LIMIT: This trip must NOT exceed ${getTierLimits().maxDays} days total. Do NOT add extra days beyond Day ${tripData.days}. If the user asks to add more days beyond this limit, keep the itinerary at ${tripData.days} days and note that the maximum is ${getTierLimits().maxDays} days.`;
+  const prompt = `Based on this itinerary:\n\n${tripData.itinerary}${originNote}${contextNote}${alreadyBookedNote}\n\nPlease update it with this instruction: ${fullInstruction}\n\nCRITICAL: Keep every activity on the SAME day and in the SAME order as the original itinerary unless the user's instruction explicitly requires moving it to a different day. Only change what the user asked for — do NOT reorganize, reorder, or shuffle other activities across days.${dayLimitInstruction}${placeDetailsInstruction}${availabilityCheck}${budgetSummaryInstruction}${ticketTipsInstruction}`;
   const result = await callGemini(prompt);
 
   finishProgress();
