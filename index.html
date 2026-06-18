@@ -2294,9 +2294,9 @@ try {
       currentUser = null;
       userProfile = null;
       try { sessionStorage.removeItem('tripSession'); } catch {}
+      // Clear trip/credit data but keep freeTierState and verifiedSessions
+      // so free-plan usage limits persist at the device level after sign-out
       localStorage.removeItem('tripCredits');
-      localStorage.removeItem('freeTierState');
-      localStorage.removeItem('verifiedSessions');
       localStorage.removeItem('savedTrip');
       if (typeof _sessionRestored !== 'undefined') _sessionRestored = false;
       // Reset in-memory trip state so stale data isn't restored by a racing SIGNED_IN event
@@ -2437,10 +2437,9 @@ async function signOut() {
   await supabaseClient.auth.signOut();
   currentUser = null;
   userProfile = null;
-  // Clear all local data so stale trips/credits don't show after sign-out
+  // Clear trip/credit data but keep freeTierState and verifiedSessions
+  // so free-plan usage limits persist at the device level after sign-out
   localStorage.removeItem('tripCredits');
-  localStorage.removeItem('freeTierState');
-  localStorage.removeItem('verifiedSessions');
   localStorage.removeItem('savedTrip');
   try { sessionStorage.removeItem('tripSession'); } catch {}
   // Reset in-memory trip state and return to home
