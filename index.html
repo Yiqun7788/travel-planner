@@ -2436,6 +2436,33 @@ async function signOut() {
   // Reset in-memory trip state and return to home
   Object.assign(tripData, { origin:'', destination:'', days:0, itinerary:'', startDate:'', endDate:'', transportation:[], travelers:1, interests:[], pace:'Medium', additionalInstructions:'', wantsCheapTickets:false, roundTrip:false, alreadyBooked:[], tripFinalized:false, packingListUsed:false, funFactUsed:false, isPaidTrip:false, updatesUsed:0 });
   _sessionRestored = false;
+  // Reset planning form fields
+  document.getElementById('origin').value = '';
+  document.getElementById('destination').value = '';
+  destChips.clear();
+  document.getElementById('start-date').value = '';
+  document.getElementById('end-date').value = '';
+  document.getElementById('budget-input').value = '';
+  document.getElementById('currency-select').value = 'USD';
+  var travelersInput = document.querySelector('[data-i18n="travelers"]').parentElement.querySelector('input');
+  if (travelersInput) travelersInput.value = '';
+  document.querySelector('input[name="pace"][value="Medium"]').checked = true;
+  document.getElementById('additional-instructions').value = '';
+  document.getElementById('other-interests').value = '';
+  document.getElementById('cheap-tickets-checkbox').checked = false;
+  document.getElementById('round-trip-checkbox').checked = false;
+  document.getElementById('already-booked-accommodation').checked = false;
+  document.getElementById('already-booked-flights').checked = false;
+  document.getElementById('already-booked-section').classList.add('hidden');
+  document.querySelectorAll('#interests-group input[type="checkbox"]').forEach(function(cb) { cb.checked = false; });
+  document.querySelectorAll('#long-distance-group input[type="checkbox"], #local-transport-group input[type="checkbox"]').forEach(function(cb) { cb.checked = false; });
+  // Clear itinerary display
+  document.getElementById('content-display').innerHTML = '';
+  document.getElementById('trip-overview').innerHTML = '';
+  document.getElementById('trip-overview').classList.add('hidden');
+  document.getElementById('start-new-trip-btn').classList.add('hidden');
+  document.getElementById('return-to-itinerary-btn').classList.add('hidden');
+  resetUpdatesForNewItinerary();
   showHomeView();
   updateAuthUI();
 }
