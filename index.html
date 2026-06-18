@@ -3184,6 +3184,7 @@ document.getElementById('start-new-trip-cancel').addEventListener('click', funct
 });
 document.getElementById('start-new-trip-confirm').addEventListener('click', function() {
   document.getElementById('start-new-trip-modal').classList.remove('active');
+  var wasPaidTrip = tripData.isPaidTrip;
   // Clear trip data
   tripData.itinerary = '';
   tripData.destination = '';
@@ -3243,7 +3244,8 @@ document.getElementById('start-new-trip-confirm').addEventListener('click', func
   showView('planning');
   applyTierUI();
   // Prompt free-plan users to upgrade if they've used their free generation
-  if (getUserTier() === 'free' && getGenerationsThisMonth() >= getTierLimits().maxGenerations) {
+  // Skip if the previous trip was paid — user already purchased, no need to upsell
+  if (!wasPaidTrip && getUserTier() === 'free' && getGenerationsThisMonth() >= getTierLimits().maxGenerations) {
     if (!currentUser) {
       showUpgradeModal('Free Trip Used', 'You\u2019ve used your <strong>1 free trip</strong> this month.<br><br><strong>Sign in</strong> and get a <strong>Trip Pack</strong> to keep planning \u2014 up to 5 destinations, 14 day trips, and 3 revisions.<br><br><em>Or come back next month for another free one!</em>');
     } else {
