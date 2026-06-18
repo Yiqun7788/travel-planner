@@ -2316,6 +2316,17 @@ async function loadUserProfile() {
       .single();
     if (result.data) {
       userProfile = result.data;
+      // Sync credits to localStorage so early page-load renders the correct badge
+      if (userProfile.credits > 0) {
+        localStorage.setItem('tripCredits', String(userProfile.credits));
+      }
+      // Retroactively set hasPurchased for users who purchased before this flag existed
+      var fts = userProfile.free_tier_state || {};
+      if (userProfile.credits > 0 && !fts.hasPurchased) {
+        fts.hasPurchased = true;
+        userProfile.free_tier_state = fts;
+        saveFreeTierState(fts);
+      }
     }
   } catch (e) { console.warn('Failed to load profile:', e.message); }
 }
