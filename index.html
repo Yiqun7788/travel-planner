@@ -1957,11 +1957,10 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
       </div>
     </div>
 
-    <!-- Already Booked (visible only when budget is entered) -->
-    <div id="already-booked-section" class="hidden" style="margin-top:-0.25rem;">
+    <!-- Already Booked -->
+    <div id="already-booked-section" style="margin-top:-0.25rem;">
       <span class="text-xs text-slate-400 mr-2">Already booked:</span>
       <label class="already-booked-label inline-flex items-center gap-2 mr-4 cursor-pointer"><input type="checkbox" id="already-booked-accommodation"> <span>Accommodation</span></label>
-      <label class="already-booked-label inline-flex items-center gap-2 cursor-pointer"><input type="checkbox" id="already-booked-flights"> <span>Flights</span></label>
     </div>
     </div>
 
@@ -2472,8 +2471,6 @@ async function signOut() {
   document.getElementById('cheap-tickets-checkbox').checked = false;
   document.getElementById('round-trip-checkbox').checked = false;
   document.getElementById('already-booked-accommodation').checked = false;
-  document.getElementById('already-booked-flights').checked = false;
-  document.getElementById('already-booked-section').classList.add('hidden');
   document.querySelectorAll('#interests-group input[type="checkbox"]').forEach(function(cb) { cb.checked = false; });
   document.querySelectorAll('#long-distance-group input[type="checkbox"], #local-transport-group input[type="checkbox"]').forEach(function(cb) { cb.checked = false; });
   // Clear itinerary display
@@ -3244,8 +3241,6 @@ document.getElementById('start-new-trip-confirm').addEventListener('click', func
   document.getElementById('cheap-tickets-checkbox').checked = false;
   document.getElementById('round-trip-checkbox').checked = false;
   document.getElementById('already-booked-accommodation').checked = false;
-  document.getElementById('already-booked-flights').checked = false;
-  document.getElementById('already-booked-section').classList.add('hidden');
   document.querySelectorAll('#interests-group input[type="checkbox"]').forEach(function(cb) { cb.checked = false; });
   document.querySelectorAll('#long-distance-group input[type="checkbox"], #local-transport-group input[type="checkbox"]').forEach(function(cb) { cb.checked = false; });
   // Reset UI state
@@ -3580,15 +3575,10 @@ document.getElementById('long-distance-group').addEventListener('change', toggle
 // Run on page load to set initial state
 toggleLongDistance();
 
-// ─── Show/hide "Already booked" checkboxes based on budget field ───
+// ─── Reset "Already booked" checkbox when budget is cleared ───
 document.getElementById('budget-input').addEventListener('input', function() {
-  const section = document.getElementById('already-booked-section');
-  if (this.value.trim()) {
-    section.classList.remove('hidden');
-  } else {
-    section.classList.add('hidden');
+  if (!this.value.trim()) {
     document.getElementById('already-booked-accommodation').checked = false;
-    document.getElementById('already-booked-flights').checked = false;
   }
 });
 
@@ -3630,10 +3620,8 @@ function prefillPlanningForm(data) {
   document.getElementById('round-trip-checkbox').checked = data.roundTrip || false;
   document.getElementById('cheap-tickets-checkbox').checked = data.wantsCheapTickets || false;
   if (data.additionalInstructions) document.getElementById('additional-instructions').value = data.additionalInstructions;
-  if (data.budget && data.alreadyBooked && data.alreadyBooked.length > 0) {
-    document.getElementById('already-booked-section').classList.remove('hidden');
+  if (data.alreadyBooked && data.alreadyBooked.length > 0) {
     document.getElementById('already-booked-accommodation').checked = data.alreadyBooked.includes('accommodation');
-    document.getElementById('already-booked-flights').checked = data.alreadyBooked.includes('flights');
   }
   toggleLongDistance();
 }
@@ -3690,8 +3678,6 @@ function postPaymentReset(creditCount, savedTrip) {
   document.getElementById('cheap-tickets-checkbox').checked = false;
   document.getElementById('round-trip-checkbox').checked = false;
   document.getElementById('already-booked-accommodation').checked = false;
-  document.getElementById('already-booked-flights').checked = false;
-  document.getElementById('already-booked-section').classList.add('hidden');
   document.querySelectorAll('#interests-group input[type="checkbox"]').forEach(function(cb) { cb.checked = false; });
   document.querySelectorAll('#long-distance-group input[type="checkbox"], #local-transport-group input[type="checkbox"]').forEach(function(cb) { cb.checked = false; });
   // If there's a saved trip with destination but no itinerary, pre-fill the form
@@ -4097,7 +4083,6 @@ document.getElementById('generate-button').addEventListener('click', async () =>
   // Check already-booked checkboxes
   const alreadyBooked = [];
   if (document.getElementById('already-booked-accommodation').checked) alreadyBooked.push('accommodation');
-  if (document.getElementById('already-booked-flights').checked) alreadyBooked.push('flights');
 
   const langMap = {
     en:"English", zh:"Simplified Chinese", ja:"Japanese",
@@ -4160,7 +4145,8 @@ Trip pace: ${pace}.
 ${primaryInterests.length > 0 ? `Primary interests (focus the itinerary on these): ${primaryInterests.join(", ")}.` : ''}
 ${secondaryInterests.length > 0 ? `Secondary interests (include if possible): ${secondaryInterests.join(", ")}.` : ''}
 ${other ? `Other interests: ${other}.` : ''}
-${budget > 0 ? `Total budget: ${budget} ${currency} for ${travelers} traveler(s). Recommend restaurants, activities, and accommodations that fit within this budget. Show prices in ${currency} where possible.${alreadyBooked.includes('accommodation') ? ' The traveler has already booked and paid for accommodation — do NOT include hotel/accommodation costs in the budget breakdown or recommendations.' : ''}${alreadyBooked.includes('flights') ? ' The traveler has already booked and paid for flights — do NOT include flight/airfare costs in the budget breakdown.' : ''} At the end of the itinerary (after all days), include a section with the EXACT heading: ## Budget Summary — Break down estimated costs by category (${alreadyBooked.includes('accommodation') ? 'exclude accommodation, ' : ''}${alreadyBooked.includes('flights') ? 'exclude flights/airfare, ' : ''}food, transportation, activities, etc.) and show a total. Compare against the ${budget} ${currency} budget. Do NOT include cheap ticket tips in this section.` : ''}
+${budget > 0 ? `Total budget: ${budget} ${currency} for ${travelers} traveler(s). Recommend restaurants, activities, and accommodations that fit within this budget. Show prices in ${currency} where possible.${alreadyBooked.includes('accommodation') ? ' The traveler has already booked and paid for accommodation — do NOT include hotel/accommodation costs in the budget breakdown or recommendations.' : ''} At the end of the itinerary (after all days), include a section with the EXACT heading: ## Budget Summary — Break down estimated costs by category (${alreadyBooked.includes('accommodation') ? 'exclude accommodation, ' : ''}food, activities, etc.) and show a total. Compare against the ${budget} ${currency} budget. Do NOT include cheap ticket tips in this section.
+IMPORTANT - Transportation Budget: ALWAYS include estimated transportation costs in the Budget Summary, broken down into:${longDistance.length > 0 ? ' Long-distance Transportation (' + longDistance.join(', ') + ')' : ''}${localTransport.length > 0 ? (longDistance.length > 0 ? ' and' : '') + ' Local Transportation (' + localTransport.join(', ') + ')' : ''}. Show estimated costs for each route/segment between destinations. Even if the traveler has already paid for some transportation, include these estimates as a reference — the AI may suggest better or cheaper alternatives. This is especially important for multi-destination trips.` : ''}
 ${longDistance.length > 0 ? `Long-distance transportation (between cities/countries): ${longDistance.join(", ")}.` : ''}
 ${localTransport.length > 0 ? `Local transportation (within cities): ${localTransport.join(", ")}.` : ''}
 ${additionalInstructions ? `Additional instructions: ${additionalInstructions}` : ''}
@@ -5577,7 +5563,6 @@ function readPlanningInputs() {
   const roundTrip = document.getElementById('round-trip-checkbox').checked;
   const alreadyBooked = [];
   if (document.getElementById('already-booked-accommodation').checked) alreadyBooked.push('accommodation');
-  if (document.getElementById('already-booked-flights').checked) alreadyBooked.push('flights');
   return { origin, destination: dest, days, startDate: start, endDate: end, interests, longDistance, localTransport, transportation, travelers, budget, currency, pace, additionalInstructions, wantsCheapTickets, roundTrip, alreadyBooked };
 }
 
@@ -5653,8 +5638,6 @@ function finalizeTripExtras() {
   document.getElementById('other-interests').value = '';
   document.getElementById('cheap-tickets-checkbox').checked = false;
   document.getElementById('already-booked-accommodation').checked = false;
-  document.getElementById('already-booked-flights').checked = false;
-  document.getElementById('already-booked-section').classList.add('hidden');
   document.querySelectorAll('#interests-group input[type="checkbox"]').forEach(function(cb) { cb.checked = false; });
   document.querySelectorAll('#long-distance-group input[type="checkbox"], #local-transport-group input[type="checkbox"]').forEach(function(cb) { cb.checked = false; });
   applyTierUI();
@@ -5811,13 +5794,15 @@ ROUND TRIP: The traveler is making a round trip${(tripData.longDistance || []).l
   const originNote = tripData.origin ? `\nThe traveler starts from ${tripData.origin} (not from an airport or station). Day 1 begins with the journey from ${tripData.origin}. The last day ends with the return to ${tripData.origin}.` : '';
   const contextNote = tripData.additionalInstructions ? `\n\nOriginal trip guidance (keep following these): ${tripData.additionalInstructions}` : '';
   let alreadyBookedNote = '';
-  if (tripData.budget > 0 && tripData.alreadyBooked && tripData.alreadyBooked.length > 0) {
-    if (tripData.alreadyBooked.includes('accommodation')) alreadyBookedNote += '\nThe traveler has already booked and paid for accommodation — do NOT include hotel/accommodation costs in the budget breakdown.';
-    if (tripData.alreadyBooked.includes('flights')) alreadyBookedNote += '\nThe traveler has already booked and paid for flights — do NOT include flight/airfare costs in the budget breakdown.';
+  if (tripData.budget > 0 && tripData.alreadyBooked && tripData.alreadyBooked.includes('accommodation')) {
+    alreadyBookedNote += '\nThe traveler has already booked and paid for accommodation — do NOT include hotel/accommodation costs in the budget breakdown.';
   }
   let budgetSummaryInstruction = '';
   if (tripData.budget > 0) {
-    budgetSummaryInstruction = `\n\nIMPORTANT: Keep the "## Budget Summary" section at the end of the itinerary (after all days). Update the estimated costs if the changes affect the budget. Break down estimated costs by category (${tripData.alreadyBooked && tripData.alreadyBooked.includes('accommodation') ? 'exclude accommodation, ' : ''}${tripData.alreadyBooked && tripData.alreadyBooked.includes('flights') ? 'exclude flights/airfare, ' : ''}food, transportation, activities, etc.) and show a total. Compare against the ${tripData.budget} ${tripData.currency} budget. Do NOT include cheap ticket tips in this section.`;
+    const ldTransport = tripData.longDistance && tripData.longDistance.length > 0 ? tripData.longDistance.join(', ') : '';
+    const lcTransport = tripData.localTransport && tripData.localTransport.length > 0 ? tripData.localTransport.join(', ') : '';
+    budgetSummaryInstruction = `\n\nIMPORTANT: Keep the "## Budget Summary" section at the end of the itinerary (after all days). Update the estimated costs if the changes affect the budget. Break down estimated costs by category (${tripData.alreadyBooked && tripData.alreadyBooked.includes('accommodation') ? 'exclude accommodation, ' : ''}food, activities, etc.) and show a total. Compare against the ${tripData.budget} ${tripData.currency} budget. Do NOT include cheap ticket tips in this section.
+ALWAYS include estimated transportation costs in the Budget Summary, broken down into:${ldTransport ? ' Long-distance Transportation (' + ldTransport + ')' : ''}${lcTransport ? (ldTransport ? ' and' : '') + ' Local Transportation (' + lcTransport + ')' : ''}. Show estimated costs for each route/segment. Even if the traveler has already paid for transportation, include these estimates as a reference.`;
   }
 
   // Build day-of-week mapping so Gemini can check opening hours on correct days
@@ -6093,10 +6078,8 @@ function restoreSession() {
     // Restore additional instructions
     if (tripData.additionalInstructions) document.getElementById('additional-instructions').value = tripData.additionalInstructions;
     // Restore already-booked checkboxes
-    if (tripData.budget && tripData.alreadyBooked && tripData.alreadyBooked.length > 0) {
-      document.getElementById('already-booked-section').classList.remove('hidden');
-      document.getElementById('already-booked-accommodation').checked = tripData.alreadyBooked.includes('accommodation');
-      document.getElementById('already-booked-flights').checked = tripData.alreadyBooked.includes('flights');
+    if (tripData.alreadyBooked && tripData.alreadyBooked.includes('accommodation')) {
+      document.getElementById('already-booked-accommodation').checked = true;
     }
     toggleLongDistance();
     // Restore all button states (generate gate, finalize, extras)
