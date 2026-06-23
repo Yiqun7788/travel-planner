@@ -5833,6 +5833,18 @@ VISIT TIME CHECK — When scheduling each place, ensure the recommended arrival 
 
   finishProgress();
 
+  if (result === '__TEMP_ERROR__') {
+    const detailEl = document.getElementById('retry-modal-detail');
+    if (window.__lastApiError) {
+      detailEl.textContent = window.__lastApiError;
+      detailEl.style.display = 'block';
+    } else {
+      detailEl.style.display = 'none';
+    }
+    document.getElementById('retry-modal').classList.add('active');
+    return;
+  }
+
   if (result) {
     tripData.itinerary = result;
     saveTripSession();
