@@ -5605,10 +5605,18 @@ function showPlanningChangesSummary() {
   const box = document.getElementById('planning-changes-summary');
   const newInputs = readPlanningInputs();
   const changes = detectPlanningChanges(newInputs);
-  // Sync additional instructions and update the label on the itinerary page
-  if ((newInputs.additionalInstructions || '') !== (tripData.additionalInstructions || '')) {
-    tripData.additionalInstructions = newInputs.additionalInstructions;
-    renderActiveInstructionsLabel();
+  // Update the "Your instructions:" label to preview the new text, but do NOT
+  // sync to tripData yet — that happens when the update is actually submitted,
+  // so detectPlanningChanges can still detect the difference.
+  const box2 = document.getElementById('active-instructions-label');
+  const newInstr = (newInputs.additionalInstructions || '').trim();
+  if (newInstr) {
+    const display = newInstr.length > 120 ? newInstr.slice(0, 120).replace(/\s+\S*$/, '') + '...' : newInstr;
+    box2.innerHTML = '<strong>Your instructions:</strong> ' + display;
+    box2.classList.remove('hidden');
+  } else if (!(tripData.additionalInstructions || '').trim()) {
+    box2.innerHTML = '';
+    box2.classList.add('hidden');
   }
   if (changes.length > 0) {
     box.innerHTML = '<strong>Planning changes detected:</strong> ' + changes.join('; ') + '.';
