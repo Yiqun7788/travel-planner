@@ -5592,7 +5592,12 @@ function detectPlanningChanges(newInputs) {
     if (newInputs.alreadyBooked.length > 0) changes.push('already booked: ' + newInputs.alreadyBooked.join(', '));
     else changes.push('removed already-booked items');
   }
-  // additionalInstructions is NOT a planning change — it's silently synced and included as persistent context in updates
+  const oldInstructions = (tripData.additionalInstructions || '').trim();
+  const newInstructions = (newInputs.additionalInstructions || '').trim();
+  if (newInstructions !== oldInstructions) {
+    if (newInstructions) changes.push(`additional instructions changed to: "${newInstructions}"`);
+    else changes.push('additional instructions removed');
+  }
   return changes;
 }
 
@@ -5600,9 +5605,11 @@ function showPlanningChangesSummary() {
   const box = document.getElementById('planning-changes-summary');
   const newInputs = readPlanningInputs();
   const changes = detectPlanningChanges(newInputs);
-  // Silently sync additional instructions (not a "planning change" — applied as persistent context)
-  tripData.additionalInstructions = newInputs.additionalInstructions;
-  renderActiveInstructionsLabel();
+  // Sync additional instructions and update the label on the itinerary page
+  if ((newInputs.additionalInstructions || '') !== (tripData.additionalInstructions || '')) {
+    tripData.additionalInstructions = newInputs.additionalInstructions;
+    renderActiveInstructionsLabel();
+  }
   if (changes.length > 0) {
     box.innerHTML = '<strong>Planning changes detected:</strong> ' + changes.join('; ') + '.';
     box.classList.remove('hidden');
@@ -5754,7 +5761,7 @@ document.getElementById('update-itinerary-btn').addEventListener('click', async 
     tripData.wantsCheapTickets = newInputs.wantsCheapTickets;
     tripData.roundTrip = newInputs.roundTrip;
     tripData.alreadyBooked = newInputs.alreadyBooked;
-    // additionalInstructions already synced in showPlanningChangesSummary()
+    tripData.additionalInstructions = newInputs.additionalInstructions;
     // Update header to reflect new destination/days
     document.getElementById('results-title').textContent = `Your Trip: ${tripData.destination} (${tripData.days} days)`;
   }
