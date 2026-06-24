@@ -1593,7 +1593,7 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
         <div class="pricing-price">$3.99<span>/ trip</span></div>
         <ul class="pricing-features">
           <li class="included">Up to 5 destinations</li>
-          <li class="included">14 day max trip</li>
+          <li class="included">16 day max trip</li>
           <li class="included">3 revisions included</li>
           <li class="included">PDF download</li>
           <li class="included">Offline HTML</li>
@@ -1609,7 +1609,7 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
         <div class="pricing-price">$8.99<span>/ 3 trips</span></div>
         <ul class="pricing-features">
           <li class="included">Up to 5 destinations</li>
-          <li class="included">14 day max trip</li>
+          <li class="included">16 day max trip</li>
           <li class="included">3 revisions included</li>
           <li class="included">PDF download</li>
           <li class="included">Offline HTML</li>
@@ -1816,7 +1816,7 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
             <div class="pricing-price">$3.99<span>/ trip</span></div>
             <ul class="pricing-features">
               <li class="included">Up to 5 destinations</li>
-              <li class="included">14 day max trip</li>
+              <li class="included">16 day max trip</li>
               <li class="included">3 revisions included</li>
               <li class="included">PDF download</li>
               <li class="included">Offline HTML</li>
@@ -1831,7 +1831,7 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
             <div class="pricing-price">$8.99<span>/ 3 trips</span></div>
             <ul class="pricing-features">
               <li class="included">Up to 5 destinations</li>
-              <li class="included">14 day max trip</li>
+              <li class="included">16 day max trip</li>
               <li class="included">3 revisions included</li>
               <li class="included">PDF download</li>
               <li class="included">Offline HTML</li>
@@ -2632,7 +2632,7 @@ function saveTripSession() {
 // ─── Tier System ───
 const TIER_LIMITS = {
   free: { maxDays:3, maxDestinations:1, maxGenerations:1, maxUpdatesPerItinerary:1, offlineHtml:false, packingList:false, cheapTickets:false, funFacts:false },
-  paid: { maxDays:14, maxDestinations:5, maxGenerations:1, maxUpdatesPerItinerary:3, offlineHtml:true, packingList:true, cheapTickets:true, funFacts:true },
+  paid: { maxDays:16, maxDestinations:5, maxGenerations:1, maxUpdatesPerItinerary:3, offlineHtml:true, packingList:true, cheapTickets:true, funFacts:true },
 };
 function getTripCredits() {
   if (currentUser && userProfile) return userProfile.credits || 0;
@@ -2761,7 +2761,7 @@ function applyTierUI() {
       if (!showPaidBadge) {
         bannerText.innerHTML = '<strong>Free Plan</strong> \u2014 1 destination, up to 3 days, 1 trip per month, 1 revision. <button class="banner-link" onclick="openPricingModal()">View Plans</button>';
       } else {
-        bannerText.innerHTML = '<strong>Trip Pack</strong> \u2014 Up to 5 destinations, 14 day trips, 3 revisions per trip. <button class="banner-link" onclick="openPricingModal()">View Plans</button>';
+        bannerText.innerHTML = '<strong>Trip Pack</strong> \u2014 Up to 5 destinations, 16 day trips, 3 revisions per trip. <button class="banner-link" onclick="openPricingModal()">View Plans</button>';
       }
     }
   }
@@ -3253,9 +3253,9 @@ document.getElementById('start-new-trip-confirm').addEventListener('click', func
   // Skip if the previous trip was paid — user already purchased, no need to upsell
   if (!wasPaidTrip && getUserTier() === 'free' && getGenerationsThisMonth() >= getTierLimits().maxGenerations) {
     if (!currentUser) {
-      showUpgradeModal('Free Trip Used', 'You\u2019ve used your <strong>1 free trip</strong> this month.<br><br><strong>Sign in</strong> and get a <strong>Trip Pack</strong> to keep planning \u2014 up to 5 destinations, 14 day trips, and 3 revisions.<br><br><em>Or come back next month for another free one!</em>');
+      showUpgradeModal('Free Trip Used', 'You\u2019ve used your <strong>1 free trip</strong> this month.<br><br><strong>Sign in</strong> and get a <strong>Trip Pack</strong> to keep planning \u2014 up to 5 destinations, 16 day trips, and 3 revisions.<br><br><em>Or come back next month for another free one!</em>');
     } else {
-      showUpgradeModal('Free Trip Used', 'You\u2019ve used your <strong>1 free trip</strong> this month.<br><br>Get a <strong>Trip Pack</strong> to keep planning \u2014 up to 5 destinations, 14 day trips, and 3 revisions.<br><br><em>Or come back next month for another free one!</em>');
+      showUpgradeModal('Free Trip Used', 'You\u2019ve used your <strong>1 free trip</strong> this month.<br><br>Get a <strong>Trip Pack</strong> to keep planning \u2014 up to 5 destinations, 16 day trips, and 3 revisions.<br><br><em>Or come back next month for another free one!</em>');
     }
   }
 });
@@ -4025,7 +4025,7 @@ document.getElementById('generate-button').addEventListener('click', async () =>
   const hasPaidCredits = getTripCredits() > 0;
   if (!hasPaidCredits) {
     if (getGenerationsThisMonth() >= getTierLimits().maxGenerations) {
-      showUpgradeModal('Monthly Limit Reached', 'You\u2019ve used your <strong>1 free trip</strong> this month.<br><br>Buy a <strong>Trip Pack</strong> for up to 5 destinations, 14 day trips, and 3 revisions.<br><br><em>Or come back next month for another free one!</em>');
+      showUpgradeModal('Monthly Limit Reached', 'You\u2019ve used your <strong>1 free trip</strong> this month.<br><br>Buy a <strong>Trip Pack</strong> for up to 5 destinations, 16 day trips, and 3 revisions.<br><br><em>Or come back next month for another free one!</em>');
       return;
     }
   }
@@ -4035,7 +4035,7 @@ document.getElementById('generate-button').addEventListener('click', async () =>
     if (getUserTier() === 'paid') {
       showUpgradeModal('Day Limit', `Your plan supports up to <strong>${getTierLimits().maxDays} days</strong>.`, true);
     } else {
-      showUpgradeModal('Day Limit', `Your plan supports up to <strong>${getTierLimits().maxDays} days</strong>.<br><br>Get a <strong>Trip Pack</strong> for up to 14 days and 5 destinations.`);
+      showUpgradeModal('Day Limit', `Your plan supports up to <strong>${getTierLimits().maxDays} days</strong>.<br><br>Get a <strong>Trip Pack</strong> for up to 16 days and 5 destinations.`);
     }
     return;
   }
