@@ -2138,7 +2138,7 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
         <span class="booking-card-icon">&#9992;&#65039;</span>
         <span class="booking-card-title">Flights</span>
         <span class="booking-card-desc">Compare flights</span>
-        <span class="booking-card-btn">Search on Skyscanner</span>
+        <span class="booking-card-btn">Search on Google Flights</span>
       </a>
     </div>
     <p class="text-slate-400 text-xs mt-3" style="font-style:italic;">&#9432; We may earn a small commission at no extra cost to you.</p>
@@ -3022,7 +3022,7 @@ function renderBookingSection() {
   const encoded = encodeURIComponent(dest);
   document.getElementById('booking-hotels').href = 'https://www.booking.com/searchresults.html?ss=' + encoded;
   document.getElementById('booking-activities').href = 'https://www.getyourguide.com/s/?q=' + encoded;
-  document.getElementById('booking-flights').href = 'https://www.skyscanner.com/transport/flights/anywhere/' + encoded.replace(/\s+/g, '-') + '/';
+  document.getElementById('booking-flights').href = 'https://www.google.com/travel/flights?q=flights+to+' + encoded;
   document.getElementById('booking-subtitle').textContent = 'Complete your ' + dest + ' trip with these trusted booking partners.';
   section.classList.remove('hidden');
 }
