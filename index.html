@@ -688,13 +688,13 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
   opacity: 0.5; cursor: not-allowed;
 }
 .download-menu-item-locked:hover { background: transparent; }
-#upgrade-modal, #finalize-modal, #confirm-new-trip-modal, #start-new-trip-modal, #download-gate-modal, #sign-in-gate-modal, #auth-modal, #retry-modal {
+#upgrade-modal, #finalize-modal, #confirm-new-trip-modal, #start-new-trip-modal, #download-gate-modal, #sign-in-gate-modal, #auth-modal, #retry-modal, #privacy-policy-modal, #terms-of-service-modal {
   position: fixed; inset: 0; z-index: 1100;
   background: rgba(0,0,0,0.4); backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
   display: none; justify-content: center; align-items: center;
 }
-#upgrade-modal.active, #finalize-modal.active, #confirm-new-trip-modal.active, #start-new-trip-modal.active, #download-gate-modal.active, #sign-in-gate-modal.active, #auth-modal.active, #retry-modal.active { display: flex; }
+#upgrade-modal.active, #finalize-modal.active, #confirm-new-trip-modal.active, #start-new-trip-modal.active, #download-gate-modal.active, #sign-in-gate-modal.active, #auth-modal.active, #retry-modal.active, #privacy-policy-modal.active, #terms-of-service-modal.active { display: flex; }
 #sign-in-gate-modal { z-index: 1300; }
 .upgrade-modal-card {
   background: #fff; border-radius: 18px; padding: 32px 28px;
@@ -724,6 +724,33 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
   border: 1px solid #e2e8f0; cursor: pointer; transition: background 0.15s;
 }
 .upgrade-modal-card .modal-btn-secondary:hover { background: #e2e8f0; }
+/* ─── Legal Modals (Privacy Policy, Terms of Service) ─── */
+.legal-modal-card {
+  background: #fff; border-radius: 18px; padding: 32px 28px;
+  max-width: 560px; width: 92%; position: relative;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+  animation: fadeInUp 0.25s ease-out;
+  max-height: 85vh; display: flex; flex-direction: column;
+}
+.legal-modal-card h3 {
+  font-size: 1.2rem; font-weight: 800; color: #1e293b; margin: 0 0 16px; text-align: center;
+}
+.legal-modal-body {
+  overflow-y: auto; text-align: left; padding-right: 8px;
+}
+.legal-modal-body h4 {
+  font-size: 0.95rem; font-weight: 700; color: #334155; margin: 18px 0 6px;
+}
+.legal-modal-body h4:first-of-type { margin-top: 0; }
+.legal-modal-body p {
+  font-size: 0.85rem; color: #64748b; line-height: 1.65; margin: 0 0 10px;
+}
+.legal-modal-body ul {
+  margin: 0 0 10px 18px; padding: 0;
+}
+.legal-modal-body li {
+  font-size: 0.85rem; color: #64748b; line-height: 1.65; margin-bottom: 4px;
+}
 .input-tooltip, .date-range-warning {
   font-size: 0.78rem; color: #ef4444; font-weight: 500;
   margin-top: 4px; display: none;
@@ -1635,6 +1662,88 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
   </div>
 </div>
 
+<!-- Privacy Policy Modal -->
+<div id="privacy-policy-modal">
+  <div class="legal-modal-card">
+    <button class="auth-close-btn" onclick="document.getElementById('privacy-policy-modal').classList.remove('active')" style="position:absolute;top:10px;right:14px;background:none;border:none;font-size:1.5rem;cursor:pointer;color:#888">&times;</button>
+    <h3>Privacy Policy</h3>
+    <div class="legal-modal-body">
+      <p style="color:#94a3b8;font-size:0.8rem;margin-bottom:16px;">Last updated: June 2025</p>
+
+      <h4>Information We Collect</h4>
+      <p>When you use Wise Itinerary, we may collect the following information:</p>
+      <ul>
+        <li><strong>Account information</strong> &mdash; your email address when you sign in</li>
+        <li><strong>Trip planning data</strong> &mdash; destinations, dates, budget, number of travelers, transportation preferences, interests, and any additional instructions you provide</li>
+      </ul>
+
+      <h4>How We Use Your Information</h4>
+      <ul>
+        <li>To generate personalized travel itineraries using AI</li>
+        <li>To process payments for premium credits</li>
+        <li>To save and sync your trips across devices (when signed in)</li>
+      </ul>
+
+      <h4>Third-Party Services</h4>
+      <p>We use the following third-party services to operate Wise Itinerary:</p>
+      <ul>
+        <li><strong>Supabase</strong> &mdash; authentication and trip data storage</li>
+        <li><strong>Stripe</strong> &mdash; payment processing. Your card details are handled entirely by Stripe and are never stored on our servers.</li>
+        <li><strong>Google Gemini</strong> &mdash; AI-powered itinerary generation. Trip details you provide (destination, dates, preferences) are sent to Google Gemini to create your itinerary.</li>
+        <li><strong>Komoot Photon</strong> &mdash; location autocomplete for destination search</li>
+      </ul>
+
+      <h4>Local Storage</h4>
+      <p>Trip data may be stored in your browser's sessionStorage or localStorage for convenience, so you can access your itinerary without being signed in. This data stays on your device.</p>
+
+      <h4>Data Security</h4>
+      <p>We take reasonable measures to protect your information. All data is transmitted over HTTPS. However, no method of transmission over the internet is 100% secure.</p>
+
+      <h4>No Tracking</h4>
+      <p>We do not use analytics, tracking cookies, or tracking pixels. We do not sell or share your personal information with advertisers.</p>
+
+      <h4>Contact</h4>
+      <p>If you have questions about this Privacy Policy, please reach out via the contact information on our website.</p>
+    </div>
+  </div>
+</div>
+
+<!-- Terms of Service Modal -->
+<div id="terms-of-service-modal">
+  <div class="legal-modal-card">
+    <button class="auth-close-btn" onclick="document.getElementById('terms-of-service-modal').classList.remove('active')" style="position:absolute;top:10px;right:14px;background:none;border:none;font-size:1.5rem;cursor:pointer;color:#888">&times;</button>
+    <h3>Terms of Service</h3>
+    <div class="legal-modal-body">
+      <p style="color:#94a3b8;font-size:0.8rem;margin-bottom:16px;">Last updated: June 2025</p>
+
+      <h4>Service Description</h4>
+      <p>Wise Itinerary is an AI-powered travel planning tool that generates personalized day-by-day itineraries based on your preferences. By using this service, you agree to these terms.</p>
+
+      <h4>Itinerary Accuracy</h4>
+      <p>Itineraries are generated by AI and are provided as suggestions only. Opening hours, prices, availability, and other details may be inaccurate or outdated. You should always verify details independently before making travel decisions. We do not guarantee the accuracy, completeness, or reliability of any AI-generated content.</p>
+
+      <h4>Payments &amp; Credits</h4>
+      <p>Credits are purchased through Stripe and are non-refundable. Credits are used to generate itineraries and access premium features. Pricing is displayed at the time of purchase.</p>
+
+      <h4>Affiliate Links</h4>
+      <p>Itineraries may include booking links to third-party services such as Booking.com, GetYourGuide, and Skyscanner. These may be affiliate links, meaning we may earn a commission at no extra cost to you. These links are provided for your convenience and do not constitute an endorsement of the third-party service.</p>
+
+      <h4>User Responsibilities</h4>
+      <ul>
+        <li>Provide accurate information when planning your trip</li>
+        <li>Do not misuse the service (e.g., automated scraping, generating harmful content)</li>
+        <li>You are responsible for your own travel decisions and safety</li>
+      </ul>
+
+      <h4>Limitation of Liability</h4>
+      <p>Wise Itinerary is provided "as is" without warranties of any kind. We are not liable for any travel disruptions, inaccurate AI suggestions, losses arising from reliance on itinerary content, or issues with third-party services linked in your itinerary.</p>
+
+      <h4>Changes to Terms</h4>
+      <p>We may update these Terms of Service from time to time. Continued use of the service after changes constitutes acceptance of the updated terms.</p>
+    </div>
+  </div>
+</div>
+
 <!-- Hero Header -->
 <header id="app-header" class="w-full bg-gradient-to-r from-sky-500 to-indigo-500 py-8 px-4 mb-8 shadow-lg" style="display:none">
   <div class="max-w-4xl mx-auto flex items-center justify-between">
@@ -2182,6 +2291,10 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
 <!-- Footer -->
 <footer id="app-footer" class="text-center py-6 text-slate-400 text-xs font-medium tracking-wide" style="display:none">
   Wise Itinerary
+  <div style="margin-top:8px; display:flex; justify-content:center; gap:16px;">
+    <a href="#" onclick="event.preventDefault(); document.getElementById('privacy-policy-modal').classList.add('active')" style="color:#94a3b8; text-decoration:none; font-size:0.7rem;">Privacy Policy</a>
+    <a href="#" onclick="event.preventDefault(); document.getElementById('terms-of-service-modal').classList.add('active')" style="color:#94a3b8; text-decoration:none; font-size:0.7rem;">Terms of Service</a>
+  </div>
 </footer>
 
 <script>
@@ -3305,6 +3418,8 @@ document.addEventListener('click', function(e) {
   if (e.target.id === 'download-gate-modal') document.getElementById('download-gate-modal').classList.remove('active');
   if (e.target.id === 'auth-modal') closeAuthModal();
   if (e.target.id === 'retry-modal') document.getElementById('retry-modal').classList.remove('active');
+  if (e.target.id === 'privacy-policy-modal') document.getElementById('privacy-policy-modal').classList.remove('active');
+  if (e.target.id === 'terms-of-service-modal') document.getElementById('terms-of-service-modal').classList.remove('active');
 });
 // Close modals on Escape key
 document.addEventListener('keydown', function(e) {
@@ -3317,6 +3432,8 @@ document.addEventListener('keydown', function(e) {
     document.getElementById('download-gate-modal').classList.remove('active');
     document.getElementById('sign-in-gate-modal').classList.remove('active');
     document.getElementById('retry-modal').classList.remove('active');
+    document.getElementById('privacy-policy-modal').classList.remove('active');
+    document.getElementById('terms-of-service-modal').classList.remove('active');
     closeAuthModal();
   }
 });
