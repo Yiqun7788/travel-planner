@@ -773,6 +773,14 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
   transition: border-color 0.15s;
 }
 .auth-input:focus { border-color: #0ea5e9; }
+.auth-pw-wrapper { position: relative; }
+.auth-pw-wrapper .auth-input { padding-right: 42px; }
+.auth-pw-toggle {
+  position: absolute; right: 10px; top: 50%; transform: translateY(calc(-50% - 5px));
+  background: none; border: none; cursor: pointer; font-size: 1.1rem;
+  color: #94a3b8; padding: 2px; line-height: 1;
+}
+.auth-pw-toggle:hover { color: #64748b; }
 .auth-btn-primary {
   width: 100%; padding: 12px; border: none; border-radius: 10px; cursor: pointer;
   font-size: 0.95rem; font-weight: 700; font-family: inherit; color: #fff;
@@ -1579,7 +1587,10 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
       <div class="auth-divider">or</div>
     </div>
     <input class="auth-input" id="auth-email" type="email" placeholder="Email address" onkeydown="if(event.key==='Enter'){document.getElementById('auth-password').focus();}" />
-    <input class="auth-input" id="auth-password" type="password" placeholder="Password" onkeydown="if(event.key==='Enter')handleEmailAuth();" />
+    <div class="auth-pw-wrapper">
+      <input class="auth-input" id="auth-password" type="password" placeholder="Password" onkeydown="if(event.key==='Enter')handleEmailAuth();" />
+      <button type="button" class="auth-pw-toggle" onclick="togglePasswordVisibility('auth-password', this)" tabindex="-1">&#128065;</button>
+    </div>
     <button class="auth-btn-primary" id="auth-submit-btn" onclick="handleEmailAuth()">Sign In</button>
     <div class="auth-error" id="auth-error"></div>
     <div id="auth-forgot" class="auth-toggle" style="margin-top:8px;">
@@ -1598,8 +1609,14 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
     <button class="auth-close-btn" onclick="closeChangePasswordModal()">&times;</button>
     <h3>Change Password</h3>
     <p class="auth-subtitle">Enter your new password below.</p>
-    <input class="auth-input" id="change-pw-new" type="password" placeholder="New password (min 6 characters)" onkeydown="if(event.key==='Enter'){document.getElementById('change-pw-confirm').focus();}" />
-    <input class="auth-input" id="change-pw-confirm" type="password" placeholder="Confirm new password" onkeydown="if(event.key==='Enter')handleChangePassword();" />
+    <div class="auth-pw-wrapper">
+      <input class="auth-input" id="change-pw-new" type="password" placeholder="New password (min 6 characters)" onkeydown="if(event.key==='Enter'){document.getElementById('change-pw-confirm').focus();}" />
+      <button type="button" class="auth-pw-toggle" onclick="togglePasswordVisibility('change-pw-new', this)" tabindex="-1">&#128065;</button>
+    </div>
+    <div class="auth-pw-wrapper">
+      <input class="auth-input" id="change-pw-confirm" type="password" placeholder="Confirm new password" onkeydown="if(event.key==='Enter')handleChangePassword();" />
+      <button type="button" class="auth-pw-toggle" onclick="togglePasswordVisibility('change-pw-confirm', this)" tabindex="-1">&#128065;</button>
+    </div>
     <button class="auth-btn-primary" id="change-pw-btn" onclick="handleChangePassword()">Update Password</button>
     <div class="auth-error" id="change-pw-error"></div>
   </div>
@@ -2646,6 +2663,17 @@ async function handleForgotPassword() {
   } catch (err) {
     errorEl.style.color = '#ef4444';
     errorEl.textContent = err.message || 'Failed to send reset email. Please try again.';
+  }
+}
+
+function togglePasswordVisibility(inputId, btn) {
+  var input = document.getElementById(inputId);
+  if (input.type === 'password') {
+    input.type = 'text';
+    btn.style.color = '#0ea5e9';
+  } else {
+    input.type = 'password';
+    btn.style.color = '';
   }
 }
 
