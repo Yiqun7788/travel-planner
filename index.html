@@ -2173,7 +2173,7 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
         <input type="checkbox" id="cheap-tickets-checkbox" disabled style="pointer-events: none;">
         <span class="option-icon">&#128274;</span>
         <span data-i18n="cheapTickets">Tips to Buy Cheap Tickets</span>
-        <span class="tier-badge" style="background: rgba(0,0,0,0.1); color: #64748b;">&#128275; Trip Pack</span>
+        <span class="tier-badge" style="background: rgba(0,0,0,0.1); color: #64748b;">&#128272; Trip Pack</span>
       </label>
     </div>
     </div>
@@ -2244,7 +2244,7 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
         <div class="relative">
           <button id="download-button" class="bg-white/20 backdrop-blur hover:bg-white/30 text-white px-4 py-2 rounded-lg font-semibold text-sm transition-all border border-white/30">Download &#9660;</button>
           <div id="download-menu" class="hidden absolute right-0 mt-2 bg-white shadow-xl rounded-xl border border-slate-100 overflow-hidden z-10 min-w-[200px]">
-            <button id="download-html" class="download-menu-item download-menu-item-locked">&#128274; Offline HTML (Clickable) <span class="tier-badge" style="color:#64748b;background:rgba(0,0,0,0.08);">&#128275; Trip Pack</span></button>
+            <button id="download-html" class="download-menu-item download-menu-item-locked">&#128274; Offline HTML (Clickable) <span class="tier-badge" style="color:#64748b;background:rgba(0,0,0,0.08);">&#128272; Trip Pack</span></button>
             <button id="download-pdf" class="download-menu-item">&#128462; Download as PDF</button>
           </div>
         </div>
@@ -2298,8 +2298,8 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
 
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-3" id="extra-tools-buttons">
       <button id="update-itinerary-btn" class="tool-btn" style="background: linear-gradient(135deg, #f59e0b, #d97706);">&#9998; Update Itinerary</button>
-      <button id="packing-list-btn" class="tool-btn tool-btn-locked" style="background: linear-gradient(135deg, #22c55e, #16a34a);">&#128274; Packing List <span class="tier-badge">&#128275; Trip Pack</span></button>
-      <button id="fun-fact-btn" class="tool-btn tool-btn-locked" style="background: linear-gradient(135deg, #a855f7, #7c3aed);">&#128274; Fun Fact <span class="tier-badge">&#128275; Trip Pack</span></button>
+      <button id="packing-list-btn" class="tool-btn tool-btn-locked" style="background: linear-gradient(135deg, #22c55e, #16a34a);">&#128274; Packing List <span class="tier-badge">&#128272; Trip Pack</span></button>
+      <button id="fun-fact-btn" class="tool-btn tool-btn-locked" style="background: linear-gradient(135deg, #a855f7, #7c3aed);">&#128274; Fun Fact <span class="tier-badge">&#128272; Trip Pack</span></button>
     </div>
     <p id="revisions-remaining" class="hidden" style="margin-top:8px; font-size:0.82rem; color:#64748b; text-align:center;"></p>
     <p id="extras-hint" class="hidden" style="margin-top:6px; font-size:0.82rem; color:#0ea5e9; text-align:center;">Packing List and Fun Fact will be available after you finalize your trip.</p>
@@ -2991,7 +2991,7 @@ function applyTierUI() {
       }
     } else {
       packBtn.classList.add('tool-btn-locked');
-      packBtn.innerHTML = '&#128274; Packing List <span class="tier-badge">&#128275; Trip Pack</span>';
+      packBtn.innerHTML = '&#128274; Packing List <span class="tier-badge">&#128272; Trip Pack</span>';
     }
   }
 
@@ -3008,7 +3008,7 @@ function applyTierUI() {
       }
     } else {
       funBtn.classList.add('tool-btn-locked');
-      funBtn.innerHTML = '&#128274; Fun Fact <span class="tier-badge">&#128275; Trip Pack</span>';
+      funBtn.innerHTML = '&#128274; Fun Fact <span class="tier-badge">&#128272; Trip Pack</span>';
     }
   }
 
@@ -3058,7 +3058,7 @@ function applyTierUI() {
       htmlBtn.innerHTML = '&#128274; Offline HTML (Clickable) <span class="tier-badge" style="color:#64748b;background:rgba(0,0,0,0.08);">Confirm updates done first</span>';
     } else {
       htmlBtn.classList.add('download-menu-item-locked');
-      htmlBtn.innerHTML = '&#128274; Offline HTML (Clickable) <span class="tier-badge" style="color:#64748b;background:rgba(0,0,0,0.08);">&#128275; Trip Pack</span>';
+      htmlBtn.innerHTML = '&#128274; Offline HTML (Clickable) <span class="tier-badge" style="color:#64748b;background:rgba(0,0,0,0.08);">&#128272; Trip Pack</span>';
     }
   }
 
