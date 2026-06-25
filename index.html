@@ -688,13 +688,13 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
   opacity: 0.5; cursor: not-allowed;
 }
 .download-menu-item-locked:hover { background: transparent; }
-#upgrade-modal, #finalize-modal, #confirm-new-trip-modal, #start-new-trip-modal, #download-gate-modal, #sign-in-gate-modal, #auth-modal, #retry-modal, #privacy-policy-modal, #terms-of-service-modal {
+#upgrade-modal, #finalize-modal, #confirm-new-trip-modal, #start-new-trip-modal, #download-gate-modal, #sign-in-gate-modal, #auth-modal, #change-password-modal, #retry-modal, #privacy-policy-modal, #terms-of-service-modal {
   position: fixed; inset: 0; z-index: 1100;
   background: rgba(0,0,0,0.4); backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
   display: none; justify-content: center; align-items: center;
 }
-#upgrade-modal.active, #finalize-modal.active, #confirm-new-trip-modal.active, #start-new-trip-modal.active, #download-gate-modal.active, #sign-in-gate-modal.active, #auth-modal.active, #retry-modal.active, #privacy-policy-modal.active, #terms-of-service-modal.active { display: flex; }
+#upgrade-modal.active, #finalize-modal.active, #confirm-new-trip-modal.active, #start-new-trip-modal.active, #download-gate-modal.active, #sign-in-gate-modal.active, #auth-modal.active, #change-password-modal.active, #retry-modal.active, #privacy-policy-modal.active, #terms-of-service-modal.active { display: flex; }
 #sign-in-gate-modal { z-index: 1300; }
 .upgrade-modal-card {
   background: #fff; border-radius: 18px; padding: 32px 28px;
@@ -1581,6 +1581,9 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
     <input class="auth-input" id="auth-password" type="password" placeholder="Password" onkeydown="if(event.key==='Enter')handleEmailAuth();" />
     <button class="auth-btn-primary" id="auth-submit-btn" onclick="handleEmailAuth()">Sign In</button>
     <div class="auth-error" id="auth-error"></div>
+    <div id="auth-forgot" class="auth-toggle" style="margin-top:8px;">
+      <button onclick="handleForgotPassword()">Forgot your password?</button>
+    </div>
     <div class="auth-toggle">
       <span id="auth-toggle-text">Don't have an account?</span>
       <button id="auth-toggle-btn" onclick="toggleAuthMode()">Sign Up</button>
@@ -1588,6 +1591,18 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
   </div>
 </div>
 
+<!-- Change Password Modal -->
+<div id="change-password-modal">
+  <div class="auth-modal-card">
+    <button class="auth-close-btn" onclick="closeChangePasswordModal()">&times;</button>
+    <h3>Change Password</h3>
+    <p class="auth-subtitle">Enter your new password below.</p>
+    <input class="auth-input" id="change-pw-new" type="password" placeholder="New password (min 6 characters)" onkeydown="if(event.key==='Enter'){document.getElementById('change-pw-confirm').focus();}" />
+    <input class="auth-input" id="change-pw-confirm" type="password" placeholder="Confirm new password" onkeydown="if(event.key==='Enter')handleChangePassword();" />
+    <button class="auth-btn-primary" id="change-pw-btn" onclick="handleChangePassword()">Update Password</button>
+    <div class="auth-error" id="change-pw-error"></div>
+  </div>
+</div>
 
 <!-- Pricing Modal -->
 <div id="pricing-modal">
@@ -1765,6 +1780,7 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
           <span id="user-display-name"></span>
         </button>
         <div id="user-menu-dropdown">
+          <button class="user-menu-item" onclick="openChangePasswordModal()">Change Password</button>
           <button class="user-menu-item danger" onclick="signOut()">Sign Out</button>
         </div>
       </div>
@@ -1796,6 +1812,7 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
         <span id="banner-user-name"></span>
       </button>
       <div class="user-menu-dropdown-shared">
+        <button class="user-menu-item" onclick="openChangePasswordModal()">Change Password</button>
         <button class="user-menu-item danger" onclick="signOut()">Sign Out</button>
       </div>
     </div>
@@ -2021,6 +2038,7 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
           <span id="ph-user-name"></span>
         </button>
         <div class="user-menu-dropdown-shared">
+          <button class="user-menu-item" onclick="openChangePasswordModal()">Change Password</button>
           <button class="user-menu-item danger" onclick="signOut()">Sign Out</button>
         </div>
       </div>
@@ -2538,18 +2556,21 @@ function renderAuthModalState() {
   var btn = document.getElementById('auth-submit-btn');
   var toggleText = document.getElementById('auth-toggle-text');
   var toggleBtn = document.getElementById('auth-toggle-btn');
+  var forgotDiv = document.getElementById('auth-forgot');
   if (authMode === 'signin') {
     title.textContent = 'Sign In';
     subtitle.textContent = 'Welcome back! Sign in to access your trips and credits.';
     btn.textContent = 'Sign In';
     toggleText.textContent = "Don't have an account?";
     toggleBtn.textContent = 'Sign Up';
+    if (forgotDiv) forgotDiv.style.display = '';
   } else {
     title.textContent = 'Sign Up';
     subtitle.textContent = 'Create an account to save trips, sync credits, and more.';
     btn.textContent = 'Sign Up';
     toggleText.textContent = 'Already have an account?';
     toggleBtn.textContent = 'Sign In';
+    if (forgotDiv) forgotDiv.style.display = 'none';
   }
 }
 
@@ -2600,6 +2621,83 @@ async function handleEmailAuth() {
   }
   btn.disabled = false;
   renderAuthModalState();
+}
+
+async function handleForgotPassword() {
+  if (!supabaseClient) {
+    document.getElementById('auth-error').textContent = 'Auth service not available.';
+    return;
+  }
+  var email = document.getElementById('auth-email').value.trim();
+  var errorEl = document.getElementById('auth-error');
+  if (!email) {
+    errorEl.style.color = '#ef4444';
+    errorEl.textContent = 'Please enter your email address first.';
+    return;
+  }
+  try {
+    var result = await supabaseClient.auth.resetPasswordForEmail(email, {
+      redirectTo: window.location.origin + '/'
+    });
+    if (result.error) throw result.error;
+    errorEl.style.color = '#16a34a';
+    errorEl.textContent = 'Check your email for a password reset link!';
+  } catch (err) {
+    errorEl.style.color = '#ef4444';
+    errorEl.textContent = err.message || 'Failed to send reset email. Please try again.';
+  }
+}
+
+function openChangePasswordModal() {
+  document.querySelectorAll('#user-menu-dropdown.active, .user-menu-dropdown-shared.active').forEach(function(d) { d.classList.remove('active'); });
+  document.getElementById('change-pw-new').value = '';
+  document.getElementById('change-pw-confirm').value = '';
+  document.getElementById('change-pw-error').textContent = '';
+  document.getElementById('change-password-modal').classList.add('active');
+  setTimeout(function() { document.getElementById('change-pw-new').focus(); }, 100);
+}
+
+function closeChangePasswordModal() {
+  document.getElementById('change-password-modal').classList.remove('active');
+}
+
+async function handleChangePassword() {
+  if (!supabaseClient) return;
+  var newPw = document.getElementById('change-pw-new').value;
+  var confirmPw = document.getElementById('change-pw-confirm').value;
+  var errorEl = document.getElementById('change-pw-error');
+  var btn = document.getElementById('change-pw-btn');
+  errorEl.textContent = '';
+  if (!newPw || !confirmPw) {
+    errorEl.style.color = '#ef4444';
+    errorEl.textContent = 'Please fill in both fields.';
+    return;
+  }
+  if (newPw.length < 6) {
+    errorEl.style.color = '#ef4444';
+    errorEl.textContent = 'Password must be at least 6 characters.';
+    return;
+  }
+  if (newPw !== confirmPw) {
+    errorEl.style.color = '#ef4444';
+    errorEl.textContent = 'Passwords do not match.';
+    return;
+  }
+  btn.disabled = true;
+  btn.textContent = 'Updating\u2026';
+  try {
+    var result = await supabaseClient.auth.updateUser({ password: newPw });
+    if (result.error) throw result.error;
+    errorEl.style.color = '#16a34a';
+    errorEl.textContent = 'Password updated successfully!';
+    document.getElementById('change-pw-new').value = '';
+    document.getElementById('change-pw-confirm').value = '';
+  } catch (err) {
+    errorEl.style.color = '#ef4444';
+    errorEl.textContent = err.message || 'Failed to update password. Please try again.';
+  }
+  btn.disabled = false;
+  btn.textContent = 'Update Password';
 }
 
 async function signInWithGoogle() {
