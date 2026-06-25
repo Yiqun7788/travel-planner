@@ -3613,7 +3613,6 @@ document.addEventListener('click', function(e) {
   if (e.target.id === 'confirm-new-trip-modal') document.getElementById('confirm-new-trip-modal').classList.remove('active');
   if (e.target.id === 'start-new-trip-modal') document.getElementById('start-new-trip-modal').classList.remove('active');
   if (e.target.id === 'download-gate-modal') document.getElementById('download-gate-modal').classList.remove('active');
-  if (e.target.id === 'auth-modal') closeAuthModal();
   if (e.target.id === 'retry-modal') document.getElementById('retry-modal').classList.remove('active');
   if (e.target.id === 'privacy-policy-modal') document.getElementById('privacy-policy-modal').classList.remove('active');
   if (e.target.id === 'terms-of-service-modal') document.getElementById('terms-of-service-modal').classList.remove('active');
@@ -3631,7 +3630,6 @@ document.addEventListener('keydown', function(e) {
     document.getElementById('retry-modal').classList.remove('active');
     document.getElementById('privacy-policy-modal').classList.remove('active');
     document.getElementById('terms-of-service-modal').classList.remove('active');
-    closeAuthModal();
   }
 });
 
