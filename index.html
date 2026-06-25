@@ -2506,6 +2506,8 @@ try {
           }
         });
       }
+    } else if (event === 'PASSWORD_RECOVERY') {
+      openChangePasswordModal();
     } else if (event === 'SIGNED_OUT') {
       currentUser = null;
       userProfile = null;
