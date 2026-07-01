@@ -4770,8 +4770,11 @@ function buildLongDistanceRouteMap(dest, longDistance, originCity) {
 
 // Extract DailyRoute lines from raw markdown BEFORE marked parsing, replace with HTML buttons
 function processDailyRoutes(markdown) {
-  return markdown.replace(/^DailyRoute:\s*(.+)$/gim, (match, stopsStr) => {
-    const stops = stopsStr.split('|').map(s => s.trim()).filter(s => s);
+  return markdown.replace(/^[>\s*`]*\*{0,2}DailyRoute:?\*{0,2}\s*(.+)$/gim, (match, stopsStr) => {
+    // Strip trailing backticks/bold markers
+    stopsStr = stopsStr.replace(/[`*]+$/g, '').trim();
+    // Accept | , or ; as separators
+    const stops = stopsStr.split(/[|,;]/).map(s => s.trim()).filter(s => s);
     if (stops.length === 0) return '';
 
     const mapsEncode = s => encodeURIComponent(s).replace(/%20/g, '+');
