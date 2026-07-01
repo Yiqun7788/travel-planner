@@ -2487,6 +2487,12 @@ try {
     } else {
       var pn = document.getElementById('planning-sign-in-nudge');
       if (pn) pn.style.display = 'flex';
+      // If user just confirmed their email, open sign-in modal
+      var hash = window.location.hash;
+      if (hash && (hash.includes('type=signup') || hash.includes('type=email'))) {
+        window.location.hash = '';
+        setTimeout(function() { openAuthModal(); }, 300);
+      }
     }
   });
   supabaseClient.auth.onAuthStateChange(function(event, session) {
