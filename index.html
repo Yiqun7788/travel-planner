@@ -4766,8 +4766,8 @@ function processDailyRoutes(markdown) {
   return markdown.replace(/^[>\s*`]*\*{0,2}DailyRoute:?\*{0,2}\s*(.+)$/gim, (match, stopsStr) => {
     // Strip trailing backticks/bold markers
     stopsStr = stopsStr.replace(/[`*]+$/g, '').trim();
-    // Accept | , or ; as separators; normalize + to spaces so encodeURIComponent doesn't double-encode them
-    const stops = stopsStr.split(/[|,;]/).map(s => s.replace(/\+/g, ' ').trim()).filter(s => s);
+    // Split only on | (pipe) — commas/semicolons are too common in place names; normalize + to spaces
+    const stops = stopsStr.split('|').map(s => s.replace(/\+/g, ' ').trim()).filter(s => s);
     if (stops.length === 0) return '';
 
     const mapsEncode = s => encodeURIComponent(s).replace(/%20/g, '+');
