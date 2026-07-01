@@ -1633,7 +1633,7 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
           <li class="included">1 trip/month</li>
           <li class="included">1 revision</li>
           <li class="included">PDF download</li>
-          <li class="excluded">Offline HTML</li>
+          <li class="included">Offline HTML</li>
           <li class="excluded">Packing List</li>
           <li class="excluded">Cheap Ticket Tips</li>
           <li class="excluded">Fun Facts</li>
@@ -1953,7 +1953,7 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
               <li class="included">1 trip/month</li>
               <li class="included">1 revision</li>
               <li class="included">PDF download</li>
-              <li class="excluded">Offline HTML</li>
+              <li class="included">Offline HTML</li>
               <li class="excluded">Packing List</li>
               <li class="excluded">Cheap Ticket Tips</li>
               <li class="excluded">Fun Facts</li>
@@ -2277,7 +2277,7 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
         <div class="relative">
           <button id="download-button" class="bg-white/20 backdrop-blur hover:bg-white/30 text-white px-4 py-2 rounded-lg font-semibold text-sm transition-all border border-white/30">Download &#9660;</button>
           <div id="download-menu" class="hidden absolute left-0 sm:left-auto sm:right-0 mt-2 bg-white shadow-xl rounded-xl border border-slate-100 overflow-hidden z-10 min-w-[200px]">
-            <button id="download-html" class="download-menu-item download-menu-item-locked">&#128274; Offline HTML (Clickable) <span class="tier-badge" style="color:#64748b;background:rgba(0,0,0,0.08);">&#128275; Trip Pack</span></button>
+            <button id="download-html" class="download-menu-item download-menu-item-locked">&#128274; Offline HTML (Clickable) <span class="tier-badge" style="color:#64748b;background:rgba(0,0,0,0.08);">Confirm updates done first</span></button>
             <button id="download-pdf" class="download-menu-item">&#128462; Download as PDF</button>
           </div>
         </div>
@@ -2944,7 +2944,7 @@ function saveTripSession() {
 
 // ─── Tier System ───
 const TIER_LIMITS = {
-  free: { maxDays:3, maxDestinations:1, maxGenerations:1, maxUpdatesPerItinerary:1, offlineHtml:false, packingList:false, cheapTickets:false, funFacts:false },
+  free: { maxDays:3, maxDestinations:1, maxGenerations:1, maxUpdatesPerItinerary:1, offlineHtml:true, packingList:false, cheapTickets:false, funFacts:false },
   paid: { maxDays:16, maxDestinations:5, maxGenerations:1, maxUpdatesPerItinerary:3, offlineHtml:true, packingList:true, cheapTickets:true, funFacts:true },
 };
 function getTripCredits() {
