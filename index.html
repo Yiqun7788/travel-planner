@@ -4767,7 +4767,13 @@ function processDailyRoutes(markdown) {
     // Strip trailing backticks/bold markers
     stopsStr = stopsStr.replace(/[`*]+$/g, '').trim();
     // Split only on | (pipe) — commas/semicolons are too common in place names; normalize + to spaces
-    const stops = stopsStr.split('|').map(s => s.replace(/\+/g, ' ').trim()).filter(s => s);
+    const city = (typeof tripData !== 'undefined' && tripData && tripData.destination) ? tripData.destination.split(/[,;\u3001]/)[0].trim() : '';
+    const stops = stopsStr.split('|').map(s => {
+      s = s.replace(/\+/g, ' ').trim();
+      // Append destination city if not already present so Google Maps resolves the correct location
+      if (city && s && !s.toLowerCase().includes(city.toLowerCase())) s = s + ' ' + city;
+      return s;
+    }).filter(s => s);
     if (stops.length === 0) return '';
 
     const mapsEncode = s => encodeURIComponent(s).replace(/%20/g, '+');
