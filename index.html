@@ -1156,6 +1156,7 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
   max-width: 720px; color: #64748b; line-height: 1.4;
 }
 .hero-sub-mobile { display: none; }
+.tab-short { display: none; }
 .hero-btns { display: flex; gap: 14px; justify-content: center; margin-top: 36px; flex-wrap: wrap; }
 .hero-btn-primary {
   background: #fff; color: #4f46e5; font-weight: 700; font-size: 1.05rem;
@@ -1358,13 +1359,15 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
   #home-view { overflow: visible; }
   .home-tabbed-layout { min-height: auto; }
   .home-tab-nav {
-    flex-wrap: wrap; gap: 6px;
-    padding: 10px 12px;
+    flex-wrap: wrap; gap: 4px;
+    padding: 8px 10px;
     position: sticky; top: 0; z-index: 10;
   }
   .home-tab-nav-item {
-    flex-shrink: 0; padding: 8px 14px; font-size: 0.82rem;
+    flex-shrink: 0; padding: 6px 12px; font-size: 0.75rem;
   }
+  .tab-full { display: none; }
+  .tab-short { display: inline; }
   .home-tab-content { padding: 24px 20px; overflow-y: visible; align-items: flex-start; }
   .home-bottom-cta { margin-top: auto; }
 }
@@ -1872,13 +1875,13 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
   <div class="home-tabbed-layout">
     <nav class="home-tab-nav">
       <div class="home-tab-nav-header" data-i18n="homeTabNavHeader">Navigation</div>
-      <button class="home-tab-nav-item active" data-tab="intro" onclick="switchHomeTab('intro')" data-i18n="homeTabIntro">Introduction</button>
-      <button class="home-tab-nav-item" data-tab="audience" onclick="switchHomeTab('audience')" data-i18n="homeTabAudience">Who Loves Wise Itinerary</button>
-      <button class="home-tab-nav-item" data-tab="why" onclick="switchHomeTab('why')" data-i18n="homeTabWhy">Why Wise Itinerary</button>
-      <button class="home-tab-nav-item" data-tab="steps" onclick="switchHomeTab('steps')" data-i18n="homeTabSteps">Simple 3-step Process</button>
-      <button class="home-tab-nav-item" data-tab="preview" onclick="switchHomeTab('preview')" data-i18n="homeTabPreview">Live preview</button>
-      <button class="home-tab-nav-item" data-tab="pricing" onclick="switchHomeTab('pricing')" data-i18n="homeTabPricing">Plans and Fee</button>
-      <button class="home-tab-nav-item" data-tab="contact" onclick="switchHomeTab('contact')" data-i18n="homeTabContact">Contact</button>
+      <button class="home-tab-nav-item active" data-tab="intro" onclick="switchHomeTab('intro')"><span class="tab-full" data-i18n="homeTabIntro">Introduction</span><span class="tab-short">Intro</span></button>
+      <button class="home-tab-nav-item" data-tab="audience" onclick="switchHomeTab('audience')"><span class="tab-full" data-i18n="homeTabAudience">Who Loves Wise Itinerary</span><span class="tab-short">Who's It For</span></button>
+      <button class="home-tab-nav-item" data-tab="why" onclick="switchHomeTab('why')"><span class="tab-full" data-i18n="homeTabWhy">Why Wise Itinerary</span><span class="tab-short">Why Us</span></button>
+      <button class="home-tab-nav-item" data-tab="steps" onclick="switchHomeTab('steps')"><span class="tab-full" data-i18n="homeTabSteps">Simple 3-step Process</span><span class="tab-short">How It Works</span></button>
+      <button class="home-tab-nav-item" data-tab="preview" onclick="switchHomeTab('preview')"><span class="tab-full" data-i18n="homeTabPreview">Live preview</span><span class="tab-short">Preview</span></button>
+      <button class="home-tab-nav-item" data-tab="pricing" onclick="switchHomeTab('pricing')"><span class="tab-full" data-i18n="homeTabPricing">Plans and Fee</span><span class="tab-short">Pricing</span></button>
+      <button class="home-tab-nav-item" data-tab="contact" onclick="switchHomeTab('contact')"><span class="tab-full" data-i18n="homeTabContact">Contact</span><span class="tab-short">Contact</span></button>
     </nav>
     <div class="home-tab-content">
 
