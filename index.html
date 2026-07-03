@@ -4680,7 +4680,7 @@ ROUND TRIP: The traveler is making a round trip${longDistance.length === 1 ? ' b
   }
 
   document.getElementById('results-title').textContent = `Your Trip: ${dest} (${days} days)`;
-  const routeMapHtml = buildLongDistanceRouteMap(dest, longDistance, origin);
+  const routeMapHtml = buildLongDistanceRouteMap(dest, longDistance, origin, tripData.roundTrip);
   document.getElementById('content-display').innerHTML = routeMapHtml + linkifyUrls(marked.parse(processDailyRoutes(finalResult)));
   restructureItinerary();
   renderTripOverview();
@@ -4745,9 +4745,10 @@ async function callGemini(prompt) {
 }
 
 // Build long-distance route map HTML if Car or Bike is selected with 2+ destinations
-function buildLongDistanceRouteMap(dest, longDistance, originCity) {
+function buildLongDistanceRouteMap(dest, longDistance, originCity, roundTrip) {
   const places = dest.split(/[,\u3001;]/).map(s => s.trim().replace(/^(?:and|&)\s+/i, '')).filter(s => s.length > 0);
   if (originCity) places.unshift(originCity);
+  if (roundTrip) places.push(places[0]);
   const hasCar = longDistance.includes('Car');
   const hasBike = longDistance.includes('Bike');
   const hasTrain = longDistance.includes('Train');
@@ -4765,7 +4766,7 @@ function buildLongDistanceRouteMap(dest, longDistance, originCity) {
 
   const stopsHtml = places.map((p, i) => {
     const marker = i === 0 ? '&#128205;' : i === places.length - 1 ? '&#127937;' : '&#128204;';
-    const label = i === 0 ? 'Start' : i === places.length - 1 ? 'End' : 'Stop ' + i;
+    const label = i === 0 ? 'Start' : i === places.length - 1 ? (roundTrip ? 'Return' : 'End') : 'Stop ' + i;
     return `<div style="display:flex;align-items:center;gap:8px;"><span style="font-size:1.1rem;">${marker}</span><span><span style="font-size:0.7rem;text-transform:uppercase;color:#94a3b8;font-weight:600;">${label}</span><br><span style="font-weight:600;color:#1e293b;">${p}</span></span></div>`;
   }).join('<div style="border-left:2px dashed #cbd5e1;height:16px;margin-left:10px;"></div>');
 
@@ -6238,7 +6239,7 @@ VISIT TIME CHECK — When scheduling each place, ensure the recommended arrival 
     tripData.itinerary = result;
     saveTripSession();
 
-    const routeMapHtml = buildLongDistanceRouteMap(tripData.destination, tripData.longDistance || [], tripData.origin);
+    const routeMapHtml = buildLongDistanceRouteMap(tripData.destination, tripData.longDistance || [], tripData.origin, tripData.roundTrip);
     document.getElementById('content-display').innerHTML = routeMapHtml + linkifyUrls(marked.parse(processDailyRoutes(result)));
     restructureItinerary();
     renderTripOverview();
@@ -6421,7 +6422,7 @@ function restoreSession() {
       tripData.updatesUsed = fts.currentItineraryUpdates || 0;
     }
     document.getElementById('results-title').textContent = 'Your Trip: ' + tripData.destination + ' (' + tripData.days + ' days)';
-    const routeMapHtml = buildLongDistanceRouteMap(tripData.destination, tripData.longDistance || [], tripData.origin);
+    const routeMapHtml = buildLongDistanceRouteMap(tripData.destination, tripData.longDistance || [], tripData.origin, tripData.roundTrip);
     document.getElementById('content-display').innerHTML = routeMapHtml + linkifyUrls(marked.parse(processDailyRoutes(stripEmoji(tripData.itinerary))));
     restructureItinerary();
     renderTripOverview();
