@@ -1641,7 +1641,7 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
         <ul class="pricing-features">
           <li class="included">1 destination</li>
           <li class="included">3 day max trip</li>
-          <li class="included">1 trip/month</li>
+          <li class="included">1 trip/month (resets the 1st day)</li>
           <li class="included">1 revision</li>
           <li class="included">PDF download</li>
           <li class="included">Offline HTML</li>
@@ -1650,6 +1650,7 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
           <li class="excluded">Fun Facts</li>
         </ul>
         <button id="pricing-btn-free" class="pricing-btn pricing-btn-current" disabled>Current Plan</button>
+        <p id="pricing-free-note" class="pricing-free-note" style="display:none; font-size:0.8rem; color:#5b6abf; margin-top:6px; text-align:center;">Get 1 free trip every month</p>
       </div>
       <!-- Trip Pack -->
       <div class="pricing-tier recommended">
@@ -1962,7 +1963,7 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
             <ul class="pricing-features">
               <li class="included">1 destination</li>
               <li class="included">3 day max trip</li>
-              <li class="included">1 trip/month</li>
+              <li class="included">1 trip/month (resets the 1st day)</li>
               <li class="included">1 revision</li>
               <li class="included">PDF download</li>
               <li class="included">Offline HTML</li>
@@ -3276,9 +3277,18 @@ function applyTierUI() {
   var tripPackBtn = document.getElementById('pricing-btn-trip-pack');
   var bundleBtn = document.getElementById('pricing-btn-bundle');
   if (freeBtn) {
-    freeBtn.className = 'pricing-btn pricing-btn-current';
-    freeBtn.disabled = true;
-    freeBtn.textContent = 'Current Plan';
+    var freeNote = document.getElementById('pricing-free-note');
+    if (!currentUser) {
+      freeBtn.className = 'pricing-btn pricing-btn-upgrade';
+      freeBtn.disabled = false;
+      freeBtn.textContent = 'Sign Up Free';
+      if (freeNote) freeNote.style.display = '';
+    } else {
+      freeBtn.className = 'pricing-btn pricing-btn-current';
+      freeBtn.disabled = true;
+      freeBtn.textContent = 'Current Plan';
+      if (freeNote) freeNote.style.display = 'none';
+    }
   }
   if (tripPackBtn) {
     tripPackBtn.className = 'pricing-btn pricing-btn-upgrade';
@@ -3465,6 +3475,11 @@ function closePricingModal() {
 }
 // ─── Pricing button click handlers (attached via addEventListener) ───
 document.getElementById('pricing-btn-free').addEventListener('click', function() {
+  if (!currentUser) {
+    closePricingModal();
+    document.getElementById('sign-in-gate-modal').classList.add('active');
+    return;
+  }
   closePricingModal();
 });
 var pendingPurchasePriceType = null;
