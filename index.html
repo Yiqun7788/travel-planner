@@ -3027,6 +3027,18 @@ function getGenerationsThisMonth() {
   const month = getMonthKey();
   return (s.generations && s.generations[month]) || 0;
 }
+function getTotalGuestGenerations() {
+  const s = getFreeTierState();
+  if (!s.generations) return 0;
+  return Object.values(s.generations).reduce((sum, n) => sum + n, 0);
+}
+function hasReachedFreeLimit() {
+  const limits = getTierLimits();
+  if (currentUser) {
+    return getGenerationsThisMonth() >= limits.maxGenerations;
+  }
+  return getTotalGuestGenerations() >= limits.maxGenerations;
+}
 function incrementGenerations() {
   const s = getFreeTierState();
   const month = getMonthKey();
@@ -3089,7 +3101,11 @@ function applyTierUI() {
     const bannerText = banner.querySelector('.banner-text');
     if (bannerText) {
       if (!showPaidBadge) {
-        bannerText.innerHTML = '<strong>Free Plan</strong> \u2014 1 destination, up to 3 days, 1 trip per month, 1 revision. <button class="banner-link" onclick="openPricingModal()">View and Upgrade Plan</button>';
+        if (!currentUser) {
+          bannerText.innerHTML = '<strong>Free Trial</strong> \u2014 1 destination, up to 3 days, 1 trial trip, 1 revision. <button class="banner-link" onclick="openPricingModal()">View and Upgrade Plan</button>';
+        } else {
+          bannerText.innerHTML = '<strong>Free Plan</strong> \u2014 1 destination, up to 3 days, 1 trip per month, 1 revision. <button class="banner-link" onclick="openPricingModal()">View and Upgrade Plan</button>';
+        }
       } else {
         bannerText.innerHTML = '<strong>Trip Pack</strong> \u2014 Up to 5 destinations, 16 day trips, 3 revisions per trip. <button class="banner-link" onclick="openPricingModal()">View and Upgrade Plan</button>';
       }
@@ -3285,7 +3301,7 @@ function applyTierUI() {
   const revisionsUsed = getUpdatesThisItinerary();
   const revisionsLeft = limits.maxUpdatesPerItinerary - revisionsUsed;
   const hasExistingTrip = !!tripData.itinerary;
-  if (tier === 'free' && getGenerationsThisMonth() >= limits.maxGenerations) {
+  if (tier === 'free' && hasReachedFreeLimit()) {
     genBtn.disabled = true; genBtn.style.opacity = '0.45'; genBtn.style.cursor = 'not-allowed';
     genHint.classList.add('hidden');
   } else if (hasExistingTrip) {
@@ -3581,9 +3597,9 @@ document.getElementById('start-new-trip-confirm').addEventListener('click', func
   applyTierUI();
   // Prompt free-plan users to upgrade if they've used their free generation
   // Skip if the previous trip was paid — user already purchased, no need to upsell
-  if (!wasPaidTrip && getUserTier() === 'free' && getGenerationsThisMonth() >= getTierLimits().maxGenerations) {
+  if (!wasPaidTrip && getUserTier() === 'free' && hasReachedFreeLimit()) {
     if (!currentUser) {
-      showUpgradeModal('Free Trip Used', 'You\u2019ve used your <strong>1 free trip</strong> this month.<br><br><strong>Sign in</strong> and get a <strong>Trip Pack</strong> to keep planning \u2014 up to 5 destinations, 16 day trips, and 3 revisions.<br><br><em>Or come back next month for another free one!</em>');
+      showUpgradeModal('Free Trial Used', 'You\u2019ve used your <strong>free trial trip</strong>. <strong>Sign up</strong> to get <strong>1 free trip every month</strong>, or get a <strong>Trip Pack</strong> for up to 5 destinations, 16 day trips, and 3 revisions.');
     } else {
       showUpgradeModal('Free Trip Used', 'You\u2019ve used your <strong>1 free trip</strong> this month.<br><br>Get a <strong>Trip Pack</strong> to keep planning \u2014 up to 5 destinations, 16 day trips, and 3 revisions.<br><br><em>Or come back next month for another free one!</em>');
     }
@@ -4356,8 +4372,12 @@ document.getElementById('generate-button').addEventListener('click', async () =>
   // Tier: generation limit check
   const hasPaidCredits = getTripCredits() > 0;
   if (!hasPaidCredits) {
-    if (getGenerationsThisMonth() >= getTierLimits().maxGenerations) {
-      showUpgradeModal('Monthly Limit Reached', 'You\u2019ve used your <strong>1 free trip</strong> this month.<br><br>Buy a <strong>Trip Pack</strong> for up to 5 destinations, 16 day trips, and 3 revisions.<br><br><em>Or come back next month for another free one!</em>');
+    if (hasReachedFreeLimit()) {
+      if (!currentUser) {
+        showUpgradeModal('Free Trial Used', 'You\u2019ve used your <strong>free trial trip</strong>.<br><br><strong>Sign up</strong> to get <strong>1 free trip every month</strong>, or get a <strong>Trip Pack</strong> for up to 5 destinations, 16 day trips, and 3 revisions.');
+      } else {
+        showUpgradeModal('Monthly Limit Reached', 'You\u2019ve used your <strong>1 free trip</strong> this month.<br><br>Get a <strong>Trip Pack</strong> for up to 5 destinations, 16 day trips, and 3 revisions.<br><br><em>Or come back next month for another free one!</em>');
+      }
       return;
     }
   }
