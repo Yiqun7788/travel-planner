@@ -3663,29 +3663,14 @@ document.getElementById('sign-in-gate-close').addEventListener('click', function
   document.getElementById('sign-in-gate-modal').classList.remove('active');
   pendingPurchasePriceType = null;
 });
-// Close modals on backdrop click
+// Close informational modals on backdrop click (privacy/terms only)
 document.addEventListener('click', function(e) {
-  if (e.target.id === 'pricing-modal') closePricingModal();
-  if (e.target.id === 'upgrade-modal') document.getElementById('upgrade-modal').classList.remove('active');
-  if (e.target.id === 'finalize-modal') document.getElementById('finalize-modal').classList.remove('active');
-  if (e.target.id === 'confirm-new-trip-modal') document.getElementById('confirm-new-trip-modal').classList.remove('active');
-  if (e.target.id === 'start-new-trip-modal') document.getElementById('start-new-trip-modal').classList.remove('active');
-  if (e.target.id === 'download-gate-modal') document.getElementById('download-gate-modal').classList.remove('active');
-  if (e.target.id === 'retry-modal') document.getElementById('retry-modal').classList.remove('active');
   if (e.target.id === 'privacy-policy-modal') document.getElementById('privacy-policy-modal').classList.remove('active');
   if (e.target.id === 'terms-of-service-modal') document.getElementById('terms-of-service-modal').classList.remove('active');
 });
-// Close modals on Escape key
+// Close informational modals on Escape key (privacy/terms only)
 document.addEventListener('keydown', function(e) {
   if (e.key === 'Escape') {
-    closePricingModal();
-    document.getElementById('upgrade-modal').classList.remove('active');
-    document.getElementById('finalize-modal').classList.remove('active');
-    document.getElementById('confirm-new-trip-modal').classList.remove('active');
-    document.getElementById('start-new-trip-modal').classList.remove('active');
-    document.getElementById('download-gate-modal').classList.remove('active');
-    document.getElementById('sign-in-gate-modal').classList.remove('active');
-    document.getElementById('retry-modal').classList.remove('active');
     document.getElementById('privacy-policy-modal').classList.remove('active');
     document.getElementById('terms-of-service-modal').classList.remove('active');
   }
