@@ -3076,7 +3076,14 @@ function applyTierUI() {
   const hasPurchased = !!(getFreeTierState().hasPurchased);
   const freeUsedUp = currentUser && getGenerationsThisMonth() >= TIER_LIMITS.free.maxGenerations;
   const showPaidBadge = tier === 'paid' || hasPurchased || freeUsedUp;
-  const badgeText = showPaidBadge ? 'Trip Pack (' + credits + ' left)' : 'Free Plan';
+  var badgeText;
+  if (showPaidBadge) {
+    badgeText = 'Trip Pack (' + credits + ' left)';
+  } else if (!currentUser) {
+    badgeText = getTotalGuestGenerations() >= 1 ? 'Free Trial Used' : 'Free Trial';
+  } else {
+    badgeText = 'Free Plan';
+  }
 
   // ─── Header badge ───
   const badge = document.getElementById('header-tier-badge');
