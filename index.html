@@ -4947,13 +4947,30 @@ function processDailyRoutes(markdown) {
     stopsStr = stopsStr.replace(/[`*]+$/g, '').trim();
     // Split only on | (pipe) — commas/semicolons are too common in place names; normalize + to spaces
     const city = (typeof tripData !== 'undefined' && tripData && tripData.destination) ? tripData.destination.split(/[,;\u3001]/)[0].trim() : '';
-    const stops = stopsStr.split('|').map(s => {
-      s = s.replace(/\+/g, ' ').trim();
+    // All destination cities for multi-city travel mode detection
+    const allCities = (typeof tripData !== 'undefined' && tripData && tripData.destination)
+      ? tripData.destination.split(/[,;\u3001]/).map(s => s.trim().replace(/^(?:and|&)\s+/i, '')).filter(s => s.length > 0) : [];
+    const rawStops = stopsStr.split('|').map(s => s.replace(/\+/g, ' ').trim()).filter(s => s);
+    const stops = rawStops.map(s => {
       // Append destination city if not already present so Google Maps resolves the correct location
       if (city && s && !s.toLowerCase().includes(city.toLowerCase())) s = s + ' ' + city;
       return s;
-    }).filter(s => s);
+    });
     if (stops.length === 0) return '';
+
+    // Detect inter-city days: if stops reference 2+ different destination cities, use driving
+    var travelmode = 'walking';
+    if (allCities.length > 1) {
+      var citiesFound = {};
+      rawStops.forEach(function(s) {
+        var lower = s.toLowerCase();
+        allCities.forEach(function(c) { if (lower.includes(c.toLowerCase())) citiesFound[c.toLowerCase()] = true; });
+      });
+      if (Object.keys(citiesFound).length > 1) {
+        var ld = (typeof tripData !== 'undefined' && tripData && tripData.longDistance) ? tripData.longDistance : '';
+        travelmode = ld.includes('Bike') ? 'bicycling' : 'driving';
+      }
+    }
 
     const mapsEncode = s => encodeURIComponent(s).replace(/%20/g, '+');
     let directionsUrl;
@@ -4963,10 +4980,11 @@ function processDailyRoutes(markdown) {
       const o = mapsEncode(stops[0]);
       const d = mapsEncode(stops[stops.length - 1]);
       const w = stops.length > 2 ? '&waypoints=' + stops.slice(1, -1).map(s => mapsEncode(s)).join('%7C') : '';
-      directionsUrl = `https://www.google.com/maps/dir/?api=1&origin=${o}&destination=${d}${w}&travelmode=walking`;
+      directionsUrl = `https://www.google.com/maps/dir/?api=1&origin=${o}&destination=${d}${w}&travelmode=${travelmode}`;
     }
 
-    return `<a href="${directionsUrl}" target="_blank" rel="noopener noreferrer" class="route-map-link">&#128506; View Day's Route on Google Maps</a>`;
+    var modeIcon = travelmode === 'walking' ? '&#128694;' : travelmode === 'bicycling' ? '&#128690;' : '&#128663;';
+    return `<a href="${directionsUrl}" target="_blank" rel="noopener noreferrer" class="route-map-link">${modeIcon} &#128506; View Day's Route on Google Maps</a>`;
   });
 }
 
