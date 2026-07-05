@@ -945,6 +945,30 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
 #header-tier-badge:hover {
   background: rgba(255,255,255,0.35);
 }
+#header-tier-badge.trial-used,
+.home-nav-badge.trial-used,
+.planning-header-badge.trial-used {
+  background: rgba(251, 146, 60, 0.3);
+  border-color: rgba(251, 146, 60, 0.6);
+  color: #fed7aa;
+}
+#header-tier-badge.trial-used:hover,
+.home-nav-badge.trial-used:hover,
+.planning-header-badge.trial-used:hover {
+  background: rgba(251, 146, 60, 0.45);
+}
+#header-tier-badge.no-credits,
+.home-nav-badge.no-credits,
+.planning-header-badge.no-credits {
+  background: rgba(239, 68, 68, 0.25);
+  border-color: rgba(239, 68, 68, 0.5);
+  color: #fecaca;
+}
+#header-tier-badge.no-credits:hover,
+.home-nav-badge.no-credits:hover,
+.planning-header-badge.no-credits:hover {
+  background: rgba(239, 68, 68, 0.4);
+}
 
 /* ─── Free tier info banner ─── */
 .free-tier-banner {
@@ -3077,10 +3101,17 @@ function applyTierUI() {
   const freeUsedUp = currentUser && getGenerationsThisMonth() >= TIER_LIMITS.free.maxGenerations;
   const showPaidBadge = tier === 'paid' || hasPurchased || freeUsedUp;
   var badgeText;
+  var badgeClass = '';
   if (showPaidBadge) {
     badgeText = 'Trip Pack (' + credits + ' left)';
+    if (credits <= 0) badgeClass = 'no-credits';
   } else if (!currentUser) {
-    badgeText = getTotalGuestGenerations() >= 1 ? 'Free Trial Used' : 'Free Trial';
+    if (getTotalGuestGenerations() >= 1) {
+      badgeText = 'Free Trial Used';
+      badgeClass = 'trial-used';
+    } else {
+      badgeText = 'Free Trial';
+    }
   } else {
     badgeText = 'Free Plan';
   }
@@ -3089,18 +3120,24 @@ function applyTierUI() {
   const badge = document.getElementById('header-tier-badge');
   if (badge) {
     badge.textContent = badgeText;
+    badge.classList.remove('trial-used', 'no-credits');
+    if (badgeClass) badge.classList.add(badgeClass);
   }
 
   // ─── Banner nav badge (shared photo banner) ───
   var bannerBadge = document.getElementById('banner-tier-badge');
   if (bannerBadge) {
     bannerBadge.textContent = badgeText;
+    bannerBadge.classList.remove('trial-used', 'no-credits');
+    if (badgeClass) bannerBadge.classList.add(badgeClass);
   }
 
   // ─── Planning header badge ───
   var phBadge = document.getElementById('ph-tier-badge');
   if (phBadge) {
     phBadge.textContent = badgeText;
+    phBadge.classList.remove('trial-used', 'no-credits');
+    if (badgeClass) phBadge.classList.add(badgeClass);
   }
 
   // ─── Hero free trial line ───
