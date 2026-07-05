@@ -1873,6 +1873,7 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
       <span class="hero-trust-badge">&#10003; <span data-i18n="homeTrust4">Budget planning</span></span>
       <span class="hero-trust-badge">&#10003; <span data-i18n="homeTrust1">Local tips</span></span>
     </div>
+    <p id="hero-free-trial" style="display:none; margin-top:10px; font-size:0.9rem; color:#10b981; font-weight:600; text-align:center;">Try it free — no sign-up required</p>
   </section>
 
   <!-- Tabbed Layout -->
@@ -3093,6 +3094,16 @@ function applyTierUI() {
   var phBadge = document.getElementById('ph-tier-badge');
   if (phBadge) {
     phBadge.textContent = badgeText;
+  }
+
+  // ─── Hero free trial line ───
+  var heroTrial = document.getElementById('hero-free-trial');
+  if (heroTrial) {
+    if (!currentUser && getTotalGuestGenerations() < 1) {
+      heroTrial.style.display = '';
+    } else {
+      heroTrial.style.display = 'none';
+    }
   }
 
   // ─── Banner text ───
