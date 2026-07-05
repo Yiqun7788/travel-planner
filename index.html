@@ -6110,56 +6110,67 @@ document.getElementById('update-itinerary-btn').addEventListener('click', async 
   // Collect all text sources that may contain day/destination requests
   const textsToCheck = [instruction, newInputs.additionalInstructions || ''].filter(t => t);
 
-  // Tier: block requests to extend beyond day limit
+  // Tier: collect all limit violations before showing a single modal
+  var limitViolations = [];
+
   for (const text of textsToCheck) {
     const lower = text.toLowerCase();
     const wordNums = {'one':1,'two':2,'three':3,'four':4,'five':5,'six':6,'seven':7,'eight':8,'nine':9,'ten':10};
 
     // Check for "N days" where N > maxDays (e.g., "make it 20 days")
-    const dayMention = text.match(/(\d+)\s*(?:days?|nights?)/i);
-    if (dayMention && parseInt(dayMention[1]) > getTierLimits().maxDays) {
-      showUpgradeModal('Day Limit', `Your plan supports up to <strong>${getTierLimits().maxDays} days</strong>.`, true);
-      return;
+    if (!limitViolations.some(function(v) { return v.type === 'day'; })) {
+      const dayMention = text.match(/(\d+)\s*(?:days?|nights?)/i);
+      if (dayMention && parseInt(dayMention[1]) > getTierLimits().maxDays) {
+        limitViolations.push({ type: 'day', msg: `Your plan supports up to <strong>${getTierLimits().maxDays} days</strong>.` });
+      }
     }
 
     // Check for requests to add more days that would exceed limit
-    if (/\b(?:add|extend|extra|more|another|additional|longer)\b/i.test(lower) && /\b(?:days?|nights?)\b/i.test(lower)) {
-      let addCount = 1; // default for "another day" / "one more day"
-      const addDigitMatch = lower.match(/(?:add|extend\s+by)\s+(\d+)/);
-      if (addDigitMatch) addCount = parseInt(addDigitMatch[1]);
-      const addWordMatch = lower.match(/(?:add|extend\s+by)\s+(one|two|three|four|five|six|seven|eight|nine|ten)\b/);
-      if (addWordMatch) addCount = wordNums[addWordMatch[1]];
-      const numFirstMatch = lower.match(/\b(\d+)\s+(?:more|extra|additional)\s+(?:days?|nights?)/);
-      if (numFirstMatch) addCount = parseInt(numFirstMatch[1]);
-      const wordFirstMatch = lower.match(/\b(one|two|three|four|five|six|seven|eight|nine|ten)\s+(?:more|extra|additional)\s+(?:days?|nights?)/);
-      if (wordFirstMatch) addCount = wordNums[wordFirstMatch[1]];
+    if (!limitViolations.some(function(v) { return v.type === 'day'; })) {
+      if (/\b(?:add|extend|extra|more|another|additional|longer)\b/i.test(lower) && /\b(?:days?|nights?)\b/i.test(lower)) {
+        let addCount = 1;
+        const addDigitMatch = lower.match(/(?:add|extend\s+by)\s+(\d+)/);
+        if (addDigitMatch) addCount = parseInt(addDigitMatch[1]);
+        const addWordMatch = lower.match(/(?:add|extend\s+by)\s+(one|two|three|four|five|six|seven|eight|nine|ten)\b/);
+        if (addWordMatch) addCount = wordNums[addWordMatch[1]];
+        const numFirstMatch = lower.match(/\b(\d+)\s+(?:more|extra|additional)\s+(?:days?|nights?)/);
+        if (numFirstMatch) addCount = parseInt(numFirstMatch[1]);
+        const wordFirstMatch = lower.match(/\b(one|two|three|four|five|six|seven|eight|nine|ten)\s+(?:more|extra|additional)\s+(?:days?|nights?)/);
+        if (wordFirstMatch) addCount = wordNums[wordFirstMatch[1]];
 
-      if (tripData.days + addCount > getTierLimits().maxDays) {
-        showUpgradeModal('Day Limit', `Your trip already has <strong>${tripData.days} days</strong>. The maximum is <strong>${getTierLimits().maxDays} days</strong>.`, true);
-        return;
+        if (tripData.days + addCount > getTierLimits().maxDays) {
+          limitViolations.push({ type: 'day', msg: `Your trip already has <strong>${tripData.days} days</strong>. The maximum is <strong>${getTierLimits().maxDays} days</strong>.` });
+        }
       }
     }
 
     // Check for requests to add destinations that would exceed limit
-    const addDestMatch = text.match(/\b(?:add|include|visit|stop\s+(?:at|in|by))\b/i);
-    if (addDestMatch) {
-      const currentDestCount = getDestinationCount(tripData.destination || '');
-      if (currentDestCount >= getTierLimits().maxDestinations) {
-        showUpgradeModal('Destination Limit', `Your trip already has <strong>${currentDestCount} destination${currentDestCount > 1 ? 's' : ''}</strong>, which is the maximum. Remove a destination first to add a new one.`, true);
-        return;
+    if (!limitViolations.some(function(v) { return v.type === 'dest'; })) {
+      const addDestMatch = text.match(/\b(?:add|include|visit|stop\s+(?:at|in|by))\b/i);
+      if (addDestMatch) {
+        const currentDestCount = getDestinationCount(tripData.destination || '');
+        if (currentDestCount >= getTierLimits().maxDestinations) {
+          limitViolations.push({ type: 'dest', msg: `Your plan already has <strong>${currentDestCount} destination${currentDestCount > 1 ? 's' : ''}</strong>, which is the maximum for your plan.` });
+        }
       }
     }
   }
 
-  // Also block if planning page dates exceed day limit
-  if (newInputs.days > getTierLimits().maxDays) {
-    showUpgradeModal('Day Limit', `Your plan supports up to <strong>${getTierLimits().maxDays} days</strong>.`, true);
-    return;
+  // Also check if planning page dates exceed day limit
+  if (!limitViolations.some(function(v) { return v.type === 'day'; }) && newInputs.days > getTierLimits().maxDays) {
+    limitViolations.push({ type: 'day', msg: `Your plan supports up to <strong>${getTierLimits().maxDays} days</strong>.` });
   }
 
-  // Tier: block if planning page destinations exceed limit
-  if (newInputs.destination && getDestinationCount(newInputs.destination) > getTierLimits().maxDestinations) {
-    showUpgradeModal('Destination Limit', `Your plan supports up to <strong>${getTierLimits().maxDestinations} destination${getTierLimits().maxDestinations > 1 ? 's' : ''}</strong>.`, true);
+  // Also check if planning page destinations exceed limit
+  if (!limitViolations.some(function(v) { return v.type === 'dest'; }) && newInputs.destination && getDestinationCount(newInputs.destination) > getTierLimits().maxDestinations) {
+    limitViolations.push({ type: 'dest', msg: `Your plan supports up to <strong>${getTierLimits().maxDestinations} destination${getTierLimits().maxDestinations > 1 ? 's' : ''}</strong>.` });
+  }
+
+  // Show all violations in a single modal
+  if (limitViolations.length > 0) {
+    var limitTitle = limitViolations.length > 1 ? 'Plan Limits' : (limitViolations[0].type === 'day' ? 'Day Limit' : 'Destination Limit');
+    var limitMessage = limitViolations.map(function(v) { return v.msg; }).join('<br><br>');
+    showUpgradeModal(limitTitle, limitMessage, true);
     return;
   }
 
