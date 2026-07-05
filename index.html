@@ -1522,7 +1522,7 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
   <div class="upgrade-modal-card">
     <h3 id="upgrade-modal-title">&#128274; Premium Feature</h3>
     <p id="upgrade-modal-message">This feature is available on the premium plan.</p>
-    <button class="upgrade-view-plans" onclick="document.getElementById('upgrade-modal').classList.remove('active'); openPricingModal();">Compare Plans &rarr;</button>
+    <button class="upgrade-view-plans" onclick="document.getElementById('upgrade-modal').classList.remove('active'); openPricingModal();">Upgrade Plan &rarr;</button>
     <div class="modal-actions">
       <button class="modal-btn-primary" onclick="document.getElementById('upgrade-modal').classList.remove('active')">Got it!</button>
       <button class="modal-btn-secondary" onclick="document.getElementById('upgrade-modal').classList.remove('active')">Maybe later</button>
@@ -3501,12 +3501,17 @@ function showUpgradeModal(title, message, infoOnly) {
   document.getElementById('upgrade-modal-message').innerHTML = message;
   var card = document.querySelector('#upgrade-modal > .upgrade-modal-card');
   var viewPlansBtn = card.querySelector('.upgrade-view-plans');
+  var primaryBtn = card.querySelector('.modal-btn-primary');
   var secondaryBtn = card.querySelector('.modal-btn-secondary');
   if (infoOnly) {
+    // Info-only: show only "Got it!", hide upgrade link and "Maybe later"
     if (viewPlansBtn) viewPlansBtn.style.display = 'none';
+    if (primaryBtn) primaryBtn.style.display = '';
     if (secondaryBtn) secondaryBtn.style.display = 'none';
   } else {
+    // Upsell: show "Upgrade Plan" and "Maybe later", hide "Got it!"
     if (viewPlansBtn) viewPlansBtn.style.display = '';
+    if (primaryBtn) primaryBtn.style.display = 'none';
     if (secondaryBtn) secondaryBtn.style.display = '';
   }
   document.getElementById('upgrade-modal').classList.add('active');
