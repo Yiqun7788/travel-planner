@@ -3116,12 +3116,18 @@ function applyTierUI() {
     badgeText = 'Free Plan';
   }
 
+  // Badge click: "Free Trial" goes to planning, all other states open pricing
+  var badgeClickFn = (!currentUser && getTotalGuestGenerations() < 1)
+    ? function() { showPlanningView(); }
+    : function() { openPricingModal(); };
+
   // ─── Header badge ───
   const badge = document.getElementById('header-tier-badge');
   if (badge) {
     badge.textContent = badgeText;
     badge.classList.remove('trial-used', 'no-credits');
     if (badgeClass) badge.classList.add(badgeClass);
+    badge.onclick = badgeClickFn;
   }
 
   // ─── Banner nav badge (shared photo banner) ───
@@ -3130,6 +3136,7 @@ function applyTierUI() {
     bannerBadge.textContent = badgeText;
     bannerBadge.classList.remove('trial-used', 'no-credits');
     if (badgeClass) bannerBadge.classList.add(badgeClass);
+    bannerBadge.onclick = badgeClickFn;
   }
 
   // ─── Planning header badge ───
@@ -3138,6 +3145,7 @@ function applyTierUI() {
     phBadge.textContent = badgeText;
     phBadge.classList.remove('trial-used', 'no-credits');
     if (badgeClass) phBadge.classList.add(badgeClass);
+    phBadge.onclick = badgeClickFn;
   }
 
   // ─── Hero free trial line ───
