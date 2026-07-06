@@ -2622,6 +2622,10 @@ try {
             pendingPurchasePriceType = null;
             purchaseCredits(pt);
           }
+        }).catch(function(e) {
+          console.warn('Sign-in chain error:', e);
+          updateAuthUI();
+          if (typeof restoreSession === 'function') restoreSession();
         });
       }
     } else if (event === 'PASSWORD_RECOVERY') {
@@ -2864,14 +2868,6 @@ async function signInWithGoogle() {
 async function signOut() {
   if (!supabaseClient) return;
   document.querySelectorAll('#user-menu-dropdown.active, .user-menu-dropdown-shared.active').forEach(function(d) { d.classList.remove('active'); });
-  // Clear current_trip from Supabase BEFORE signing out (we need auth for the DB update)
-  if (currentUser) {
-    try {
-      await supabaseClient.from('user_profiles')
-        .update({ current_trip: null })
-        .eq('id', currentUser.id);
-    } catch {}
-  }
   await supabaseClient.auth.signOut();
   currentUser = null;
   userProfile = null;
@@ -3053,7 +3049,9 @@ function saveTripSession() {
   if (currentUser && supabaseClient) {
     supabaseClient.from('user_profiles')
       .update({ current_trip: tripData })
-      .eq('id', currentUser.id).then(function() {});
+      .eq('id', currentUser.id).then(function(res) {
+        if (res.error) console.warn('saveTripSession to Supabase failed:', res.error.message);
+      });
   }
 }
 
@@ -6739,7 +6737,7 @@ function restoreSession() {
     applyTierUI();
     // Show return-to-itinerary if user goes back
     document.getElementById('return-to-itinerary-btn').classList.remove('hidden');
-  } catch {}
+  } catch (e) { console.warn('restoreSession failed:', e); }
 }
 restoreSession();
 </script>
