@@ -4960,6 +4960,20 @@ function processDailyRoutes(markdown) {
       ? tripData.destination.split(/[,;\u3001]/).map(s => s.trim().replace(/^(?:and|&)\s+/i, '')).filter(s => s.length > 0) : [];
     var rawStops = stopsStr.split('|').map(s => s.replace(/\+/g, ' ').trim()).filter(s => s);
 
+    // Detect inter-city days BEFORE cleaning (cleaning strips city names from stops)
+    var travelmode = 'walking';
+    if (allCities.length > 1) {
+      var citiesFound = {};
+      rawStops.forEach(function(s) {
+        var lower = s.toLowerCase();
+        allCities.forEach(function(c) { if (lower.includes(c.toLowerCase())) citiesFound[c.toLowerCase()] = true; });
+      });
+      if (Object.keys(citiesFound).length > 1) {
+        var ld = (typeof tripData !== 'undefined' && tripData && tripData.longDistance) ? tripData.longDistance : '';
+        travelmode = ld.includes('Bike') ? 'bicycling' : 'driving';
+      }
+    }
+
     // For multi-city trips: detect day's city from heading, clean stops with multiple city names
     var dayCity = city;
     if (allCities.length > 1) {
@@ -5006,20 +5020,6 @@ function processDailyRoutes(markdown) {
       return s;
     });
     if (stops.length === 0) return '';
-
-    // Detect inter-city days: if stops reference 2+ different destination cities, use driving
-    var travelmode = 'walking';
-    if (allCities.length > 1) {
-      var citiesFound = {};
-      rawStops.forEach(function(s) {
-        var lower = s.toLowerCase();
-        allCities.forEach(function(c) { if (lower.includes(c.toLowerCase())) citiesFound[c.toLowerCase()] = true; });
-      });
-      if (Object.keys(citiesFound).length > 1) {
-        var ld = (typeof tripData !== 'undefined' && tripData && tripData.longDistance) ? tripData.longDistance : '';
-        travelmode = ld.includes('Bike') ? 'bicycling' : 'driving';
-      }
-    }
 
     const mapsEncode = s => encodeURIComponent(s).replace(/%20/g, '+');
     let directionsUrl;
