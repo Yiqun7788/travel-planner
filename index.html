@@ -3455,6 +3455,10 @@ function applyTierUI() {
   } else if (hasExistingTrip) {
     genBtn.disabled = true; genBtn.style.opacity = '0.45'; genBtn.style.cursor = 'not-allowed';
     genHint.classList.add('hidden');
+  } else if (credits <= 0 && showPaidBadge) {
+    genBtn.disabled = true; genBtn.style.opacity = '0.45'; genBtn.style.cursor = 'not-allowed';
+    genHint.classList.remove('hidden');
+    genHint.innerHTML = 'You have <strong>0 trips left</strong>. <button class="banner-link" onclick="openPricingModal()" style="font-size:inherit;">Buy a Trip Pack</button> to continue planning.';
   } else {
     genBtn.disabled = false; genBtn.style.opacity = ''; genBtn.style.cursor = '';
     genHint.classList.add('hidden');
