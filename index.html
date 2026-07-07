@@ -5000,8 +5000,28 @@ function processDailyRoutes(markdown) {
       var headings = precedingText.match(/^#{1,3}\s+.+$/gm);
       if (headings) {
         var lastHeading = norm(headings[headings.length - 1]);
-        for (var hi = 0; hi < allCities.length; hi++) {
-          if (lastHeading.includes(norm(allCities[hi]))) { dayCity = allCities[hi]; break; }
+        // For travel days ("City A to City B"), prefer departure city A
+        // because daily sightseeing stops are at the departure city
+        var departureCityDetected = false;
+        for (var ai = 0; ai < allCities.length && !departureCityDetected; ai++) {
+          for (var bi = 0; bi < allCities.length && !departureCityDetected; bi++) {
+            if (ai === bi) continue;
+            var nA = norm(allCities[ai]), nB = norm(allCities[bi]);
+            var posA = lastHeading.indexOf(nA);
+            var posB = lastHeading.indexOf(nB);
+            if (posA !== -1 && posB !== -1 && posA < posB) {
+              var between = lastHeading.substring(posA + nA.length, posB);
+              if (/\s+to\s+/.test(between)) {
+                dayCity = allCities[ai];
+                departureCityDetected = true;
+              }
+            }
+          }
+        }
+        if (!departureCityDetected) {
+          for (var hi = 0; hi < allCities.length; hi++) {
+            if (lastHeading.includes(norm(allCities[hi]))) { dayCity = allCities[hi]; break; }
+          }
         }
       }
       // Clean stops that erroneously contain multiple destination city names
