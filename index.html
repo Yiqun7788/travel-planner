@@ -4972,13 +4972,21 @@ function processDailyRoutes(markdown) {
           if (s.toLowerCase().includes(c.toLowerCase())) matchCount++;
         });
         if (matchCount > 1) {
-          // Find where the multi-city suffix starts and truncate
-          var earliestIdx = s.length;
-          allCities.forEach(function(c) {
-            var idx = s.toLowerCase().indexOf(c.toLowerCase());
-            if (idx >= 0 && idx < earliestIdx) earliestIdx = idx;
+          // Split on comma, discard parts that are just a destination city name
+          var parts = s.split(',');
+          var cleaned = parts.filter(function(part) {
+            var t = part.trim().toLowerCase();
+            return !allCities.some(function(c) { return t === c.toLowerCase(); });
           });
-          s = s.substring(0, earliestIdx).trim().replace(/[,;\s]+$/, '');
+          // From remaining parts, strip trailing destination city names
+          // e.g. "Seville Cathedral Seville" → "Seville Cathedral"
+          cleaned = cleaned.map(function(part) {
+            allCities.forEach(function(c) {
+              part = part.replace(new RegExp('\\s+' + c.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\s*$', 'i'), '');
+            });
+            return part.trim();
+          }).filter(function(p) { return p.length > 0; });
+          s = cleaned.join(', ').trim();
         }
         return s;
       });
