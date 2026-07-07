@@ -4960,8 +4960,16 @@ function processDailyRoutes(markdown) {
       ? tripData.destination.split(/[,;\u3001]/).map(s => s.trim().replace(/^(?:and|&)\s+/i, '')).filter(s => s.length > 0) : [];
     var rawStops = stopsStr.split('|').map(s => s.replace(/\+/g, ' ').trim()).filter(s => s);
 
-    // Detect inter-city days BEFORE cleaning (cleaning strips city names from stops)
+    // Use the user's transport selections (from tripData) as the default travel mode
     var travelmode = 'walking';
+    if (typeof tripData !== 'undefined' && tripData) {
+      var lt = tripData.localTransport || [];
+      var ld = tripData.longDistance || [];
+      if (lt.includes('Subway/Metro') || lt.includes('Bus') || lt.includes('Tram')) travelmode = 'transit';
+      else if (lt.includes('Bike (Local)') || ld.includes('Bike')) travelmode = 'bicycling';
+      else if (ld.includes('Car') && lt.length === 0) travelmode = 'driving';
+    }
+    // Detect inter-city days BEFORE cleaning (cleaning strips city names from stops)
     if (allCities.length > 1) {
       var citiesFound = {};
       rawStops.forEach(function(s) {
