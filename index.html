@@ -4964,15 +4964,14 @@ function processDailyRoutes(markdown) {
       ? tripData.destination.split(/[,;\u3001]/).map(s => s.trim().replace(/^(?:and|&)\s+/i, '')).filter(s => s.length > 0) : [];
     var rawStops = stopsStr.split('|').map(s => s.replace(/\+/g, ' ').trim()).filter(s => s);
 
-    // Use the user's transport selections (from tripData) as the default travel mode
+    // Default to walking for single-city sightseeing days (Google Maps transit
+    // mode often fails in cities without full transit data, and walking best
+    // shows distances between attractions). Only override for inter-city days
+    // or when the user explicitly chose Car (Local).
     var travelmode = 'walking';
     if (typeof tripData !== 'undefined' && tripData) {
       var lt = tripData.localTransport || [];
-      var ld = tripData.longDistance || [];
       if (lt.includes('Car (Local)')) travelmode = 'driving';
-      else if (lt.includes('Subway/Metro') || lt.includes('Bus') || lt.includes('Tram')) travelmode = 'transit';
-      else if (lt.includes('Bike (Local)') || ld.includes('Bike')) travelmode = 'bicycling';
-      else if (ld.includes('Car') && lt.length === 0) travelmode = 'driving';
     }
     // Detect inter-city days BEFORE cleaning (cleaning strips city names from stops)
     if (allCities.length > 1) {
