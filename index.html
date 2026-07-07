@@ -466,6 +466,12 @@ details.budget-summary-section[open] > summary {
   border-bottom: 2px solid #22c55e;
 }
 details.budget-summary-section > summary::-webkit-details-marker { display: none; }
+details.budget-summary-section .day-content > p:first-of-type {
+  font-size: 0.82rem;
+  font-family: Georgia, 'Times New Roman', serif;
+  color: #555;
+  margin-bottom: 0.8em;
+}
 
 /* ─── Day Highlights (collapsed summary) ─── */
 .day-highlights {
@@ -1538,6 +1544,7 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
   .tool-btn { font-size: 0.82rem; padding: 12px 16px; }
   details.cheap-tickets-section > summary { font-size: 1rem; }
   details.budget-summary-section > summary { font-size: 1rem; }
+  details.budget-summary-section .day-content > p:first-of-type { font-size: 0.75rem; }
   #booking-section h3 { font-size: 1rem; }
   #booking-section p { font-size: 0.82rem; }
   .booking-card-title { font-size: 0.88rem; }
@@ -4636,7 +4643,7 @@ ${primaryInterests.length > 0 ? `Primary interests (focus the itinerary on these
 ${secondaryInterests.length > 0 ? `Secondary interests (include if possible): ${secondaryInterests.join(", ")}.` : ''}
 ${other ? `Other interests: ${other}.` : ''}
 ${budget > 0 ? `Total budget: ${budget} ${currency} for ${travelers} traveler(s). Recommend restaurants, activities, and accommodations that fit within this budget. Show prices in ${currency} where possible.${alreadyBooked.includes('accommodation') ? ' The traveler has already booked and paid for accommodation — do NOT include hotel/accommodation costs in the budget breakdown or recommendations.' : ''}${days <= 1 ? ' This is a single-day trip — do NOT include accommodation/hotel costs in the budget breakdown at all (no $0 line, no "not required" note). Simply omit accommodation entirely.' : ''} At the end of the itinerary (after all days), include a section with the EXACT heading: ## Budget Summary — Break down estimated costs by category (${alreadyBooked.includes('accommodation') || days <= 1 ? 'exclude accommodation, ' : ''}food, activities, etc.) and show a total. Compare against the ${budget} ${currency} budget. Do NOT include cheap ticket tips in this section.
-Begin the Budget Summary with this note in bold: **This budget covers accommodation, activities, food & local transport.${!longDistance.includes('Air') ? ' Flights/travel to your destination are not included.' : ''}**
+Begin the Budget Summary with this note on its own line, using bold italic markdown (triple asterisks): ***Note: This budget covers accommodation, activities, food & local transport.${!longDistance.includes('Air') ? ' Flights/travel to your destination are not included.' : ''}*** Then leave a blank line before continuing with the budget details.
 IMPORTANT - Transportation Budget: ALWAYS include estimated transportation costs in the Budget Summary. Use ONLY the selected transportation modes listed below — do NOT assume the traveler is using any other mode.${!longDistance.includes('Air') ? ' The traveler did NOT select Air/flights — NEVER include flights, airfare, or air travel in the itinerary or budget. Use only the selected ground transportation modes instead.' : ''} Break down costs into:${longDistance.length > 0 ? ' Long-distance Transportation (' + longDistance.join(', ') + ')' : ''}${localTransport.length > 0 ? (longDistance.length > 0 ? ' and' : '') + ' Local Transportation (' + localTransport.join(', ') + ')' : ''}.${longDistance.length > 1 ? ` COMPARISON: For each long-distance route/segment, you MUST show BOTH the estimated cost AND the approximate travel time for EVERY selected mode. This is critical — never omit travel times. Use this exact format for each route:
 - Route (Mode): ~cost, ~Xh Ym
 Example for Frankfurt→Bonn:
@@ -6416,7 +6423,7 @@ ROUND TRIP: The traveler is making a round trip${(tripData.longDistance || []).l
     const ldTransport = tripData.longDistance && tripData.longDistance.length > 0 ? tripData.longDistance.join(', ') : '';
     const lcTransport = tripData.localTransport && tripData.localTransport.length > 0 ? tripData.localTransport.join(', ') : '';
     budgetSummaryInstruction = `\n\nIMPORTANT: Keep the "## Budget Summary" section at the end of the itinerary (after all days). Update the estimated costs if the changes affect the budget.${(tripData.days || 0) <= 1 ? ' This is a single-day trip — do NOT include accommodation/hotel costs in the budget breakdown at all (no $0 line, no "not required" note). Simply omit accommodation entirely.' : ''} Break down estimated costs by category (${(tripData.alreadyBooked && tripData.alreadyBooked.includes('accommodation')) || (tripData.days || 0) <= 1 ? 'exclude accommodation, ' : ''}food, activities, etc.) and show a total. Compare against the ${tripData.budget} ${tripData.currency} budget. Do NOT include cheap ticket tips in this section.
-Begin the Budget Summary with this note in bold: **This budget covers accommodation, activities, food & local transport.${!(tripData.longDistance || []).includes('Air') ? ' Flights/travel to your destination are not included.' : ''}**
+Begin the Budget Summary with this note on its own line, using bold italic markdown (triple asterisks): ***Note: This budget covers accommodation, activities, food & local transport.${!(tripData.longDistance || []).includes('Air') ? ' Flights/travel to your destination are not included.' : ''}*** Then leave a blank line before continuing with the budget details.
 ALWAYS include estimated transportation costs in the Budget Summary. Use ONLY the selected transportation modes — do NOT assume the traveler is using any other mode.${!(tripData.longDistance || []).includes('Air') ? ' The traveler did NOT select Air/flights — NEVER include flights, airfare, or air travel in the itinerary or budget. Use only the selected ground transportation modes instead.' : ''} Break down costs into:${ldTransport ? ' Long-distance Transportation (' + ldTransport + ')' : ''}${lcTransport ? (ldTransport ? ' and' : '') + ' Local Transportation (' + lcTransport + ')' : ''}.${(tripData.longDistance || []).length > 1 ? ` COMPARISON: For each long-distance route/segment, you MUST show BOTH the estimated cost AND the approximate travel time for EVERY selected mode. This is critical — never omit travel times. Use this exact format for each route:
 - Route (Mode): ~cost, ~Xh Ym
 Example:
