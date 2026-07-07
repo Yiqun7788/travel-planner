@@ -4688,8 +4688,8 @@ DAILY ROUTE MAP - VERY IMPORTANT:
 At the VERY BEGINNING of each day (right after the day heading like "## Day 1"), you MUST include a daily route line.
 - Arrange all places for that day in the most time-efficient route order to minimize travel time.
 - Output the route in this EXACT format on a single line (this will be parsed by code):
-  DailyRoute: Place+A+${dest.replace(/\s+/g, '+')}|Place+B+${dest.replace(/\s+/g, '+')}|Place+C+${dest.replace(/\s+/g, '+')}
-- Replace spaces with + in each place name. Include the city name after each place. Separate stops with | character.
+  DailyRoute: Place+A+${dest.split(/[,;\u3001]/)[0].trim().replace(/\s+/g, '+')}|Place+B+${dest.split(/[,;\u3001]/)[0].trim().replace(/\s+/g, '+')}|Place+C+${dest.split(/[,;\u3001]/)[0].trim().replace(/\s+/g, '+')}
+- Replace spaces with + in each place name. After each place, include ONLY the specific city where that place is located (NOT the full destination list). Separate stops with | character.
 - Include ONLY attractions, restaurants, and activities the traveler will visit. Do NOT include the traveler's origin/home city, airports, train stations, or other transit hubs in DailyRoute lines.
 - The line MUST start with "DailyRoute: " exactly.
 - Example for a day in Paris with 3 stops:
@@ -4941,7 +4941,7 @@ function stripEmoji(text) {
   return text.replace(/[\u{1F000}-\u{1FFFF}]|[\u{2600}-\u{27BF}]|[\u{FE00}-\u{FE0F}]|[\u{1F900}-\u{1F9FF}]|[\u{200D}]|[\u{20E3}]|[\u{E0020}-\u{E007F}]|[\u{2300}-\u{23FF}]|[\u{2B50}\u{2B55}\u{25AA}\u{25AB}\u{25FB}-\u{25FE}\u{2934}\u{2935}\u{2B05}-\u{2B07}\u{3030}\u{303D}\u{3297}\u{3299}]|[\u{2702}-\u{27B0}]|[\u{1FA00}-\u{1FA6F}]|[\u{1FA70}-\u{1FAFF}]/gu, '').replace(/\(\s*\)/g, '').replace(/  +/g, ' ');
 }
 function processDailyRoutes(markdown) {
-  return markdown.replace(/^[>\s*`]*\*{0,2}DailyRoute:?\*{0,2}\s*(.+)$/gim, (match, stopsStr) => {
+  return markdown.replace(/^[>\s*`]*\*{0,2}DailyRoute:?\*{0,2}\s*(.+)$/gim, (match, stopsStr, offset, fullString) => {
     // Strip trailing backticks/bold markers
     stopsStr = stopsStr.replace(/[`*]+$/g, '').trim();
     // Split only on | (pipe) — commas/semicolons are too common in place names; normalize + to spaces
@@ -4949,10 +4949,43 @@ function processDailyRoutes(markdown) {
     // All destination cities for multi-city travel mode detection
     const allCities = (typeof tripData !== 'undefined' && tripData && tripData.destination)
       ? tripData.destination.split(/[,;\u3001]/).map(s => s.trim().replace(/^(?:and|&)\s+/i, '')).filter(s => s.length > 0) : [];
-    const rawStops = stopsStr.split('|').map(s => s.replace(/\+/g, ' ').trim()).filter(s => s);
+    var rawStops = stopsStr.split('|').map(s => s.replace(/\+/g, ' ').trim()).filter(s => s);
+
+    // For multi-city trips: detect day's city from heading, clean stops with multiple city names
+    var dayCity = city;
+    if (allCities.length > 1) {
+      // Look at the preceding heading to determine which city this day is in
+      var precedingText = fullString.substring(Math.max(0, offset - 500), offset);
+      var headings = precedingText.match(/^#{1,3}\s+.+$/gm);
+      if (headings) {
+        var lastHeading = headings[headings.length - 1].toLowerCase();
+        for (var hi = 0; hi < allCities.length; hi++) {
+          if (lastHeading.includes(allCities[hi].toLowerCase())) { dayCity = allCities[hi]; break; }
+        }
+      }
+      // Clean stops that erroneously contain multiple destination city names
+      // (caused by the AI appending the full destination list instead of a single city)
+      rawStops = rawStops.map(function(s) {
+        var matchCount = 0;
+        allCities.forEach(function(c) {
+          if (s.toLowerCase().includes(c.toLowerCase())) matchCount++;
+        });
+        if (matchCount > 1) {
+          // Find where the multi-city suffix starts and truncate
+          var earliestIdx = s.length;
+          allCities.forEach(function(c) {
+            var idx = s.toLowerCase().indexOf(c.toLowerCase());
+            if (idx >= 0 && idx < earliestIdx) earliestIdx = idx;
+          });
+          s = s.substring(0, earliestIdx).trim().replace(/[,;\s]+$/, '');
+        }
+        return s;
+      });
+    }
+
     const stops = rawStops.map(s => {
-      // Append destination city if not already present so Google Maps resolves the correct location
-      if (city && s && !s.toLowerCase().includes(city.toLowerCase())) s = s + ' ' + city;
+      // Append day's city if not already present so Google Maps resolves the correct location
+      if (dayCity && s && !s.toLowerCase().includes(dayCity.toLowerCase())) s = s + ' ' + dayCity;
       return s;
     });
     if (stops.length === 0) return '';
@@ -6355,8 +6388,8 @@ followed by the detail bullet points. Every place MUST have a short description 
 CRITICAL: Never invent or guess website URLs.
 
 Also at the VERY BEGINNING of each day (right after the day heading), include a daily route line in this EXACT format on a single line:
-DailyRoute: Place+A+${tripData.destination.replace(/\s+/g, '+')}|Place+B+${tripData.destination.replace(/\s+/g, '+')}|Place+C+${tripData.destination.replace(/\s+/g, '+')}
-Replace spaces with + in each place name. Include the city name. Separate stops with | character. Arrange in optimal time-saving order.${(tripData.longDistance || []).includes('Car') ? `
+DailyRoute: Place+A+${tripData.destination.split(/[,;\u3001]/)[0].trim().replace(/\s+/g, '+')}|Place+B+${tripData.destination.split(/[,;\u3001]/)[0].trim().replace(/\s+/g, '+')}|Place+C+${tripData.destination.split(/[,;\u3001]/)[0].trim().replace(/\s+/g, '+')}
+Replace spaces with + in each place name. After each place, include ONLY the specific city where that place is located (NOT the full destination list). Separate stops with | character. Arrange in optimal time-saving order.${(tripData.longDistance || []).includes('Car') ? `
 
 PARKING & DRIVING TIPS: The traveler is driving by car. For EVERY stop/attraction, include a practical parking tip right after the fee line. Use this format:
 - Parking: [specific advice for that location]
