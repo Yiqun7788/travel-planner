@@ -4646,7 +4646,7 @@ ${primaryInterests.length > 0 ? `Primary interests (focus the itinerary on these
 ${secondaryInterests.length > 0 ? `Secondary interests (include if possible): ${secondaryInterests.join(", ")}.` : ''}
 ${other ? `Other interests: ${other}.` : ''}
 ${budget > 0 ? `Total budget: ${budget} ${currency} for ${travelers} traveler(s). Recommend restaurants, activities, and accommodations that fit within this budget. Show prices in ${currency} where possible.${alreadyBooked.includes('accommodation') ? ' The traveler has already booked and paid for accommodation — do NOT include hotel/accommodation costs in the budget breakdown or recommendations.' : ''}${days <= 1 ? ' This is a single-day trip — do NOT include accommodation/hotel costs in the budget breakdown at all (no $0 line, no "not required" note). Simply omit accommodation entirely.' : ''} At the end of the itinerary (after all days), include a section with the EXACT heading: ## Budget Summary — Break down estimated costs by category (${alreadyBooked.includes('accommodation') || days <= 1 ? 'exclude accommodation, ' : ''}food, activities, etc.) and show a total. Compare against the ${budget} ${currency} budget. Do NOT include cheap ticket tips in this section.
-Begin the Budget Summary with this note on its own line, using bold italic markdown (triple asterisks): ***Note: This budget covers accommodation, activities, food & local transport.${!longDistance.includes('Air') ? ' Flights/travel to your destination are not included.' : ''}*** Then leave a blank line before continuing with the budget details.
+BUDGET NOTE (MANDATORY — DO NOT SKIP): The VERY FIRST line of the Budget Summary section (immediately after the ## Budget Summary heading) MUST be this exact note in bold italic markdown: ***Note: This budget covers accommodation, activities, food & local transport.${!longDistance.includes('Air') ? ' Flights/travel to your destination are not included.' : ''}*** Then leave a blank line before the budget details. This note MUST appear — never omit it.
 IMPORTANT - Transportation Budget: ALWAYS include estimated transportation costs in the Budget Summary. Use ONLY the selected transportation modes listed below — do NOT assume the traveler is using any other mode.${!longDistance.includes('Air') ? ' The traveler did NOT select Air/flights — NEVER include flights, airfare, or air travel in the itinerary or budget. Use only the selected ground transportation modes instead.' : ''} Break down costs into:${longDistance.length > 0 ? ' Long-distance Transportation (' + longDistance.join(', ') + ')' : ''}${localTransport.length > 0 ? (longDistance.length > 0 ? ' and' : '') + ' Local Transportation (' + localTransport.join(', ') + ')' : ''}.${longDistance.length > 1 ? ` COMPARISON: For each long-distance route/segment, you MUST show BOTH the estimated cost AND the approximate travel time for EVERY selected mode. This is critical — never omit travel times. Use this exact format for each route:
 - Route (Mode): ~cost, ~Xh Ym
 Example for Frankfurt→Bonn:
@@ -4701,7 +4701,7 @@ At the VERY BEGINNING of each day (right after the day heading like "## Day 1"),
 - Output the route in this EXACT format on a single line (this will be parsed by code):
   DailyRoute: Place+A+${dest.split(/[,;\u3001]/)[0].trim().replace(/\s+/g, '+')}|Place+B+${dest.split(/[,;\u3001]/)[0].trim().replace(/\s+/g, '+')}|Place+C+${dest.split(/[,;\u3001]/)[0].trim().replace(/\s+/g, '+')}
 - Replace spaces with + in each place name. After each place, include ONLY the specific city where that place is located (NOT the full destination list). Separate stops with | character.
-- Include ONLY attractions, restaurants, and activities the traveler will visit. Do NOT include airports, train stations, or other transit hubs in DailyRoute lines. However, for travel days that involve moving from one city to another, include the departure city name as the FIRST stop so the map shows the intercity driving route (e.g. DailyRoute: Seville|Mezquita+Cordoba|Roman+Bridge+Cordoba).
+- Include ONLY attractions, restaurants, and activities the traveler will physically visit that day. Do NOT include airports, train stations, transit hubs, or city names by themselves. On travel days between cities, include only the stops in the destination city (the city you arrive in and explore).
 - The line MUST start with "DailyRoute: " exactly.
 - Example for a day in Paris with 3 stops:
   DailyRoute: Eiffel+Tower+Paris|Louvre+Museum+Paris|Notre+Dame+Cathedral+Paris
@@ -4964,26 +4964,13 @@ function processDailyRoutes(markdown) {
       ? tripData.destination.split(/[,;\u3001]/).map(s => s.trim().replace(/^(?:and|&)\s+/i, '')).filter(s => s.length > 0) : [];
     var rawStops = stopsStr.split('|').map(s => s.replace(/\+/g, ' ').trim()).filter(s => s);
 
-    // Default to walking for single-city sightseeing days (Google Maps transit
-    // mode often fails in cities without full transit data, and walking best
-    // shows distances between attractions). Only override for inter-city days
-    // or when the user explicitly chose Car (Local).
+    // Always use walking mode for daily route maps — these show attractions
+    // within a single city where walking best represents actual distances.
+    // Only override to driving when user explicitly selected Car (Local).
     var travelmode = 'walking';
     if (typeof tripData !== 'undefined' && tripData) {
       var lt = tripData.localTransport || [];
       if (lt.includes('Car (Local)')) travelmode = 'driving';
-    }
-    // Detect inter-city days BEFORE cleaning (cleaning strips city names from stops)
-    if (allCities.length > 1) {
-      var citiesFound = {};
-      rawStops.forEach(function(s) {
-        var sn = norm(s);
-        allCities.forEach(function(c) { if (sn.includes(norm(c))) citiesFound[norm(c)] = true; });
-      });
-      if (Object.keys(citiesFound).length > 1) {
-        var ld = (typeof tripData !== 'undefined' && tripData && tripData.longDistance) ? tripData.longDistance : '';
-        travelmode = ld.includes('Bike') ? 'bicycling' : 'driving';
-      }
     }
 
     // For multi-city trips: detect day's city from heading, clean stops with multiple city names
@@ -6436,7 +6423,7 @@ ROUND TRIP: The traveler is making a round trip${(tripData.longDistance || []).l
     const ldTransport = tripData.longDistance && tripData.longDistance.length > 0 ? tripData.longDistance.join(', ') : '';
     const lcTransport = tripData.localTransport && tripData.localTransport.length > 0 ? tripData.localTransport.join(', ') : '';
     budgetSummaryInstruction = `\n\nIMPORTANT: Keep the "## Budget Summary" section at the end of the itinerary (after all days). Update the estimated costs if the changes affect the budget.${(tripData.days || 0) <= 1 ? ' This is a single-day trip — do NOT include accommodation/hotel costs in the budget breakdown at all (no $0 line, no "not required" note). Simply omit accommodation entirely.' : ''} Break down estimated costs by category (${(tripData.alreadyBooked && tripData.alreadyBooked.includes('accommodation')) || (tripData.days || 0) <= 1 ? 'exclude accommodation, ' : ''}food, activities, etc.) and show a total. Compare against the ${tripData.budget} ${tripData.currency} budget. Do NOT include cheap ticket tips in this section.
-Begin the Budget Summary with this note on its own line, using bold italic markdown (triple asterisks): ***Note: This budget covers accommodation, activities, food & local transport.${!(tripData.longDistance || []).includes('Air') ? ' Flights/travel to your destination are not included.' : ''}*** Then leave a blank line before continuing with the budget details.
+BUDGET NOTE (MANDATORY — DO NOT SKIP): The VERY FIRST line of the Budget Summary section (immediately after the ## Budget Summary heading) MUST be this exact note in bold italic markdown: ***Note: This budget covers accommodation, activities, food & local transport.${!(tripData.longDistance || []).includes('Air') ? ' Flights/travel to your destination are not included.' : ''}*** Then leave a blank line before the budget details. This note MUST appear — never omit it.
 ALWAYS include estimated transportation costs in the Budget Summary. Use ONLY the selected transportation modes — do NOT assume the traveler is using any other mode.${!(tripData.longDistance || []).includes('Air') ? ' The traveler did NOT select Air/flights — NEVER include flights, airfare, or air travel in the itinerary or budget. Use only the selected ground transportation modes instead.' : ''} Break down costs into:${ldTransport ? ' Long-distance Transportation (' + ldTransport + ')' : ''}${lcTransport ? (ldTransport ? ' and' : '') + ' Local Transportation (' + lcTransport + ')' : ''}.${(tripData.longDistance || []).length > 1 ? ` COMPARISON: For each long-distance route/segment, you MUST show BOTH the estimated cost AND the approximate travel time for EVERY selected mode. This is critical — never omit travel times. Use this exact format for each route:
 - Route (Mode): ~cost, ~Xh Ym
 Example:
