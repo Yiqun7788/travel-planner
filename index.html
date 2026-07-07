@@ -4698,7 +4698,7 @@ At the VERY BEGINNING of each day (right after the day heading like "## Day 1"),
 - Output the route in this EXACT format on a single line (this will be parsed by code):
   DailyRoute: Place+A+${dest.split(/[,;\u3001]/)[0].trim().replace(/\s+/g, '+')}|Place+B+${dest.split(/[,;\u3001]/)[0].trim().replace(/\s+/g, '+')}|Place+C+${dest.split(/[,;\u3001]/)[0].trim().replace(/\s+/g, '+')}
 - Replace spaces with + in each place name. After each place, include ONLY the specific city where that place is located (NOT the full destination list). Separate stops with | character.
-- Include ONLY attractions, restaurants, and activities the traveler will visit. Do NOT include the traveler's origin/home city, airports, train stations, or other transit hubs in DailyRoute lines.
+- Include ONLY attractions, restaurants, and activities the traveler will visit. Do NOT include airports, train stations, or other transit hubs in DailyRoute lines. However, for travel days that involve moving from one city to another, include the departure city name as the FIRST stop so the map shows the intercity driving route (e.g. DailyRoute: Seville|Mezquita+Cordoba|Roman+Bridge+Cordoba).
 - The line MUST start with "DailyRoute: " exactly.
 - Example for a day in Paris with 3 stops:
   DailyRoute: Eiffel+Tower+Paris|Louvre+Museum+Paris|Notre+Dame+Cathedral+Paris
