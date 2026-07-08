@@ -4706,7 +4706,7 @@ At the VERY BEGINNING of each day (right after the day heading like "## Day 1"),
   DailyRoute: Place+A+${dest.split(/[,;\u3001]/)[0].trim().replace(/\s+/g, '+')}|Place+B+${dest.split(/[,;\u3001]/)[0].trim().replace(/\s+/g, '+')}|Place+C+${dest.split(/[,;\u3001]/)[0].trim().replace(/\s+/g, '+')}
 - Replace spaces with + in each place name. After each place, include ONLY the specific city where that place is located (NOT the full destination list). Separate stops with | character.
 - Include ONLY attractions, restaurants, and activities the traveler will physically visit that day. Do NOT include airports, train stations, transit hubs, city names by themselves, or "Travel/Drive from X to Y" entries in DailyRoute.
-- TRAVEL DAYS: On days that involve moving from one city to another, the DailyRoute must contain ONLY the attractions, restaurants, and activities the traveler physically visits that day. Do NOT include "Travel/Drive from X to Y" entries. If the traveler explores City A in the morning and then drives to City B later (e.g., a departure day heading to the airport), the DailyRoute must list City A's sightseeing places, NOT City B. If the traveler drives to City B first and then explores City B, list City B's places.
+- CRITICAL: Each DailyRoute line must contain places from ONLY ONE city — the city where the traveler does sightseeing that day. NEVER mix places from different cities in the same DailyRoute. On travel days between cities, include ONLY places from the city where sightseeing happens (usually the departure city before driving). Do NOT include "Travel/Drive from X to Y" entries, airports, or the arrival city.
 - The line MUST start with "DailyRoute: " exactly.
 - Example for a day in Paris with 3 stops:
   DailyRoute: Eiffel+Tower+Paris|Louvre+Museum+Paris|Notre+Dame+Cathedral+Paris
@@ -5052,6 +5052,19 @@ function processDailyRoutes(markdown) {
       });
     }
 
+    // For multi-city trips: filter out stops that are clearly from a different city
+    if (allCities.length > 1 && dayCity) {
+      rawStops = rawStops.filter(function(s) {
+        for (var ci = 0; ci < allCities.length; ci++) {
+          if (norm(allCities[ci]) === norm(dayCity)) continue;
+          if (norm(s).includes(norm(allCities[ci])) && !norm(s).includes(norm(dayCity))) {
+            return false;
+          }
+        }
+        return true;
+      });
+    }
+
     const stops = rawStops.map(s => {
       // Append day's city if not already present so Google Maps resolves the correct location
       if (dayCity && s && !norm(s).includes(norm(dayCity))) s = s + ' ' + dayCity;
@@ -5133,6 +5146,26 @@ function restructureItinerary() {
 
       // Detect place name: <p> containing <strong>
       if (el.tagName === 'P' && el.querySelector('strong')) {
+        const allStrongs = el.querySelectorAll('strong');
+        // Handle multiple bold place names in the same <p> (AI omitted blank line between places)
+        if (allStrongs.length > 1) {
+          allStrongs.forEach(function(s, si) {
+            if (current) stops.push(current);
+            var sName = s.textContent.trim().replace(timeStampPrefixRe, '');
+            // Extract description text between this <strong> and the next one
+            var sDesc = '';
+            var node = s.nextSibling;
+            while (node) {
+              if (node.nodeType === 1 && node.tagName === 'STRONG') break;
+              if (node.nodeType === 1 && node.querySelector && node.querySelector('strong')) break;
+              sDesc += node.textContent || '';
+              node = node.nextSibling;
+            }
+            sDesc = sDesc.trim().replace(/^[:\-–—\s]+/, '').replace(timeStampPrefixRe, '').replace(/^[:\-–—\s]+/, '');
+            current = { name: sName, description: sDesc, mapUrl: '', website: '', address: '', hours: '', fee: '', parking: '', notes: [], extraEls: [] };
+          });
+          continue;
+        }
         if (current) stops.push(current);
         const nameEl = el.querySelector('strong');
         // Strip time prefix from bold name (e.g. "10:30 AM - 12:30 PM St. Paul's Cathedral")
@@ -5336,9 +5369,33 @@ function restructureItinerary() {
         }
       }
 
-      // Additional description paragraphs — append to description
+      // Detect unbolded place names: "Place Name — Description" followed by structured data <ul>
+      // This handles cases where the AI forgets to bold the place name
       if (current && el.tagName === 'P' && !el.querySelector('strong')) {
         const pText = el.textContent.trim();
+        const dashMatch = pText.match(/^([^—–]{2,}?)\s*[—–]\s+(.+)/);
+        if (dashMatch && !structuredLineRe.test(pText) && !timeStampPrefixRe.test(pText)) {
+          // Look ahead: check if next element sibling is a <ul> with structured data
+          var nextIdx = i + 1;
+          while (nextIdx < elements.length && elements[nextIdx].nodeType !== 1) nextIdx++;
+          if (nextIdx < elements.length && elements[nextIdx].nodeType === 1 && elements[nextIdx].tagName === 'UL') {
+            var peekLis = elements[nextIdx].querySelectorAll('li');
+            var hasStructured = false;
+            for (var li2 = 0; li2 < peekLis.length; li2++) {
+              if (structuredLineRe.test(peekLis[li2].textContent.trim())) { hasStructured = true; break; }
+            }
+            if (hasStructured) {
+              stops.push(current);
+              current = {
+                name: dashMatch[1].trim().replace(timeStampPrefixRe, ''),
+                description: dashMatch[2].trim(),
+                mapUrl: '', website: '', address: '', hours: '', fee: '', parking: '', notes: [], extraEls: []
+              };
+              continue;
+            }
+          }
+        }
+        // Additional description paragraphs — append to description
         if (pText) {
           current.description = current.description ? (current.description + ' ' + pText) : pText;
         }
@@ -6449,7 +6506,7 @@ CRITICAL: Never invent or guess website URLs.
 Also at the VERY BEGINNING of each day (right after the day heading), include a daily route line in this EXACT format on a single line:
 DailyRoute: Place+A+${tripData.destination.split(/[,;\u3001]/)[0].trim().replace(/\s+/g, '+')}|Place+B+${tripData.destination.split(/[,;\u3001]/)[0].trim().replace(/\s+/g, '+')}|Place+C+${tripData.destination.split(/[,;\u3001]/)[0].trim().replace(/\s+/g, '+')}
 Replace spaces with + in each place name. After each place, include ONLY the specific city where that place is located (NOT the full destination list). Separate stops with | character. Arrange in optimal time-saving order.
-TRAVEL DAYS: On days that involve moving from one city to another, the DailyRoute must contain ONLY the attractions, restaurants, and activities the traveler physically visits that day. Do NOT include "Travel/Drive from X to Y" entries. If the traveler explores City A in the morning and then drives to City B later (e.g., a departure day heading to the airport), list City A's sightseeing places, NOT City B. If the traveler drives to City B first and then explores City B, list City B's places.${(tripData.longDistance || []).includes('Car') ? `
+CRITICAL: Each DailyRoute line must contain places from ONLY ONE city — the city where the traveler does sightseeing that day. NEVER mix places from different cities in the same DailyRoute. On travel days between cities, include ONLY places from the city where sightseeing happens (usually the departure city before driving). Do NOT include "Travel/Drive from X to Y" entries, airports, or the arrival city.${(tripData.longDistance || []).includes('Car') ? `
 
 PARKING & DRIVING TIPS: The traveler is driving by car. For EVERY stop/attraction, include a practical parking tip right after the fee line. Use this format:
 - Parking: [specific advice for that location]
