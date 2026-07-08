@@ -5079,8 +5079,19 @@ function processDailyRoutes(markdown) {
     // Helper: build a single route link for a set of stops in a given city
     function buildRouteLink(cityStops, linkCity, label) {
       var stops = cityStops.map(function(s) {
-        if (linkCity && s && !norm(s).includes(norm(linkCity))) s = s + ' ' + linkCity;
-        return s;
+        if (!linkCity || !s) return s;
+        var normCity = norm(linkCity);
+        var normStop = norm(s);
+        // Strip trailing city name if present (space or comma separated)
+        // so we can re-add it with comma format for better geocoding
+        var cityIdx = normStop.lastIndexOf(normCity);
+        if (cityIdx > 0 && cityIdx + normCity.length >= normStop.length) {
+          s = s.substring(0, cityIdx).replace(/[,\s]+$/, '').trim();
+        }
+        // Use "Place, City" comma format — Google Maps resolves this far more
+        // reliably than "Place City" (space-only), especially for smaller cities
+        // like Ronda that exist in multiple countries
+        return s + ', ' + linkCity;
       });
       if (stops.length === 0) return '';
       var url;
