@@ -4706,7 +4706,7 @@ At the VERY BEGINNING of each day (right after the day heading like "## Day 1"),
   DailyRoute: Place+A+${dest.split(/[,;\u3001]/)[0].trim().replace(/\s+/g, '+')}|Place+B+${dest.split(/[,;\u3001]/)[0].trim().replace(/\s+/g, '+')}|Place+C+${dest.split(/[,;\u3001]/)[0].trim().replace(/\s+/g, '+')}
 - Replace spaces with + in each place name. After each place, include ONLY the specific city where that place is located (NOT the full destination list). Separate stops with | character.
 - Include ONLY attractions, restaurants, and activities the traveler will physically visit that day. Do NOT include airports, train stations, transit hubs, city names by themselves, or "Travel/Drive from X to Y" entries in DailyRoute.
-- CRITICAL: Each DailyRoute line must contain places from ONLY ONE city — the city where the traveler does sightseeing that day. NEVER mix places from different cities in the same DailyRoute. On travel days between cities, include ONLY places from the city where sightseeing happens (usually the departure city before driving). Do NOT include "Travel/Drive from X to Y" entries, airports, or the arrival city.
+- CRITICAL: Each DailyRoute line must contain places from ONLY ONE city. NEVER mix places from different cities in the same DailyRoute. If a day involves sightseeing in TWO different cities (e.g., a travel day with stops in both the departure and destination city), output a SEPARATE DailyRoute line for each city. Example for a day visiting Córdoba then Granada: output one DailyRoute for Córdoba places, then one DailyRoute for Granada places on the next line. Do NOT include "Travel/Drive from X to Y" entries, airports, or the arrival city name by itself.
 - The line MUST start with "DailyRoute: " exactly.
 - Example for a day in Paris with 3 stops:
   DailyRoute: Eiffel+Tower+Paris|Louvre+Museum+Paris|Notre+Dame+Cathedral+Paris
@@ -4994,17 +4994,16 @@ function processDailyRoutes(markdown) {
 
     // For multi-city trips: detect day's city from heading, clean stops with multiple city names
     var dayCity = city;
+    var headingCityA = null, headingCityB = null;
     if (allCities.length > 1) {
       // Look at the preceding heading to determine which city this day is in
       var precedingText = fullString.substring(Math.max(0, offset - 500), offset);
       var headings = precedingText.match(/^#{1,3}\s+.+$/gm);
       if (headings) {
         var lastHeading = norm(headings[headings.length - 1]);
-        // For travel days ("City A to City B"), prefer departure city A
-        // because daily sightseeing stops are at the departure city
-        var departureCityDetected = false;
-        for (var ai = 0; ai < allCities.length && !departureCityDetected; ai++) {
-          for (var bi = 0; bi < allCities.length && !departureCityDetected; bi++) {
+        // Detect two-city days ("City A to City B")
+        for (var ai = 0; ai < allCities.length; ai++) {
+          for (var bi = 0; bi < allCities.length; bi++) {
             if (ai === bi) continue;
             var nA = norm(allCities[ai]), nB = norm(allCities[bi]);
             var posA = lastHeading.indexOf(nA);
@@ -5012,16 +5011,20 @@ function processDailyRoutes(markdown) {
             if (posA !== -1 && posB !== -1 && posA < posB) {
               var between = lastHeading.substring(posA + nA.length, posB);
               if (/\s+to\s+/.test(between)) {
-                dayCity = allCities[ai];
-                departureCityDetected = true;
+                headingCityA = allCities[ai];
+                headingCityB = allCities[bi];
               }
             }
           }
         }
-        if (!departureCityDetected) {
+        // Detect single-city day from heading
+        if (!headingCityA) {
           for (var hi = 0; hi < allCities.length; hi++) {
             if (lastHeading.includes(norm(allCities[hi]))) { dayCity = allCities[hi]; break; }
           }
+        } else {
+          // For two-city days, default dayCity to the first heading city
+          dayCity = headingCityA;
         }
       }
       // Clean stops that erroneously contain multiple destination city names
@@ -5052,39 +5055,58 @@ function processDailyRoutes(markdown) {
       });
     }
 
-    // For multi-city trips: filter out stops that are clearly from a different city
-    if (allCities.length > 1 && dayCity) {
-      rawStops = rawStops.filter(function(s) {
-        for (var ci = 0; ci < allCities.length; ci++) {
-          if (norm(allCities[ci]) === norm(dayCity)) continue;
-          if (norm(s).includes(norm(allCities[ci])) && !norm(s).includes(norm(dayCity))) {
-            return false;
-          }
-        }
-        return true;
-      });
-    }
+    // Filter out any stops that became empty after cleaning
+    rawStops = rawStops.filter(function(s) { return s.length > 0; });
+    if (rawStops.length === 0) return '';
 
-    const stops = rawStops.map(s => {
-      // Append day's city if not already present so Google Maps resolves the correct location
-      if (dayCity && s && !norm(s).includes(norm(dayCity))) s = s + ' ' + dayCity;
-      return s;
+    // Group stops by city
+    var cityGroups = {};
+    rawStops.forEach(function(s) {
+      var stopCity = null;
+      for (var ci = 0; ci < allCities.length; ci++) {
+        if (norm(s).includes(norm(allCities[ci]))) { stopCity = allCities[ci]; break; }
+      }
+      if (!stopCity) stopCity = dayCity;
+      if (!cityGroups[stopCity]) cityGroups[stopCity] = [];
+      cityGroups[stopCity].push(s);
     });
-    if (stops.length === 0) return '';
+
+    var groupKeys = Object.keys(cityGroups);
 
     const mapsEncode = s => encodeURIComponent(s).replace(/%20/g, '+');
-    let directionsUrl;
-    if (stops.length === 1) {
-      directionsUrl = `https://www.google.com/maps/search/?api=1&query=${mapsEncode(stops[0])}`;
-    } else {
-      const o = mapsEncode(stops[0]);
-      const d = mapsEncode(stops[stops.length - 1]);
-      const w = stops.length > 2 ? '&waypoints=' + stops.slice(1, -1).map(s => mapsEncode(s)).join('%7C') : '';
-      directionsUrl = `https://www.google.com/maps/dir/?api=1&origin=${o}&destination=${d}${w}&travelmode=${travelmode}`;
+    var modeIcon = travelmode === 'walking' ? '&#128694;' : travelmode === 'bicycling' ? '&#128690;' : '&#128663;';
+
+    // Helper: build a single route link for a set of stops in a given city
+    function buildRouteLink(cityStops, linkCity, label) {
+      var stops = cityStops.map(function(s) {
+        if (linkCity && s && !norm(s).includes(norm(linkCity))) s = s + ' ' + linkCity;
+        return s;
+      });
+      if (stops.length === 0) return '';
+      var url;
+      if (stops.length === 1) {
+        url = 'https://www.google.com/maps/search/?api=1&query=' + mapsEncode(stops[0]);
+      } else {
+        var o = mapsEncode(stops[0]);
+        var d = mapsEncode(stops[stops.length - 1]);
+        var w = stops.length > 2 ? '&waypoints=' + stops.slice(1, -1).map(function(s) { return mapsEncode(s); }).join('%7C') : '';
+        url = 'https://www.google.com/maps/dir/?api=1&origin=' + o + '&destination=' + d + w + '&travelmode=' + travelmode;
+      }
+      return '<a href="' + url + '" target="_blank" rel="noopener noreferrer" class="route-map-link">' + modeIcon + ' &#128506; ' + label + '</a>';
     }
 
-    var modeIcon = travelmode === 'walking' ? '&#128694;' : travelmode === 'bicycling' ? '&#128690;' : '&#128663;';
-    return `<a href="${directionsUrl}" target="_blank" rel="noopener noreferrer" class="route-map-link">${modeIcon} &#128506; View Day's Route on Google Maps</a>`;
+    // If stops span multiple cities, generate per-city links
+    if (groupKeys.length > 1) {
+      var links = groupKeys.map(function(gc) {
+        return buildRouteLink(cityGroups[gc], gc, 'View ' + gc + ' Walking Route');
+      }).filter(function(l) { return l.length > 0; });
+      if (links.length === 0) return '';
+      return links.join('\n');
+    }
+
+    // Single city: generate one link
+    var singleCity = groupKeys.length === 1 ? groupKeys[0] : dayCity;
+    return buildRouteLink(rawStops, singleCity, "View Day's Route on Google Maps");
   });
 }
 
@@ -5655,17 +5677,16 @@ function restructureItinerary() {
       next = next.nextSibling;
     }
 
-    // Extract route-map-link if present
-    let routeMapEl = null;
+    // Extract all route-map-link elements if present
+    var routeMapEls = [];
     const elSiblings = siblings.filter(s => s.nodeType === 1);
     for (let i = 0; i < elSiblings.length; i++) {
       if (elSiblings[i].tagName === 'A' && elSiblings[i].classList.contains('route-map-link')) {
-        routeMapEl = elSiblings[i];
-        break;
-      }
-      if (elSiblings[i].querySelector && elSiblings[i].querySelector('.route-map-link')) {
-        routeMapEl = elSiblings[i].querySelector('.route-map-link');
-        break;
+        routeMapEls.push(elSiblings[i]);
+      } else if (elSiblings[i].querySelector) {
+        elSiblings[i].querySelectorAll('.route-map-link').forEach(function(el) {
+          routeMapEls.push(el);
+        });
       }
     }
 
@@ -5689,7 +5710,7 @@ function restructureItinerary() {
         const content = document.createElement('div');
         content.className = 'day-content';
         content.appendChild(h2.cloneNode(true));
-        if (routeMapEl) content.appendChild(routeMapEl.cloneNode(true));
+        routeMapEls.forEach(function(el) { content.appendChild(el.cloneNode(true)); });
         directStops.forEach(stop => content.appendChild(buildStopCard(stop)));
         details.appendChild(summary);
         details.appendChild(content);
@@ -5751,11 +5772,10 @@ function restructureItinerary() {
     content.className = 'day-content';
     content.appendChild(h2.cloneNode(true));
 
-    // Route map link
-    if (routeMapEl) {
-      const clone = routeMapEl.cloneNode(true);
-      content.appendChild(clone);
-    }
+    // Route map links
+    routeMapEls.forEach(function(el) {
+      content.appendChild(el.cloneNode(true));
+    });
 
     // Day overview
     const overview = document.createElement('div');
@@ -5894,9 +5914,10 @@ function restructureItinerary() {
       const content = document.createElement('div');
       content.className = 'day-content';
 
-      // Look for route map link
-      const routeLink = container.querySelector('.route-map-link');
-      if (routeLink) content.appendChild(routeLink.cloneNode(true));
+      // Look for route map links
+      container.querySelectorAll('.route-map-link').forEach(function(el) {
+        content.appendChild(el.cloneNode(true));
+      });
 
       allStops.forEach(stop => content.appendChild(buildStopCard(stop)));
       details.appendChild(summary);
@@ -6506,7 +6527,7 @@ CRITICAL: Never invent or guess website URLs.
 Also at the VERY BEGINNING of each day (right after the day heading), include a daily route line in this EXACT format on a single line:
 DailyRoute: Place+A+${tripData.destination.split(/[,;\u3001]/)[0].trim().replace(/\s+/g, '+')}|Place+B+${tripData.destination.split(/[,;\u3001]/)[0].trim().replace(/\s+/g, '+')}|Place+C+${tripData.destination.split(/[,;\u3001]/)[0].trim().replace(/\s+/g, '+')}
 Replace spaces with + in each place name. After each place, include ONLY the specific city where that place is located (NOT the full destination list). Separate stops with | character. Arrange in optimal time-saving order.
-CRITICAL: Each DailyRoute line must contain places from ONLY ONE city — the city where the traveler does sightseeing that day. NEVER mix places from different cities in the same DailyRoute. On travel days between cities, include ONLY places from the city where sightseeing happens (usually the departure city before driving). Do NOT include "Travel/Drive from X to Y" entries, airports, or the arrival city.${(tripData.longDistance || []).includes('Car') ? `
+CRITICAL: Each DailyRoute line must contain places from ONLY ONE city. NEVER mix places from different cities in the same DailyRoute. If a day involves sightseeing in TWO different cities (e.g., a travel day with stops in both the departure and destination city), output a SEPARATE DailyRoute line for each city. Example for a day visiting Córdoba then Granada: output one DailyRoute for Córdoba places, then one DailyRoute for Granada places on the next line. Do NOT include "Travel/Drive from X to Y" entries, airports, or the arrival city name by itself.${(tripData.longDistance || []).includes('Car') ? `
 
 PARKING & DRIVING TIPS: The traveler is driving by car. For EVERY stop/attraction, include a practical parking tip right after the fee line. Use this format:
 - Parking: [specific advice for that location]
