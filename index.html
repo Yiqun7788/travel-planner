@@ -5076,10 +5076,6 @@ function processDailyRoutes(markdown) {
     const mapsEncode = s => encodeURIComponent(s).replace(/%20/g, '+');
     var modeIcon = travelmode === 'walking' ? '&#128694;' : travelmode === 'bicycling' ? '&#128690;' : '&#128663;';
 
-    // Primary destination city used as geographic anchor for disambiguation
-    // (e.g., Seville anchors Granada/Córdoba/Ronda to Spain, not Nicaragua/Argentina/Canada)
-    var anchorCity = allCities.length > 0 ? allCities[0] : city;
-
     // Helper: build a single route link for a set of stops in a given city
     function buildRouteLink(cityStops, linkCity, label) {
       var stops = cityStops.map(function(s) {
@@ -5092,25 +5088,10 @@ function processDailyRoutes(markdown) {
         if (cityIdx > 0 && cityIdx + normCity.length >= normStop.length) {
           s = s.substring(0, cityIdx).replace(/[,\s]+$/, '').trim();
         }
-        // Also strip trailing anchor city if present (e.g. "Mezquita Cordoba Seville")
-        if (anchorCity && norm(anchorCity) !== normCity) {
-          var normAnchor = norm(anchorCity);
-          var anchorIdx = norm(s).lastIndexOf(normAnchor);
-          if (anchorIdx > 0 && anchorIdx + normAnchor.length >= norm(s).length) {
-            s = s.substring(0, anchorIdx).replace(/[,\s]+$/, '').trim();
-          }
-        }
         // Use "Place, City" comma format — Google Maps resolves this far more
-        // reliably than "Place City" (space-only), especially for smaller cities
-        // like Ronda that exist in multiple countries.
-        // Append anchor city for geographic disambiguation when the stop's city
-        // differs from the primary destination (e.g., "Alhambra, Granada, Seville"
-        // ensures Google Maps geocodes to Granada near Seville, Spain)
-        s = s + ', ' + linkCity;
-        if (anchorCity && norm(anchorCity) !== normCity) {
-          s = s + ', ' + anchorCity;
-        }
-        return s;
+        // reliably than "Place City" (space-only). The comma tells Google Maps
+        // that the city name is a location qualifier, not part of the place name.
+        return s + ', ' + linkCity;
       });
       if (stops.length === 0) return '';
       var url;
