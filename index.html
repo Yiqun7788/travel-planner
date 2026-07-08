@@ -6377,8 +6377,12 @@ document.getElementById('update-itinerary-btn').addEventListener('click', async 
     return;
   }
 
-  // Apply planning page changes to tripData
+  // Apply planning page changes to tripData (save old values to restore on failure)
+  var savedTripFields = null;
+  var tripFieldKeys = ['origin','destination','days','startDate','endDate','interests','longDistance','localTransport','transportation','travelers','budget','currency','pace','wantsCheapTickets','roundTrip','alreadyBooked','additionalInstructions'];
   if (planningChanges.length > 0) {
+    savedTripFields = {};
+    tripFieldKeys.forEach(function(k) { savedTripFields[k] = tripData[k]; });
     tripData.origin = newInputs.origin;
     tripData.destination = newInputs.destination;
     tripData.days = newInputs.days;
@@ -6499,15 +6503,22 @@ VISIT TIME CHECK — When scheduling each place, ensure the recommended arrival 
 
   finishProgress();
 
-  if (result === '__TEMP_ERROR__') {
-    const detailEl = document.getElementById('retry-modal-detail');
-    if (window.__lastApiError) {
-      detailEl.textContent = window.__lastApiError;
-      detailEl.style.display = 'block';
-    } else {
-      detailEl.style.display = 'none';
+  if (result === '__TEMP_ERROR__' || !result) {
+    // Restore tripData so changes can be re-detected on retry
+    if (savedTripFields) {
+      tripFieldKeys.forEach(function(k) { tripData[k] = savedTripFields[k]; });
+      document.getElementById('results-title').textContent = `Your Trip: ${tripData.destination} (${tripData.days} days)`;
     }
-    document.getElementById('retry-modal').classList.add('active');
+    if (result === '__TEMP_ERROR__') {
+      const detailEl = document.getElementById('retry-modal-detail');
+      if (window.__lastApiError) {
+        detailEl.textContent = window.__lastApiError;
+        detailEl.style.display = 'block';
+      } else {
+        detailEl.style.display = 'none';
+      }
+      document.getElementById('retry-modal').classList.add('active');
+    }
     return;
   }
 
