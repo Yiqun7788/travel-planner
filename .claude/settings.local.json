@@ -33,7 +33,18 @@
       "Bash(node -e:*)",
       "Bash(find:*)",
       "Bash(node -c:*)",
-      "Bash(git stash:*)"
+      "Bash(git stash:*)",
+      "Bash(change your trip settings\" instead of proceeding. Now::*)",
+      "WebFetch(domain:developers.skyscanner.net)",
+      "WebFetch(domain:www.skyscanner.com)",
+      "WebFetch(domain:www.skyscanner.net)",
+      "Bash(ls:*)",
+      "WebFetch(domain:unsplash.com)",
+      "Bash(done)",
+      "Bash(python3:*)",
+      "Bash(make changes.\" Now saves old tripData values before applying changes:*)",
+      "WebFetch(domain:www.google.com)",
+      "Bash(Cordoba\"\\), which shows a search results page with multiple matches:*)"
     ]
   }
 }

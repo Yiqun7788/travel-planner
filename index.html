@@ -3768,9 +3768,14 @@ document.getElementById('start-new-trip-confirm').addEventListener('click', func
   }
 });
 // ─── Retry Modal handlers ───
+window.__retryAction = 'generate'; // track which action to retry
 document.getElementById('retry-modal-retry').addEventListener('click', function() {
   document.getElementById('retry-modal').classList.remove('active');
-  document.getElementById('generate-button').click();
+  if (window.__retryAction === 'update') {
+    document.getElementById('update-itinerary-btn').click();
+  } else {
+    document.getElementById('generate-button').click();
+  }
 });
 document.getElementById('retry-modal-close').addEventListener('click', function() {
   document.getElementById('retry-modal').classList.remove('active');
@@ -4505,7 +4510,8 @@ document.getElementById('generate-button').addEventListener('click', async () =>
     alert(t.errorDateOrder);
     return;
   }
-  if (new Date(start) < new Date()) {
+  var todayMidnight = new Date(); todayMidnight.setHours(0,0,0,0);
+  if (new Date(start) < todayMidnight) {
     alert(t.errorPastTime);
     return;
   }
@@ -4722,6 +4728,7 @@ ROUND TRIP: The traveler is making a round trip${longDistance.length === 1 ? ' b
   finishProgress();
 
   if (result === '__TEMP_ERROR__') {
+    window.__retryAction = 'generate';
     const detailEl = document.getElementById('retry-modal-detail');
     if (window.__lastApiError) {
       detailEl.textContent = window.__lastApiError;
@@ -6611,6 +6618,7 @@ VISIT TIME CHECK — When scheduling each place, ensure the recommended arrival 
       document.getElementById('results-title').textContent = `Your Trip: ${tripData.destination} (${tripData.days} days)`;
     }
     if (result === '__TEMP_ERROR__') {
+      window.__retryAction = 'update';
       const detailEl = document.getElementById('retry-modal-detail');
       if (window.__lastApiError) {
         detailEl.textContent = window.__lastApiError;
