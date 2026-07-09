@@ -5551,10 +5551,14 @@ function restructureItinerary() {
     // Action buttons row (Map + Website) — inside left so they wrap on mobile
     const actions = document.createElement('div');
     actions.className = 'stop-actions';
-    if (stop.mapUrl) {
+    if (stop.mapUrl || stop.address) {
       const mapBtn = document.createElement('a');
       mapBtn.className = 'stop-map-btn';
-      mapBtn.href = stop.mapUrl;
+      // Prefer full address for Google Maps — it pinpoints the exact location
+      // instead of showing a search results page with multiple matches
+      mapBtn.href = stop.address
+        ? 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(stop.address).replace(/%20/g, '+')
+        : stop.mapUrl;
       mapBtn.target = '_blank';
       mapBtn.rel = 'noopener noreferrer';
       mapBtn.textContent = '\uD83D\uDDFA\uFE0F View on Google Maps';
