@@ -4664,7 +4664,8 @@ Example for Frankfurt→Bonn:
 - Frankfurt→Bonn (Long-Distance Bus): ~€40, ~2h 30min
 - Frankfurt→Bonn (Car): ~€60, ~1h 45min
 The traveler needs travel times to compare options.` : ' For each long-distance route/segment, include the approximate travel time alongside the cost (e.g., "CityA→CityB (Train): ~€80, ~1h 20min").'} Show estimated costs for each route/segment between destinations using ONLY these selected modes. Do NOT state that any transportation is "already booked" or "already paid for" — the traveler has NOT pre-paid for transportation. This is especially important for multi-destination trips.` : ''}
-${longDistance.length > 0 ? `Long-distance transportation (between cities/countries): ${longDistance.join(", ")}. Use ONLY ${longDistance.join("/")} for travel between destinations${!longDistance.includes('Air') ? ' — NO flights' : ''}.` : ''}
+${longDistance.length > 0 ? `Long-distance transportation (between cities/countries): ${longDistance.join(", ")}. Use ONLY ${longDistance.join("/")} for travel between destinations${!longDistance.includes('Air') ? ' — NO flights' : ''}.
+TRAVEL DAY DETAILS: On days when the traveler moves between cities, you MUST include the travel details as a scheduled entry in the day's itinerary. Show: the route (e.g., "Seville → Córdoba via A-4"), the approximate distance (e.g., "~140 km / ~87 miles"), and the estimated travel time (e.g., "~1h 40min"). Include this as part of a ### time section with a time range (e.g., "### Morning: Scenic Drive to Córdoba (8:00 AM - 10:00 AM)"). Do NOT leave "Long-distance Transportation" as an empty heading — always include the route, distance, and duration.` : ''}
 ${localTransport.length > 0 ? `Local transportation (within cities): ${localTransport.join(", ")}.` : ''}
 ${additionalInstructions ? `Additional instructions: ${additionalInstructions}` : ''}
 
@@ -5123,7 +5124,7 @@ function processDailyRoutes(markdown) {
     // If stops span multiple cities, generate per-city links
     if (groupKeys.length > 1) {
       var links = groupKeys.map(function(gc) {
-        return buildRouteLink(cityGroups[gc], gc, 'View ' + gc + ' Walking Route');
+        return buildRouteLink(cityGroups[gc], gc, 'View ' + gc + ' Sightseeing Route');
       }).filter(function(l) { return l.length > 0; });
       if (links.length === 0) return '';
       return links.join('\n');
@@ -5131,7 +5132,7 @@ function processDailyRoutes(markdown) {
 
     // Single city: generate one link
     var singleCity = groupKeys.length === 1 ? groupKeys[0] : dayCity;
-    return buildRouteLink(rawStops, singleCity, "View Day's Route on Google Maps");
+    return buildRouteLink(rawStops, singleCity, "View Sightseeing Route on Google Maps");
   });
 }
 
@@ -6561,7 +6562,8 @@ CRITICAL: Each DailyRoute line must contain places from ONLY ONE city. NEVER mix
 
 PARKING & DRIVING TIPS: The traveler is driving by car. For EVERY stop/attraction, include a practical parking tip right after the fee line. Use this format:
 - Parking: [specific advice for that location]
-Include details like: free parking spots nearby, affordable parking lots/garages with approximate rates, or park-and-ride options (e.g., "Park at [specific lot/station] and take the metro into the city center"). Tailor the advice to each specific location.` : ''}${tripData.roundTrip && !tripData.origin && getDestinationCount(tripData.destination) > 1 ? `
+Include details like: free parking spots nearby, affordable parking lots/garages with approximate rates, or park-and-ride options (e.g., "Park at [specific lot/station] and take the metro into the city center"). Tailor the advice to each specific location.` : ''}${(tripData.longDistance || []).length > 0 ? `
+TRAVEL DAY DETAILS: On days when the traveler moves between cities, you MUST include the travel details as a scheduled entry in the day's itinerary. Show: the route (e.g., "Seville → Córdoba via A-4"), the approximate distance (e.g., "~140 km / ~87 miles"), and the estimated travel time (e.g., "~1h 40min"). Include this as part of a ### time section with a time range (e.g., "### Morning: Scenic Drive to Córdoba (8:00 AM - 10:00 AM)"). Do NOT leave "Long-distance Transportation" as an empty heading — always include the route, distance, and duration.` : ''}${tripData.roundTrip && !tripData.origin && getDestinationCount(tripData.destination) > 1 ? `
 ROUND TRIP: The traveler is making a round trip${(tripData.longDistance || []).length === 1 ? ' by ' + tripData.longDistance[0].toLowerCase() : ''}. The last day MUST end with the return journey back to ${tripData.destination.split(/[,;\u3001]/)[0].trim()} to complete the loop. Include estimated travel time and distance for the return leg.` : ''}`;
 
   const originNote = tripData.origin ? `\nThe traveler starts from ${tripData.origin} (not from an airport or station). Day 1 begins with the journey from ${tripData.origin}. The last day ends with the return to ${tripData.origin}.` : '';
