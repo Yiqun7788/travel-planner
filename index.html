@@ -5582,10 +5582,10 @@ function restructureItinerary() {
     if (stop.mapUrl || stop.address) {
       const mapBtn = document.createElement('a');
       mapBtn.className = 'stop-map-btn';
-      // Prefer full address for Google Maps — it pinpoints the exact location
-      // instead of showing a search results page with multiple matches
+      // Use "Name, Address" so Google Maps can disambiguate places that
+      // share an address (e.g. Mercado de Triana vs the adjacent bridge)
       mapBtn.href = stop.address
-        ? 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(stop.address).replace(/%20/g, '+')
+        ? 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(stop.name + ', ' + stop.address).replace(/%20/g, '+')
         : stop.mapUrl;
       mapBtn.target = '_blank';
       mapBtn.rel = 'noopener noreferrer';
