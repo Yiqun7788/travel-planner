@@ -5496,15 +5496,31 @@ function restructureItinerary() {
   };
 
   function buildStopCard(stop) {
-    // For "Long-distance Transportation" stops, generate a driving directions
-    // link from the "CityA → CityB (Car)" pattern in the description
-    if (/^Long-distance Transportation/i.test(stop.name) && !stop.mapUrl && !stop.address) {
-      var routeMatch = (stop.description || '').match(/^(.+?)\s*→\s*(.+?)\s*\((\w+)\)/);
-      if (routeMatch) {
-        var rOrigin = routeMatch[1].trim();
-        var rDest = routeMatch[2].trim();
-        var rMode = routeMatch[3].toLowerCase();
-        var rTravelmode = rMode === 'car' ? 'driving' : rMode === 'bike' ? 'bicycling' : 'driving';
+    // For long-distance transport stops, generate a driving directions link.
+    // Handles both "Long-distance Transportation" (route in description) and
+    // "Travel/Drive CityA → CityB" (route in name) patterns.
+    if (!stop.mapUrl && !stop.address) {
+      var rOrigin, rDest, rTravelmode;
+      if (/^Long-distance Transportation/i.test(stop.name)) {
+        // Parse "CityA → CityB (Mode)" from description
+        var routeMatch = (stop.description || '').match(/^(.+?)\s*→\s*(.+?)\s*\((\w+)\)/);
+        if (routeMatch) {
+          rOrigin = routeMatch[1].trim();
+          rDest = routeMatch[2].trim();
+          var rMode = routeMatch[3].toLowerCase();
+          rTravelmode = rMode === 'car' ? 'driving' : rMode === 'bike' ? 'bicycling' : 'driving';
+        }
+      } else {
+        // Parse "Travel/Drive/Scenic Drive CityA → CityB via ..." from name
+        var travelMatch = stop.name.match(/^(?:Travel|Drive|Scenic Drive)\s+(?:from\s+)?(.+?)\s*(?:→|–|—|to)\s+(.+?)(?:\s+(?:via|by|on)\s+.*)?$/i);
+        if (travelMatch) {
+          rOrigin = travelMatch[1].trim();
+          rDest = travelMatch[2].trim();
+          var ld = (typeof tripData !== 'undefined' && tripData && tripData.longDistance) || [];
+          rTravelmode = ld.includes('Bike') && !ld.includes('Car') ? 'bicycling' : 'driving';
+        }
+      }
+      if (rOrigin && rDest) {
         stop.mapUrl = 'https://www.google.com/maps/dir/?api=1'
           + '&origin=' + encodeURIComponent(rOrigin)
           + '&destination=' + encodeURIComponent(rDest)
