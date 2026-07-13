@@ -5121,18 +5121,38 @@ function processDailyRoutes(markdown) {
       return '<a href="' + url + '" target="_blank" rel="noopener noreferrer" class="route-map-link">' + modeIcon + ' &#128506; ' + label + '</a>';
     }
 
+    var drivingRouteLink = '';
+    if (headingCityA && headingCityB) {
+      var ld = (typeof tripData !== 'undefined' && tripData && tripData.longDistance) || [];
+      var hasCar = ld.includes('Car');
+      var hasBike = ld.includes('Bike');
+      if (hasCar || hasBike) {
+        var driveMode = hasCar ? 'driving' : 'bicycling';
+        var driveIcon = hasCar ? '&#128663;' : '&#128690;';
+        var driveUrl = 'https://www.google.com/maps/dir/?api=1'
+          + '&origin=' + mapsEncode(headingCityA)
+          + '&destination=' + mapsEncode(headingCityB)
+          + '&travelmode=' + driveMode;
+        drivingRouteLink = '<a href="' + driveUrl + '" target="_blank" rel="noopener noreferrer" class="route-map-link">'
+          + driveIcon + ' &#128506; View Driving Route to ' + headingCityB + ' on Google Maps</a>';
+      }
+    }
+
     // If stops span multiple cities, generate per-city links
     if (groupKeys.length > 1) {
       var links = groupKeys.map(function(gc) {
         return buildRouteLink(cityGroups[gc], gc, 'View Sightseeing Route in ' + gc + ' on Google Maps');
       }).filter(function(l) { return l.length > 0; });
+      if (drivingRouteLink) links.unshift(drivingRouteLink);
       if (links.length === 0) return '';
       return links.join('\n');
     }
 
     // Single city: generate one link
     var singleCity = groupKeys.length === 1 ? groupKeys[0] : dayCity;
-    return buildRouteLink(rawStops, singleCity, "View Sightseeing Route in " + singleCity + " on Google Maps");
+    var sightLink = buildRouteLink(rawStops, singleCity, "View Sightseeing Route in " + singleCity + " on Google Maps");
+    if (drivingRouteLink) return drivingRouteLink + '\n' + sightLink;
+    return sightLink;
   });
 }
 
