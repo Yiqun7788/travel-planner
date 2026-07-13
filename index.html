@@ -5124,7 +5124,7 @@ function processDailyRoutes(markdown) {
     // If stops span multiple cities, generate per-city links
     if (groupKeys.length > 1) {
       var links = groupKeys.map(function(gc) {
-        return buildRouteLink(cityGroups[gc], gc, 'View ' + gc + ' Sightseeing Route');
+        return buildRouteLink(cityGroups[gc], gc, 'View Sightseeing Route in ' + gc + ' on Google Maps');
       }).filter(function(l) { return l.length > 0; });
       if (links.length === 0) return '';
       return links.join('\n');
@@ -5132,7 +5132,7 @@ function processDailyRoutes(markdown) {
 
     // Single city: generate one link
     var singleCity = groupKeys.length === 1 ? groupKeys[0] : dayCity;
-    return buildRouteLink(rawStops, singleCity, "View Sightseeing Route on Google Maps");
+    return buildRouteLink(rawStops, singleCity, "View Sightseeing Route in " + singleCity + " on Google Maps");
   });
 }
 
