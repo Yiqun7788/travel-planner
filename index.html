@@ -5476,7 +5476,27 @@ function restructureItinerary() {
       }
     }
     if (current) stops.push(current);
-    return stops;
+
+    // Deduplicate consecutive stops with the same name (AI sometimes
+    // repeats the same entry, e.g. "Long-distance Transportation" twice)
+    var deduped = [];
+    stops.forEach(function(s) {
+      var prev = deduped.length > 0 ? deduped[deduped.length - 1] : null;
+      if (prev && prev.name === s.name) {
+        // Merge: keep whichever fields are non-empty
+        if (!prev.description && s.description) prev.description = s.description;
+        if (!prev.address && s.address) prev.address = s.address;
+        if (!prev.mapUrl && s.mapUrl) prev.mapUrl = s.mapUrl;
+        if (!prev.website && s.website) prev.website = s.website;
+        if (!prev.hours && s.hours) prev.hours = s.hours;
+        if (!prev.fee && s.fee) prev.fee = s.fee;
+        if (!prev.parking && s.parking) prev.parking = s.parking;
+        if (s.notes.length > 0) prev.notes = prev.notes.concat(s.notes);
+      } else {
+        deduped.push(s);
+      }
+    });
+    return deduped;
   }
 
   function truncateToFirstSentence(text, max) {
@@ -5496,6 +5516,22 @@ function restructureItinerary() {
   };
 
   function buildStopCard(stop) {
+    // For "Long-distance Transportation" stops, generate a driving directions
+    // link from the "CityA → CityB (Car)" pattern in the description
+    if (/^Long-distance Transportation/i.test(stop.name) && !stop.mapUrl && !stop.address) {
+      var routeMatch = (stop.description || '').match(/^(.+?)\s*→\s*(.+?)\s*\((\w+)\)/);
+      if (routeMatch) {
+        var rOrigin = routeMatch[1].trim();
+        var rDest = routeMatch[2].trim();
+        var rMode = routeMatch[3].toLowerCase();
+        var rTravelmode = rMode === 'car' ? 'driving' : rMode === 'bike' ? 'bicycling' : 'driving';
+        stop.mapUrl = 'https://www.google.com/maps/dir/?api=1'
+          + '&origin=' + encodeURIComponent(rOrigin)
+          + '&destination=' + encodeURIComponent(rDest)
+          + '&travelmode=' + rTravelmode;
+      }
+    }
+
     const id = 'stop-panel-' + (++stopCardCounter);
     const card = document.createElement('div');
     card.className = 'stop-card';
