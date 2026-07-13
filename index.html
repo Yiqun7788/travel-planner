@@ -5520,7 +5520,7 @@ function restructureItinerary() {
         }
       } else {
         // Parse "Travel/Drive/Scenic Drive CityA → CityB via ..." from name
-        var travelMatch = stop.name.match(/^(?:Travel|Drive|Scenic Drive)\s+(?:from\s+)?(.+?)\s*(?:→|–|—|to)\s+(.+?)(?:\s+(?:via|by|on)\s+.*)?$/i);
+        var travelMatch = stop.name.match(/^(?:Travel|Drive|Scenic Drive):?\s+(?:from\s+)?(.+?)\s*(?:→|–|—|to)\s+(.+?)(?:\s+(?:via|by|on)\s+.*)?$/i);
         if (travelMatch) {
           rOrigin = travelMatch[1].trim();
           rDest = travelMatch[2].trim();
@@ -5533,6 +5533,7 @@ function restructureItinerary() {
           + '&origin=' + encodeURIComponent(rOrigin)
           + '&destination=' + encodeURIComponent(rDest)
           + '&travelmode=' + rTravelmode;
+        stop._transitDest = rDest;
       }
     }
 
@@ -5629,7 +5630,9 @@ function restructureItinerary() {
         : stop.mapUrl;
       mapBtn.target = '_blank';
       mapBtn.rel = 'noopener noreferrer';
-      mapBtn.textContent = '\uD83D\uDDFA\uFE0F View on Google Maps';
+      mapBtn.textContent = stop._transitDest
+        ? '\uD83D\uDDFA\uFE0F View Driving Route to ' + stop._transitDest + ' on Google Maps'
+        : '\uD83D\uDDFA\uFE0F View on Google Maps';
       mapBtn.addEventListener('click', function(e) { e.stopPropagation(); });
       actions.appendChild(mapBtn);
     }
@@ -5652,7 +5655,8 @@ function restructureItinerary() {
     }
 
     // "Details" toggle button in actions row — only show if there's something to expand
-    const hasDetails = stop.address || stop.hours || stop.fee || stop.parking || stop.notes.length > 0;
+    // Skip for transit stops (Travel/Drive/Long-distance) — the map button is sufficient
+    const hasDetails = !stop._transitDest && (stop.address || stop.hours || stop.fee || stop.parking || stop.notes.length > 0);
     if (hasDetails) {
       const detailsBtn = document.createElement('button');
       detailsBtn.className = 'stop-details-btn';
