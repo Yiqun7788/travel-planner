@@ -5420,9 +5420,6 @@ function restructureItinerary() {
           current.parking = pText.replace(/^parking:\s*/i, '');
           continue;
         }
-        if (/^(distance|duration|estimated\s+travel|travel\s*time):/i.test(pText)) {
-          continue;
-        }
       }
 
       // Detect unbolded place names: "Place Name — Description" followed by structured data <ul>
