@@ -5665,8 +5665,7 @@ function restructureItinerary() {
     }
 
     // "Details" toggle button in actions row — only show if there's something to expand
-    // Skip for transit stops (Travel/Drive/Long-distance) — the map button is sufficient
-    const hasDetails = !stop._transitDest && (stop.address || stop.hours || stop.fee || stop.parking || stop.notes.length > 0);
+    const hasDetails = stop.address || stop.hours || stop.fee || stop.parking || stop.notes.length > 0;
     if (hasDetails) {
       const detailsBtn = document.createElement('button');
       detailsBtn.className = 'stop-details-btn';
