@@ -1538,6 +1538,7 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
   .stop-header .stop-desc-preview { font-size: 0.75rem; }
   .stop-chip { font-size: 0.65rem; }
   .stop-map-btn, .stop-web-btn, .stop-details-btn { font-size: 0.7rem; padding: 3px 10px; min-height: 26px; }
+  .stop-map-btn { white-space: normal; word-break: break-word; text-align: left; }
   .stop-details { font-size: 0.8rem; }
   .stop-detail-label { font-size: 0.72rem; }
   .route-map-link { font-size: 0.82rem; padding: 10px 16px; }
@@ -5573,8 +5574,9 @@ function restructureItinerary() {
       const descDiv = document.createElement('div');
       descDiv.className = 'stop-desc-preview';
       // Truncate at 60 chars for preview; show "Read more..." if there's more
+      // Skip truncation for transit stops — distance, travel time, fuel, tolls are essential
       const previewLen = 60;
-      const needsTruncation = fullDesc.length > previewLen;
+      const needsTruncation = !stop._transitDest && fullDesc.length > previewLen;
       if (needsTruncation) {
         const shortText = fullDesc.slice(0, previewLen).replace(/\s+\S*$/, '') + '...';
         const shortSpan = document.createElement('span');
