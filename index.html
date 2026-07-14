@@ -3152,10 +3152,14 @@ function incrementGenerations() {
   saveFreeTierState(s);
 }
 function getUpdatesThisItinerary() {
-  // Use tripData.updatesUsed (persists with the trip in localStorage)
-  if (typeof tripData.updatesUsed === 'number') return tripData.updatesUsed;
-  const s = getFreeTierState();
-  return s.currentItineraryUpdates || 0;
+  // Use the higher of tripData.updatesUsed and freeTierState (localStorage),
+  // because Supabase async saves can race and leave stale data
+  var fromTrip = typeof tripData.updatesUsed === 'number' ? tripData.updatesUsed : 0;
+  var fromLocalStorage = 0;
+  try { var ls = JSON.parse(localStorage.getItem('freeTierState') || '{}'); fromLocalStorage = ls.currentItineraryUpdates || 0; } catch {}
+  var result = Math.max(fromTrip, fromLocalStorage);
+  if (result > fromTrip) tripData.updatesUsed = result;
+  return result;
 }
 function incrementUpdates() {
   tripData.updatesUsed = (tripData.updatesUsed || 0) + 1;
