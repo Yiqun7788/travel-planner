@@ -5574,9 +5574,8 @@ function restructureItinerary() {
       const descDiv = document.createElement('div');
       descDiv.className = 'stop-desc-preview';
       // Truncate at 60 chars for preview; show "Read more..." if there's more
-      // Skip truncation for transit stops — distance, travel time, fuel, tolls are essential
       const previewLen = 60;
-      const needsTruncation = !stop._transitDest && fullDesc.length > previewLen;
+      const needsTruncation = fullDesc.length > previewLen;
       if (needsTruncation) {
         const shortText = fullDesc.slice(0, previewLen).replace(/\s+\S*$/, '') + '...';
         const shortSpan = document.createElement('span');
