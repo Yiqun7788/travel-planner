@@ -5182,7 +5182,7 @@ function restructureItinerary() {
   // Helper: strip leading time stamps like "10:30 AM - 12:30 PM " or "08:04 AM " from a name
   const timeStampPrefixRe = /^\d{1,2}:\d{2}\s*(?:AM|PM)\s*(?:[-–]\s*\d{1,2}:\d{2}\s*(?:AM|PM))?\s*/i;
   // Structured data line pattern (Map, Website, Address, Hours, Fee, Parking)
-  const structuredLineRe = /^(map|website|address|hours?|open|opening|fee|price|cost|admission|entry|parking|distance|duration|estimated\s+travel|travel\s*time):/i;
+  const structuredLineRe = /^(map|website|address|hours?|open|opening|fee|price|cost|admission|entry|parking):/i;
 
   function parseStopsFromElements(elements) {
     const stops = [];
@@ -5309,8 +5309,6 @@ function restructureItinerary() {
                     current.fee = subText.replace(/^(fee|price|cost|admission|entry):\s*/i, '');
                   } else if (/^parking:/i.test(subText)) {
                     current.parking = subText.replace(/^parking:\s*/i, '');
-                  } else if (/^(distance|duration|estimated\s+travel|travel\s*time):/i.test(subText)) {
-                    // Consumed — already shown in description
                   } else {
                     current.notes.push(subLi.innerHTML);
                   }
@@ -5336,7 +5334,6 @@ function restructureItinerary() {
                     else if (/^(hours?|open|opening):/i.test(subText)) { current.hours = subText.replace(/^(hours?|open|opening):\s*/i, ''); }
                     else if (/^(fee|price|cost|admission|entry):/i.test(subText)) { current.fee = subText.replace(/^(fee|price|cost|admission|entry):\s*/i, ''); }
                     else if (/^parking:/i.test(subText)) { current.parking = subText.replace(/^parking:\s*/i, ''); }
-                    else if (/^(distance|duration|estimated\s+travel|travel\s*time):/i.test(subText)) { /* consumed */ }
                     else { current.notes.push(subLi.innerHTML); }
                   });
                 }
@@ -5380,8 +5377,6 @@ function restructureItinerary() {
               consumed = true;
             } else if (/^parking:/i.test(text)) {
               current.parking = text.replace(/^parking:\s*/i, '');
-              consumed = true;
-            } else if (/^(distance|duration|estimated\s+travel|travel\s*time):/i.test(text)) {
               consumed = true;
             } else {
               current.notes.push(html);
@@ -5564,11 +5559,14 @@ function restructureItinerary() {
     nameDiv.textContent = stop.name;
     left.appendChild(nameDiv);
 
-    // Build description: inline text + descriptive notes (exclude structured data)
+    // Build description: inline text + descriptive notes (exclude structured data
+    // and notes already present in the description to avoid duplication)
     const structuredPattern = /^(map|website|address|hours?|open|opening|fee|price|cost|admission|entry|parking):/i;
+    const descLower = (stop.description || '').toLowerCase();
     const descNotes = stop.notes
       .map(html => { const tmp = document.createElement('span'); tmp.innerHTML = html; return tmp.textContent.trim(); })
-      .filter(t => t && !structuredPattern.test(t));
+      .filter(t => t && !structuredPattern.test(t))
+      .filter(t => !descLower || !descLower.includes(t.toLowerCase()));
     const fullDesc = [stop.description, ...descNotes].filter(Boolean).join(' ');
     if (fullDesc) {
       const descId = id + '-desc';
