@@ -5568,7 +5568,29 @@ function restructureItinerary() {
       .map(html => { const tmp = document.createElement('span'); tmp.innerHTML = html; return tmp.textContent.trim(); })
       .filter(t => t && !structuredPattern.test(t))
       .filter(t => !descLower || !descLower.includes(t.toLowerCase()));
-    const fullDesc = [stop.description, ...descNotes].filter(Boolean).join(' ');
+    var fullDesc = [stop.description, ...descNotes].filter(Boolean).join(' ');
+
+    // On mobile, for transit stops, include detail fields (parking, structured
+    // notes, etc.) in the description since the Details button is hidden.
+    // Desktop is unchanged.
+    if (stop._transitDest && window.matchMedia('(max-width: 768px)').matches) {
+      var extraParts = [];
+      if (stop.parking) extraParts.push('Parking: ' + stop.parking);
+      if (stop.hours) extraParts.push('Hours: ' + stop.hours);
+      if (stop.fee) extraParts.push('Fee: ' + stop.fee);
+      stop.notes.forEach(function(html) {
+        var tmp = document.createElement('span');
+        tmp.innerHTML = html;
+        var t = tmp.textContent.trim();
+        if (t && (!fullDesc || !fullDesc.toLowerCase().includes(t.toLowerCase()))) {
+          extraParts.push(t);
+        }
+      });
+      if (extraParts.length > 0) {
+        fullDesc = fullDesc ? (fullDesc + ' ' + extraParts.join(' ')) : extraParts.join(' ');
+      }
+    }
+
     if (fullDesc) {
       const descId = id + '-desc';
       const descDiv = document.createElement('div');
