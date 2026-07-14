@@ -4666,7 +4666,13 @@ Example for Frankfurt→Bonn:
 - Frankfurt→Bonn (Car): ~€60, ~1h 45min
 The traveler needs travel times to compare options.` : ' For each long-distance route/segment, include the approximate travel time alongside the cost (e.g., "CityA→CityB (Train): ~€80, ~1h 20min").'} Show estimated costs for each route/segment between destinations using ONLY these selected modes. Do NOT state that any transportation is "already booked" or "already paid for" — the traveler has NOT pre-paid for transportation. This is especially important for multi-destination trips.` : ''}
 ${longDistance.length > 0 ? `Long-distance transportation (between cities/countries): ${longDistance.join(", ")}. Use ONLY ${longDistance.join("/")} for travel between destinations${!longDistance.includes('Air') ? ' — NO flights' : ''}.
-TRAVEL DAY DETAILS: On days when the traveler moves between cities, you MUST include the travel details as a scheduled entry in the day's itinerary. Show: the route (e.g., "Seville → Córdoba via A-4"), the approximate distance (e.g., "~140 km / ~87 miles"), and the estimated travel time (e.g., "~1h 40min"). If the traveler is driving by car, also include the estimated fuel/gas cost and whether the route has tolls (and if so, the approximate toll fee). Include this as part of a ### time section with a time range (e.g., "### Morning: Scenic Drive to Córdoba (8:00 AM - 10:00 AM)"). Do NOT leave "Long-distance Transportation" as an empty heading — always include the route, distance, duration, and driving costs when applicable.` : ''}
+TRAVEL DAY DETAILS: On days when the traveler moves between cities, you MUST include a travel entry as a scheduled stop in the day's itinerary, inside a ### time section with a time range (e.g., "### Morning: Scenic Drive to Córdoba (8:00 AM - 10:00 AM)"). Format the travel entry as a bold heading followed by bullet points with ALL of the following details:
+**Travel CityA → CityB via [route]** — Brief scenic/practical description
+- Approx. distance: ~X km / ~Y miles
+- Estimated travel time: ~Xh Ymin
+- Estimated fuel cost: ~€X (approx. $Y) (if driving by car)
+- Tolls: [toll details or "No tolls on this route"] (if driving by car)
+Do NOT leave "Long-distance Transportation" as an empty heading. ALWAYS include ALL bullet points listed above — never omit distance, travel time, or driving costs.` : ''}
 ${localTransport.length > 0 ? `Local transportation (within cities): ${localTransport.join(", ")}.` : ''}
 ${additionalInstructions ? `Additional instructions: ${additionalInstructions}` : ''}
 
@@ -6659,7 +6665,13 @@ CRITICAL: Each DailyRoute line must contain places from ONLY ONE city. NEVER mix
 PARKING & DRIVING TIPS: The traveler is driving by car. For EVERY stop/attraction, include a practical parking tip right after the fee line. Use this format:
 - Parking: [specific advice for that location]
 Include details like: free parking spots nearby, affordable parking lots/garages with approximate rates, or park-and-ride options (e.g., "Park at [specific lot/station] and take the metro into the city center"). Tailor the advice to each specific location.` : ''}${(tripData.longDistance || []).length > 0 ? `
-TRAVEL DAY DETAILS: On days when the traveler moves between cities, you MUST include the travel details as a scheduled entry in the day's itinerary. Show: the route (e.g., "Seville → Córdoba via A-4"), the approximate distance (e.g., "~140 km / ~87 miles"), and the estimated travel time (e.g., "~1h 40min"). If the traveler is driving by car, also include the estimated fuel/gas cost and whether the route has tolls (and if so, the approximate toll fee). Include this as part of a ### time section with a time range (e.g., "### Morning: Scenic Drive to Córdoba (8:00 AM - 10:00 AM)"). Do NOT leave "Long-distance Transportation" as an empty heading — always include the route, distance, duration, and driving costs when applicable.` : ''}${tripData.roundTrip && !tripData.origin && getDestinationCount(tripData.destination) > 1 ? `
+TRAVEL DAY DETAILS: On days when the traveler moves between cities, you MUST include a travel entry as a scheduled stop in the day's itinerary, inside a ### time section with a time range (e.g., "### Morning: Scenic Drive to Córdoba (8:00 AM - 10:00 AM)"). Format the travel entry as a bold heading followed by bullet points with ALL of the following details:
+**Travel CityA → CityB via [route]** — Brief scenic/practical description
+- Approx. distance: ~X km / ~Y miles
+- Estimated travel time: ~Xh Ymin
+- Estimated fuel cost: ~€X (approx. $Y) (if driving by car)
+- Tolls: [toll details or "No tolls on this route"] (if driving by car)
+Do NOT leave "Long-distance Transportation" as an empty heading. ALWAYS include ALL bullet points listed above — never omit distance, travel time, or driving costs.` : ''}${tripData.roundTrip && !tripData.origin && getDestinationCount(tripData.destination) > 1 ? `
 ROUND TRIP: The traveler is making a round trip${(tripData.longDistance || []).length === 1 ? ' by ' + tripData.longDistance[0].toLowerCase() : ''}. The last day MUST end with the return journey back to ${tripData.destination.split(/[,;\u3001]/)[0].trim()} to complete the loop. Include estimated travel time and distance for the return leg.` : ''}`;
 
   const originNote = tripData.origin ? `\nThe traveler starts from ${tripData.origin} (not from an airport or station). Day 1 begins with the journey from ${tripData.origin}. The last day ends with the return to ${tripData.origin}.` : '';
