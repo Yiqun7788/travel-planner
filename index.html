@@ -5521,6 +5521,20 @@ function restructureItinerary() {
       } else {
         // Parse "Travel/Drive/Scenic Drive CityA → CityB via ..." from name
         var travelMatch = stop.name.match(/^(?:Travel|Drive|Scenic Drive):?\s+(?:from\s+)?(.+?)\s*(?:→|–|—|to)\s+(.+?)(?:\s+(?:via|by|on)\s+.*)?$/i);
+        if (!travelMatch) {
+          // Fallback: bare "CityA → CityB" or "CityA – CityB" without prefix,
+          // but only when both sides match known destination cities
+          var bareMatch = stop.name.match(/^(.+?)\s*(?:→|–|—)\s+(.+?)(?:\s+(?:via|by|on)\s+.*)?$/i);
+          if (bareMatch) {
+            var _allCities = (typeof tripData !== 'undefined' && tripData && tripData.destination)
+              ? tripData.destination.split(/[,;\u3001]/).map(function(s) { return s.trim().replace(/^(?:and|&)\s+/i, ''); }).filter(function(s) { return s.length > 0; }) : [];
+            var _norm = function(s) { return s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase(); };
+            var _a = bareMatch[1].trim(), _b = bareMatch[2].trim();
+            var _matchA = _allCities.some(function(c) { return _norm(_a).includes(_norm(c)) || _norm(c).includes(_norm(_a)); });
+            var _matchB = _allCities.some(function(c) { return _norm(_b).includes(_norm(c)) || _norm(c).includes(_norm(_b)); });
+            if (_matchA && _matchB) travelMatch = bareMatch;
+          }
+        }
         if (travelMatch) {
           rOrigin = travelMatch[1].trim();
           rDest = travelMatch[2].trim();
