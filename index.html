@@ -299,7 +299,7 @@ body { font-family: 'Inter', system-ui, sans-serif; background: #f1f5f9; }
   .stop-header .stop-name { font-size: 1.2rem; }
   .stop-header .stop-desc-preview { font-size: 1.05rem; }
   .stop-chip { font-size: 0.88rem; }
-  .stop-map-btn, .stop-web-btn, .stop-details-btn { font-size: 0.95rem; padding: 6px 16px; min-height: 34px; }
+  .stop-map-btn, .stop-details-btn { font-size: 0.95rem; padding: 6px 16px; min-height: 34px; }
   .stop-details { font-size: 1.1rem; }
   .stop-detail-label { font-size: 1rem; min-width: 76px; }
   .stop-detail-value { font-size: 1.1rem; }
@@ -569,7 +569,7 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
   display: flex; gap: 5px; flex-wrap: wrap; align-items: center;
   margin-top: 6px;
 }
-.stop-map-btn, .stop-web-btn, .stop-details-btn {
+.stop-map-btn, .stop-details-btn {
   display: inline-flex; align-items: center; gap: 4px;
   font-size: 0.75rem; font-weight: 600;
   padding: 4px 12px; border-radius: 6px;
@@ -581,11 +581,6 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
   background: #6366f1; color: white !important;
 }
 .stop-map-btn:hover { background: #4f46e5; color: white !important; }
-.stop-web-btn {
-  background: #f1f5f9; color: #334155 !important;
-  border: 1px solid #e2e8f0;
-}
-.stop-web-btn:hover { background: #e2e8f0; color: #1e293b !important; }
 .stop-details-btn {
   background: #f1f5f9; color: #334155 !important;
   border: 1px solid #e2e8f0; font: inherit;
@@ -1537,7 +1532,7 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
   .stop-header .stop-name { font-size: 0.85rem; }
   .stop-header .stop-desc-preview { font-size: 0.75rem; }
   .stop-chip { font-size: 0.65rem; }
-  .stop-map-btn, .stop-web-btn, .stop-details-btn { font-size: 0.7rem; padding: 3px 10px; min-height: 26px; }
+  .stop-map-btn, .stop-details-btn { font-size: 0.7rem; padding: 3px 10px; min-height: 26px; }
   .stop-map-btn { white-space: normal; word-break: break-word; text-align: left; }
   .stop-details { font-size: 0.8rem; }
   .stop-detail-label { font-size: 0.72rem; }
@@ -4691,10 +4686,9 @@ STRUCTURE - You MUST use this exact markdown heading structure:
 
 IMPORTANT - For EVERY place, attraction, restaurant, and activity mentioned in the itinerary, you MUST include:
 1. A Google Maps link in this exact format: https://www.google.com/maps/search/?api=1&query=PLACE+NAME+CITY (replace spaces with +). ALWAYS provide this for every place.
-2. Official website: ONLY include a website if you are certain it is a real, well-known official domain (e.g., https://www.louvre.fr, https://www.nps.gov). Only use the homepage or main domain. Do NOT guess or make up any URLs. If you are not 100% sure the website exists, write "Website: Search online for latest info" instead.
-3. Address (full street address)
-4. Opening hours (e.g., "Open: 9:00 AM - 5:00 PM, Closed Mondays")
-5. Entry fees or price range (e.g., "Fee: $15 adults, $10 children" or "Free admission" or "$$$ - expensive")
+2. Address (full street address)
+3. Opening hours (e.g., "Open: 9:00 AM - 5:00 PM, Closed Mondays")
+4. Entry fees or price range (e.g., "Fee: $15 adults, $10 children" or "Free admission" or "$$$ - expensive")
 
 AVAILABILITY CHECK — The calendar days for this trip are: ${dayOfWeekMap}.
 For each place you recommend, consider whether it is typically closed or restricted on that day of the week (e.g., many museums close on Mondays, some churches and cathedrals restrict tourist visits on Sundays, certain restaurants close mid-week, etc.).
@@ -4706,7 +4700,6 @@ VISIT TIME CHECK — When scheduling each place, ensure the recommended arrival 
 Format each place like this:
 **Place Name** — Brief description (5-10 words about what makes this place notable)
 - Map: https://www.google.com/maps/search/?api=1&query=Place+Name+City
-- Website: https://www.officialsite.com (or "Search online for latest info")
 - Address: 123 Main Street, City
 - Hours: 9:00 AM - 6:00 PM daily
 - Fee: $20 per person
@@ -4714,8 +4707,6 @@ Format each place like this:
 Every place MUST have a brief description after the name. Examples:
 **Cutty Sark** — Last surviving tea clipper ship, now a maritime museum
 **Greenwich Park** — Royal park with panoramic views of the London skyline
-
-CRITICAL: Never invent or guess website URLs. Only include URLs you are absolutely certain are real.
 
 DAILY ROUTE MAP - VERY IMPORTANT:
 At the VERY BEGINNING of each day (right after the day heading like "## Day 1"), you MUST include a daily route line.
@@ -5193,7 +5184,7 @@ function restructureItinerary() {
   // Helper: strip leading time stamps like "10:30 AM - 12:30 PM " or "08:04 AM " from a name
   const timeStampPrefixRe = /^\d{1,2}:\d{2}\s*(?:AM|PM)\s*(?:[-–]\s*\d{1,2}:\d{2}\s*(?:AM|PM))?\s*/i;
   // Structured data line pattern (Map, Website, Address, Hours, Fee, Parking)
-  const structuredLineRe = /^(map|website|address|hours?|open|opening|fee|price|cost|admission|entry|parking):/i;
+  const structuredLineRe = /^(map|address|hours?|open|opening|fee|price|cost|admission|entry|parking):/i;
 
   function parseStopsFromElements(elements) {
     const stops = [];
@@ -5221,7 +5212,7 @@ function restructureItinerary() {
               node = node.nextSibling;
             }
             sDesc = sDesc.trim().replace(/^[:\-–—\s]+/, '').replace(timeStampPrefixRe, '').replace(/^[:\-–—\s]+/, '');
-            current = { name: sName, description: sDesc, mapUrl: '', website: '', address: '', hours: '', fee: '', parking: '', notes: [], extraEls: [] };
+            current = { name: sName, description: sDesc, mapUrl: '', address: '', hours: '', fee: '', parking: '', notes: [], extraEls: [] };
           });
           continue;
         }
@@ -5309,9 +5300,6 @@ function restructureItinerary() {
                   if (/^map:/i.test(subText)) {
                     const a = subLi.querySelector('a');
                     current.mapUrl = a ? a.href : subText.replace(/^map:\s*/i, '');
-                  } else if (/^website:/i.test(subText)) {
-                    const a = subLi.querySelector('a');
-                    current.website = a ? a.outerHTML : subText.replace(/^website:\s*/i, '');
                   } else if (/^address:/i.test(subText)) {
                     current.address = subText.replace(/^address:\s*/i, '');
                   } else if (/^(hours?|open|opening):/i.test(subText)) {
@@ -5340,7 +5328,6 @@ function restructureItinerary() {
                   Array.from(nestedUl.children).filter(c => c.tagName === 'LI').forEach(subLi => {
                     const subText = subLi.textContent.trim();
                     if (/^map:/i.test(subText)) { const a = subLi.querySelector('a'); current.mapUrl = a ? a.href : subText.replace(/^map:\s*/i, ''); }
-                    else if (/^website:/i.test(subText)) { const a = subLi.querySelector('a'); current.website = a ? a.outerHTML : subText.replace(/^website:\s*/i, ''); }
                     else if (/^address:/i.test(subText)) { current.address = subText.replace(/^address:\s*/i, ''); }
                     else if (/^(hours?|open|opening):/i.test(subText)) { current.hours = subText.replace(/^(hours?|open|opening):\s*/i, ''); }
                     else if (/^(fee|price|cost|admission|entry):/i.test(subText)) { current.fee = subText.replace(/^(fee|price|cost|admission|entry):\s*/i, ''); }
@@ -5352,7 +5339,6 @@ function restructureItinerary() {
             } else if (current && structuredLineRe.test(liText)) {
               // Flat structured data <li> for current stop
               if (/^map:/i.test(liText)) { const a = li.querySelector('a'); current.mapUrl = a ? a.href : liText.replace(/^map:\s*/i, ''); }
-              else if (/^website:/i.test(liText)) { const a = li.querySelector('a'); current.website = a ? a.outerHTML : liText.replace(/^website:\s*/i, ''); }
               else if (/^address:/i.test(liText)) { current.address = liText.replace(/^address:\s*/i, ''); }
               else if (/^(hours?|open|opening):/i.test(liText)) { current.hours = liText.replace(/^(hours?|open|opening):\s*/i, ''); }
               else if (/^(fee|price|cost|admission|entry):/i.test(liText)) { current.fee = liText.replace(/^(fee|price|cost|admission|entry):\s*/i, ''); }
@@ -5372,10 +5358,6 @@ function restructureItinerary() {
             if (/^map:/i.test(text)) {
               const a = li.querySelector('a');
               current.mapUrl = a ? a.href : text.replace(/^map:\s*/i, '');
-              consumed = true;
-            } else if (/^website:/i.test(text)) {
-              const a = li.querySelector('a');
-              current.website = a ? a.outerHTML : text.replace(/^website:\s*/i, '');
               consumed = true;
             } else if (/^address:/i.test(text)) {
               current.address = text.replace(/^address:\s*/i, '');
@@ -5403,11 +5385,6 @@ function restructureItinerary() {
         if (/^map:/i.test(pText)) {
           const a = el.querySelector('a');
           current.mapUrl = a ? a.href : pText.replace(/^map:\s*/i, '');
-          continue;
-        }
-        if (/^website:/i.test(pText)) {
-          const a = el.querySelector('a');
-          current.website = a ? a.outerHTML : pText.replace(/^website:\s*/i, '');
           continue;
         }
         if (/^address:/i.test(pText)) {
@@ -5478,7 +5455,6 @@ function restructureItinerary() {
         if (!prev.description && s.description) prev.description = s.description;
         if (!prev.address && s.address) prev.address = s.address;
         if (!prev.mapUrl && s.mapUrl) prev.mapUrl = s.mapUrl;
-        if (!prev.website && s.website) prev.website = s.website;
         if (!prev.hours && s.hours) prev.hours = s.hours;
         if (!prev.fee && s.fee) prev.fee = s.fee;
         if (!prev.parking && s.parking) prev.parking = s.parking;
@@ -5674,23 +5650,6 @@ function restructureItinerary() {
       mapBtn.addEventListener('click', function(e) { e.stopPropagation(); });
       actions.appendChild(mapBtn);
     }
-    if (stop.website) {
-      // Extract href from anchor HTML or use raw text
-      const tmpDiv = document.createElement('div');
-      tmpDiv.innerHTML = stop.website;
-      const existingA = tmpDiv.querySelector('a');
-      const webBtn = document.createElement('a');
-      webBtn.className = 'stop-web-btn';
-      webBtn.href = existingA ? existingA.href : (stop.website.startsWith('http') ? stop.website : '#');
-      webBtn.target = '_blank';
-      webBtn.rel = 'noopener noreferrer';
-      webBtn.textContent = '\uD83C\uDF10 Website';
-      webBtn.addEventListener('click', function(e) { e.stopPropagation(); });
-      // Only show if it's a real link, not "Search online..."
-      if (existingA || stop.website.startsWith('http')) {
-        actions.appendChild(webBtn);
-      }
-    }
 
     // "Details" toggle button in actions row — only show if there's something to expand
     // Skip for transit stops (Travel/Drive/Long-distance) — the map button is sufficient
@@ -5721,7 +5680,6 @@ function restructureItinerary() {
     if (stop.hours) panel.innerHTML += '<div class="stop-detail-row"><span class="stop-detail-label">Hours</span><span class="stop-detail-value">' + stop.hours + '</span></div>';
     if (stop.fee) panel.innerHTML += '<div class="stop-detail-row"><span class="stop-detail-label">Fee</span><span class="stop-detail-value">' + stop.fee + '</span></div>';
     if (stop.parking) panel.innerHTML += '<div class="stop-detail-row"><span class="stop-detail-label">Parking</span><span class="stop-detail-value">' + stop.parking + '</span></div>';
-    if (stop.website) panel.innerHTML += '<div class="stop-detail-row"><span class="stop-detail-label">Website</span><span class="stop-detail-value">' + stop.website + '</span></div>';
     if (stop.notes.length > 0) panel.innerHTML += '<div class="stop-extra-notes">' + stop.notes.join(' ') + '</div>';
 
     card.appendChild(header);
@@ -6237,11 +6195,9 @@ details.cheap-tickets-section>summary::-webkit-details-marker{display:none;}
 .stop-chip.paid{background:#fef3c7;color:#92400e;}
 .stop-chip.transport{background:#e0e7ff;color:#3730a3;}
 .stop-actions{display:flex;gap:5px;flex-wrap:wrap;align-items:center;margin-top:6px;}
-.stop-map-btn,.stop-web-btn,.stop-details-btn{display:inline-flex;align-items:center;gap:4px;font-size:0.75rem;font-weight:600;padding:4px 12px;border-radius:6px;text-decoration:none!important;white-space:nowrap;min-height:28px;cursor:pointer;}
+.stop-map-btn,.stop-details-btn{display:inline-flex;align-items:center;gap:4px;font-size:0.75rem;font-weight:600;padding:4px 12px;border-radius:6px;text-decoration:none!important;white-space:nowrap;min-height:28px;cursor:pointer;}
 .stop-map-btn{background:#6366f1;color:#fff!important;}
 .stop-map-btn:hover{background:#4f46e5;color:#fff!important;}
-.stop-web-btn{background:#f1f5f9;color:#334155!important;border:1px solid #e2e8f0;}
-.stop-web-btn:hover{background:#e2e8f0;color:#1e293b!important;}
 .stop-details-btn{background:#f1f5f9;color:#334155!important;border:1px solid #e2e8f0;font-size:0.75rem;font-weight:600;}
 .stop-details-btn:hover{background:#e2e8f0;color:#1e293b!important;}
 .stop-card.open .stop-details-btn{background:#eef2ff;border-color:#c7d2fe;color:#4338ca!important;}
@@ -6647,14 +6603,12 @@ CRITICAL: You MUST output EVERY single day as its own separate ## Day section. N
 
 IMPORTANT: For EVERY place, attraction, restaurant, and activity in the updated itinerary, include:
 1. A Google Maps link: https://www.google.com/maps/search/?api=1&query=PLACE+NAME+CITY (replace spaces with +). ALWAYS provide this.
-2. Official website: ONLY if you are 100% certain it is real. Otherwise write "Website: Search online for latest info". NEVER guess or invent URLs.
-3. Address (full street address)
-4. Opening hours
-5. Entry fees or price range
+2. Address (full street address)
+3. Opening hours
+4. Entry fees or price range
 
 Format each place as: **Place Name** — Brief description (5-10 words)
 followed by the detail bullet points. Every place MUST have a short description after the name.
-CRITICAL: Never invent or guess website URLs.
 
 Also at the VERY BEGINNING of each day (right after the day heading), include a daily route line in this EXACT format on a single line:
 DailyRoute: Place+A+${tripData.destination.split(/[,;\u3001]/)[0].trim().replace(/\s+/g, '+')}|Place+B+${tripData.destination.split(/[,;\u3001]/)[0].trim().replace(/\s+/g, '+')}|Place+C+${tripData.destination.split(/[,;\u3001]/)[0].trim().replace(/\s+/g, '+')}
