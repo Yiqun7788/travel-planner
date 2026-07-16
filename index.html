@@ -3475,10 +3475,9 @@ function applyTierUI() {
   finalizeBtn.classList.add('hidden');
   if (finalizeBtnMobile) finalizeBtnMobile.classList.add('hidden');
 
-  // ─── Show "Start New Trip" button when finalized or no revisions left ───
+  // ─── Show "Start New Trip" button after finalization ───
   const startNewTripBtn = document.getElementById('start-new-trip-btn');
-  const noRevisionsLeft = updatesUsed >= limits.maxUpdatesPerItinerary;
-  if (tripData.itinerary && (tripData.tripFinalized || noRevisionsLeft)) {
+  if (tripData.tripFinalized && tripData.itinerary) {
     startNewTripBtn.classList.remove('hidden');
   } else {
     startNewTripBtn.classList.add('hidden');
