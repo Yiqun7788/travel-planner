@@ -5653,7 +5653,7 @@ function restructureItinerary() {
 
     // "Details" toggle button in actions row — only show if there's something to expand
     // Skip for transit stops (Travel/Drive/Long-distance) — the map button is sufficient
-    const hasDetails = !stop._transitDest && (stop.address || stop.hours || stop.fee || stop.parking || stop.notes.length > 0);
+    const hasDetails = !stop._transitDest && (stop.address || stop.hours || stop.fee || stop.notes.length > 0);
     if (hasDetails) {
       const detailsBtn = document.createElement('button');
       detailsBtn.className = 'stop-details-btn';
@@ -5679,7 +5679,6 @@ function restructureItinerary() {
     if (stop.address) panel.innerHTML += '<div class="stop-detail-row"><span class="stop-detail-label">Address</span><span class="stop-detail-value">' + stop.address + '</span></div>';
     if (stop.hours) panel.innerHTML += '<div class="stop-detail-row"><span class="stop-detail-label">Hours</span><span class="stop-detail-value">' + stop.hours + '</span></div>';
     if (stop.fee) panel.innerHTML += '<div class="stop-detail-row"><span class="stop-detail-label">Fee</span><span class="stop-detail-value">' + stop.fee + '</span></div>';
-    if (stop.parking) panel.innerHTML += '<div class="stop-detail-row"><span class="stop-detail-label">Parking</span><span class="stop-detail-value">' + stop.parking + '</span></div>';
     if (stop.notes.length > 0) panel.innerHTML += '<div class="stop-extra-notes">' + stop.notes.join(' ') + '</div>';
 
     card.appendChild(header);
