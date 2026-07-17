@@ -5779,14 +5779,16 @@ function restructureItinerary() {
       next = next.nextSibling;
     }
 
-    // Extract all route-map-link elements if present
+    // Extract all route-map-link and route-note elements if present
     var routeMapEls = [];
     const elSiblings = siblings.filter(s => s.nodeType === 1);
     for (let i = 0; i < elSiblings.length; i++) {
       if (elSiblings[i].tagName === 'A' && elSiblings[i].classList.contains('route-map-link')) {
         routeMapEls.push(elSiblings[i]);
+      } else if (elSiblings[i].classList && elSiblings[i].classList.contains('route-note')) {
+        routeMapEls.push(elSiblings[i]);
       } else if (elSiblings[i].querySelector) {
-        elSiblings[i].querySelectorAll('.route-map-link').forEach(function(el) {
+        elSiblings[i].querySelectorAll('.route-map-link, .route-note').forEach(function(el) {
           routeMapEls.push(el);
         });
       }
@@ -6016,8 +6018,8 @@ function restructureItinerary() {
       const content = document.createElement('div');
       content.className = 'day-content';
 
-      // Look for route map links
-      container.querySelectorAll('.route-map-link').forEach(function(el) {
+      // Look for route map links and transit notes
+      container.querySelectorAll('.route-map-link, .route-note').forEach(function(el) {
         content.appendChild(el.cloneNode(true));
       });
 
