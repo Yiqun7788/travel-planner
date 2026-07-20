@@ -5631,7 +5631,7 @@ function restructureItinerary() {
     const chips = document.createElement('div');
     chips.className = 'stop-chips';
     if (stop.fee) {
-      const isFree = /free|gratuit|gratis|kostenlos|無料|免费/i.test(stop.fee);
+      const isFree = /^free\b|^gratuit\b|^gratis\b|^kostenlos\b|^無料|^免费/i.test(stop.fee.trim());
       const chip = document.createElement('span');
       chip.className = 'stop-chip ' + (isFree ? 'free' : 'paid');
       if (isFree) {
