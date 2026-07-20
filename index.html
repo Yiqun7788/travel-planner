@@ -5665,9 +5665,18 @@ function restructureItinerary() {
       actions.appendChild(mapBtn);
     }
 
+    // Filter out notes that duplicate the description (avoids showing same text
+    // in both the description preview and the Details panel)
+    var descTextLower = (stop.description || '').toLowerCase().trim();
+    var panelNotes = stop.notes.filter(function(html) {
+      var tmp = document.createElement('span'); tmp.innerHTML = html;
+      var t = tmp.textContent.trim().toLowerCase();
+      return t && (!descTextLower || !descTextLower.includes(t));
+    });
+
     // "Details" toggle button in actions row — only show if there's something to expand
     // Skip for transit stops (Travel/Drive/Long-distance) — the map button is sufficient
-    const hasDetails = !stop._transitDest && (stop.address || stop.hours || stop.fee || stop.notes.length > 0);
+    const hasDetails = !stop._transitDest && (stop.address || stop.hours || stop.fee || panelNotes.length > 0);
     if (hasDetails) {
       const detailsBtn = document.createElement('button');
       detailsBtn.className = 'stop-details-btn';
@@ -5693,7 +5702,7 @@ function restructureItinerary() {
     if (stop.address) panel.innerHTML += '<div class="stop-detail-row"><span class="stop-detail-label">Address</span><span class="stop-detail-value">' + stop.address + '</span></div>';
     if (stop.hours) panel.innerHTML += '<div class="stop-detail-row"><span class="stop-detail-label">Hours</span><span class="stop-detail-value">' + stop.hours + '</span></div>';
     if (stop.fee) panel.innerHTML += '<div class="stop-detail-row"><span class="stop-detail-label">Fee</span><span class="stop-detail-value">' + stop.fee + '</span></div>';
-    if (stop.notes.length > 0) panel.innerHTML += '<div class="stop-extra-notes">' + stop.notes.join(' ') + '</div>';
+    if (panelNotes.length > 0) panel.innerHTML += '<div class="stop-extra-notes">' + panelNotes.join(' ') + '</div>';
 
     card.appendChild(header);
     card.appendChild(panel);
