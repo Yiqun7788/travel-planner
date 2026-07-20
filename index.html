@@ -306,7 +306,7 @@ body { font-family: 'Inter', system-ui, sans-serif; background: #f1f5f9; }
   .stop-extra-notes { font-size: 1.1rem; }
   .route-map-link { font-size: 1.1rem; padding: 14px 24px; }
   #content-display .route-note { font-size: 0.75rem; }
-  #content-display .time-block-fallback, #content-display .time-block-fallback p { font-size: 0.92rem; }
+  #content-display .time-block-fallback, #content-display .time-block-fallback p, #content-display .time-block-fallback ul, #content-display .time-block-fallback li { font-size: 0.92rem; }
   .tool-btn { font-size: 1.1rem; padding: 16px 24px; }
   details.cheap-tickets-section > summary { font-size: 1.6rem; }
   details.budget-summary-section > summary { font-size: 1.6rem; }
@@ -505,7 +505,7 @@ details.budget-summary-section .day-content > p:first-of-type {
 /* ─── Time Block ─── */
 .time-block { margin-bottom: 12px; }
 .time-block-fallback { font-size: 0.82rem; color: #475569; line-height: 1.5; }
-.time-block-fallback p { margin: 4px 0; }
+.time-block-fallback p, .time-block-fallback ul, .time-block-fallback li { font-size: 0.82rem; margin: 4px 0; }
 .time-block-label {
   display: flex; align-items: center; gap: 6px;
   font-weight: 700; font-size: 1rem; color: #334155;
@@ -6256,7 +6256,7 @@ details.day-section[open]>summary .day-chevron{transform:rotate(90deg);}
 .day-overview span{white-space:normal;}
 .time-block{margin-bottom:12px;}
 .time-block-fallback{font-size:0.82rem;color:#475569;line-height:1.5;}
-.time-block-fallback p{margin:4px 0;}
+.time-block-fallback p,.time-block-fallback ul,.time-block-fallback li{font-size:0.82rem;margin:4px 0;}
 .time-block-label{display:flex;align-items:center;gap:6px;font-weight:700;font-size:1rem;color:#334155;margin:14px 0 8px;padding-bottom:4px;border-bottom:1.5px solid #e2e8f0;}
 details.schedule-section{border:1px solid #e2e8f0;border-radius:12px;margin:8px 0;overflow:hidden;}
 details.schedule-section>summary{list-style:none;cursor:pointer;padding:10px 14px;font-weight:600;font-size:0.95rem;color:#334155;background:#f8fafc;display:flex;align-items:center;gap:8px;user-select:none;}
