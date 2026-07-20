@@ -5449,7 +5449,6 @@ function restructureItinerary() {
         if (pText) {
           current.description = current.description ? (current.description + ' ' + pText) : pText;
         }
-        el.setAttribute('data-consumed', '1');
         continue;
       }
 
@@ -6033,8 +6032,6 @@ function restructureItinerary() {
     }
   }
 
-  // Global cleanup: remove elements marked as consumed during stop parsing
-  container.querySelectorAll('[data-consumed]').forEach(function(el) { el.remove(); });
 }
 
 // Delegated handler for "Read more" toggles (fallback for inline handlers)
