@@ -5929,14 +5929,6 @@ function restructureItinerary() {
 
       if (tb.stops.length > 0) {
         tb.stops.forEach(stop => block.appendChild(buildStopCard(stop)));
-        // Remove any child elements that aren't stop cards or the label
-        Array.from(block.childNodes).forEach(function(node) {
-          if (node.nodeType === 1 && !node.classList.contains('stop-card') && !node.classList.contains('time-block-label')) {
-            node.remove();
-          } else if (node.nodeType === 3 && node.textContent.trim()) {
-            node.remove();
-          }
-        });
       } else {
         // Fallback: render raw elements
         tb.rawEls.forEach(el => {
@@ -6049,6 +6041,19 @@ function restructureItinerary() {
     }
   }
 
+  // Final cleanup: remove any elements inside time blocks that aren't
+  // stop cards or the time-block-label (catches stray duplicates)
+  container.querySelectorAll('.time-block').forEach(function(block) {
+    Array.from(block.childNodes).forEach(function(node) {
+      if (node.nodeType === 1) {
+        if (!node.classList.contains('stop-card') && !node.classList.contains('time-block-label')) {
+          node.remove();
+        }
+      } else if (node.nodeType === 3 && node.textContent.trim()) {
+        node.remove();
+      }
+    });
+  });
 }
 
 // Delegated handler for "Read more" toggles (fallback for inline handlers)
