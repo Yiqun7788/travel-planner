@@ -5449,6 +5449,7 @@ function restructureItinerary() {
         if (pText) {
           current.description = current.description ? (current.description + ' ' + pText) : pText;
         }
+        el.setAttribute('data-consumed', '1');
         continue;
       }
 
@@ -6032,24 +6033,8 @@ function restructureItinerary() {
     }
   }
 
-  // Global cleanup: remove any <p> elements inside day sections that duplicate
-  // a stop card's description (prevents text appearing both inside the card
-  // and as a standalone paragraph)
-  container.querySelectorAll('.day-section').forEach(function(section) {
-    var descriptions = [];
-    section.querySelectorAll('.stop-card .stop-desc-preview').forEach(function(el) {
-      var t = el.textContent.replace(/Read more\.\.\.$/i, '').replace(/Read less$/i, '').trim().toLowerCase();
-      if (t) descriptions.push(t);
-    });
-    if (descriptions.length === 0) return;
-    section.querySelectorAll('p').forEach(function(p) {
-      if (p.closest('.stop-card') || p.classList.contains('route-note')) return;
-      var pText = p.textContent.trim().toLowerCase();
-      if (pText && descriptions.some(function(d) { return d.includes(pText) || pText.includes(d); })) {
-        p.remove();
-      }
-    });
-  });
+  // Global cleanup: remove elements marked as consumed during stop parsing
+  container.querySelectorAll('[data-consumed]').forEach(function(el) { el.remove(); });
 }
 
 // Delegated handler for "Read more" toggles (fallback for inline handlers)
