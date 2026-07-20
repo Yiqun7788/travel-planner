@@ -5891,10 +5891,40 @@ function restructureItinerary() {
     content.className = 'day-content';
     content.appendChild(h2.cloneNode(true));
 
-    // Route map links
+    // Route map links: group by city for per-city placement
+    var routeLinkMap = {};  // city -> [elements]
+    var ungroupedRouteEls = [];
+    var norm2 = function(s) { return s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim(); };
     routeMapEls.forEach(function(el) {
-      content.appendChild(el.cloneNode(true));
+      if (el.classList && el.classList.contains('route-map-link')) {
+        var m = el.textContent.match(/in\s+(.+?)\s+on\s+Google/i);
+        if (m) {
+          var city = m[1].trim();
+          if (!routeLinkMap[city]) routeLinkMap[city] = [];
+          routeLinkMap[city].push(el);
+        } else {
+          ungroupedRouteEls.push(el);
+        }
+      } else if (el.classList && el.classList.contains('route-note')) {
+        // Transit note: will be added after each route link group
+        if (!routeLinkMap._transitNote) routeLinkMap._transitNote = el;
+      } else {
+        ungroupedRouteEls.push(el);
+      }
     });
+    var routeCities = Object.keys(routeLinkMap).filter(function(k) { return k !== '_transitNote'; });
+    var transitNoteEl = routeLinkMap._transitNote || null;
+
+    // If single city or no city grouping, place all at top as before
+    if (routeCities.length <= 1) {
+      routeMapEls.forEach(function(el) { content.appendChild(el.cloneNode(true)); });
+    } else {
+      // Place first city's route link at top
+      var firstCity = routeCities[0];
+      routeLinkMap[firstCity].forEach(function(el) { content.appendChild(el.cloneNode(true)); });
+      if (transitNoteEl) content.appendChild(transitNoteEl.cloneNode(true));
+      ungroupedRouteEls.forEach(function(el) { content.appendChild(el.cloneNode(true)); });
+    }
 
     // Day overview
     const overview = document.createElement('div');
@@ -5916,7 +5946,30 @@ function restructureItinerary() {
     const schedContent = document.createElement('div');
     schedContent.className = 'schedule-content';
 
+    // Track which cities' route links have been placed (for multi-city days)
+    var placedRouteCities = {};
+    if (routeCities.length > 1) placedRouteCities[norm2(routeCities[0])] = true;
+
     timeBlocks.forEach(tb => {
+      // For multi-city days, insert per-city route link before the first
+      // time block that contains stops from a new city
+      if (routeCities.length > 1) {
+        for (var rc = 1; rc < routeCities.length; rc++) {
+          var rcNorm = norm2(routeCities[rc]);
+          if (placedRouteCities[rcNorm]) continue;
+          var hasCity = tb.stops.some(function(s) { return norm2(s.name).includes(rcNorm); });
+          // Also check the time block label
+          if (!hasCity) hasCity = norm2(tb.label).includes(rcNorm);
+          if (hasCity) {
+            placedRouteCities[rcNorm] = true;
+            routeLinkMap[routeCities[rc]].forEach(function(el) {
+              schedContent.appendChild(el.cloneNode(true));
+            });
+            if (transitNoteEl) schedContent.appendChild(transitNoteEl.cloneNode(true));
+          }
+        }
+      }
+
       const block = document.createElement('div');
       block.className = 'time-block';
       const label = document.createElement('div');
