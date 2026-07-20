@@ -5920,6 +5920,16 @@ function restructureItinerary() {
 
       if (tb.stops.length > 0) {
         tb.stops.forEach(stop => block.appendChild(buildStopCard(stop)));
+        // Remove any stray <p> elements whose text duplicates a stop description
+        var stopDescs = tb.stops.map(function(s) { return (s.description || '').toLowerCase().trim(); }).filter(Boolean);
+        Array.from(block.querySelectorAll('p')).forEach(function(p) {
+          if (!p.closest('.stop-card')) {
+            var pText = p.textContent.trim().toLowerCase();
+            if (pText && stopDescs.some(function(d) { return d.includes(pText) || pText.includes(d); })) {
+              p.remove();
+            }
+          }
+        });
       } else {
         // Fallback: render raw elements
         tb.rawEls.forEach(el => {
