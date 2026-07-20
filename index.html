@@ -5668,10 +5668,15 @@ function restructureItinerary() {
     // Filter out notes that duplicate the description (avoids showing same text
     // in both the description preview and the Details panel)
     var descTextLower = (stop.description || '').toLowerCase().trim();
+    var fullDescLower = (fullDesc || '').toLowerCase().trim();
     var panelNotes = stop.notes.filter(function(html) {
       var tmp = document.createElement('span'); tmp.innerHTML = html;
       var t = tmp.textContent.trim().toLowerCase();
-      return t && (!descTextLower || !descTextLower.includes(t));
+      if (!t) return false;
+      // Remove if note matches description in either direction
+      if (descTextLower && (descTextLower.includes(t) || t.includes(descTextLower))) return false;
+      if (fullDescLower && (fullDescLower.includes(t) || t.includes(fullDescLower))) return false;
+      return true;
     });
 
     // "Details" toggle button in actions row — only show if there's something to expand
@@ -6041,19 +6046,6 @@ function restructureItinerary() {
     }
   }
 
-  // Final cleanup: remove any elements inside time blocks that aren't
-  // stop cards or the time-block-label (catches stray duplicates)
-  container.querySelectorAll('.time-block').forEach(function(block) {
-    Array.from(block.childNodes).forEach(function(node) {
-      if (node.nodeType === 1) {
-        if (!node.classList.contains('stop-card') && !node.classList.contains('time-block-label')) {
-          node.remove();
-        }
-      } else if (node.nodeType === 3 && node.textContent.trim()) {
-        node.remove();
-      }
-    });
-  });
 }
 
 // Delegated handler for "Read more" toggles (fallback for inline handlers)
