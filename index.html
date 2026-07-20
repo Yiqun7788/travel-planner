@@ -5920,16 +5920,6 @@ function restructureItinerary() {
 
       if (tb.stops.length > 0) {
         tb.stops.forEach(stop => block.appendChild(buildStopCard(stop)));
-        // Remove any stray <p> elements whose text duplicates a stop description
-        var stopDescs = tb.stops.map(function(s) { return (s.description || '').toLowerCase().trim(); }).filter(Boolean);
-        Array.from(block.querySelectorAll('p')).forEach(function(p) {
-          if (!p.closest('.stop-card')) {
-            var pText = p.textContent.trim().toLowerCase();
-            if (pText && stopDescs.some(function(d) { return d.includes(pText) || pText.includes(d); })) {
-              p.remove();
-            }
-          }
-        });
       } else {
         // Fallback: render raw elements
         tb.rawEls.forEach(el => {
@@ -6041,6 +6031,25 @@ function restructureItinerary() {
       container.appendChild(details);
     }
   }
+
+  // Global cleanup: remove any <p> elements inside day sections that duplicate
+  // a stop card's description (prevents text appearing both inside the card
+  // and as a standalone paragraph)
+  container.querySelectorAll('.day-section').forEach(function(section) {
+    var descriptions = [];
+    section.querySelectorAll('.stop-card .stop-desc-preview').forEach(function(el) {
+      var t = el.textContent.replace(/Read more\.\.\.$/i, '').replace(/Read less$/i, '').trim().toLowerCase();
+      if (t) descriptions.push(t);
+    });
+    if (descriptions.length === 0) return;
+    section.querySelectorAll('p').forEach(function(p) {
+      if (p.closest('.stop-card') || p.classList.contains('route-note')) return;
+      var pText = p.textContent.trim().toLowerCase();
+      if (pText && descriptions.some(function(d) { return d.includes(pText) || pText.includes(d); })) {
+        p.remove();
+      }
+    });
+  });
 }
 
 // Delegated handler for "Read more" toggles (fallback for inline handlers)
