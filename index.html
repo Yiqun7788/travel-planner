@@ -4977,6 +4977,35 @@ function stripEmoji(text) {
 function processDailyRoutes(markdown) {
   // Strip accents/diacritics for city name matching (e.g. Córdoba → Cordoba)
   var norm = function(s) { return s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase(); };
+
+  // Pre-process: merge multiple DailyRoute lines within the same day into one.
+  // The AI sometimes generates one DailyRoute per time section instead of one per day,
+  // which causes duplicate buttons and single-stop routes.
+  var lines = markdown.split('\n');
+  var currentDay = -1;
+  var dayFirstRouteIdx = {};
+  var dayMergedStops = {};
+  var linesToRemove = new Set();
+  for (var i = 0; i < lines.length; i++) {
+    if (/^##\s+Day\s+/i.test(lines[i])) currentDay++;
+    var routeMatch = lines[i].match(/^[>\s*`]*\*{0,2}DailyRoute:?\*{0,2}\s*(.+)$/i);
+    if (routeMatch) {
+      var stops = routeMatch[1].replace(/[`*]+$/g, '').trim();
+      if (dayFirstRouteIdx[currentDay] === undefined) {
+        dayFirstRouteIdx[currentDay] = i;
+        dayMergedStops[currentDay] = stops;
+      } else {
+        dayMergedStops[currentDay] += '|' + stops;
+        linesToRemove.add(i);
+      }
+    }
+  }
+  Object.keys(dayFirstRouteIdx).forEach(function(day) {
+    lines[dayFirstRouteIdx[day]] = 'DailyRoute: ' + dayMergedStops[day];
+  });
+  lines = lines.filter(function(_, idx) { return !linesToRemove.has(idx); });
+  markdown = lines.join('\n');
+
   return markdown.replace(/^[>\s*`]*\*{0,2}DailyRoute:?\*{0,2}\s*(.+)$/gim, (match, stopsStr, offset, fullString) => {
     // Strip trailing backticks/bold markers
     stopsStr = stopsStr.replace(/[`*]+$/g, '').trim();
@@ -6503,14 +6532,6 @@ function showPlanningChangesSummary() {
 function finalizeTripExtras() {
   tripData.tripFinalized = true;
   saveTripSession();
-  // Clear saved trip so next visit starts with a fresh planning page
-  try { localStorage.removeItem('savedTrip'); } catch {}
-  try { sessionStorage.removeItem('tripSession'); } catch {}
-  if (currentUser && supabaseClient) {
-    supabaseClient.from('user_profiles')
-      .update({ current_trip: null })
-      .eq('id', currentUser.id).then(function() {});
-  }
   document.getElementById('finalize-modal').classList.remove('active');
   // Reset planning page so next Generate starts fresh
   document.getElementById('origin').value = '';
@@ -6802,8 +6823,6 @@ VISIT TIME CHECK — When scheduling each place, ensure the recommended arrival 
     document.getElementById('planning-changes-summary').classList.add('hidden');
     // Tier: track update usage
     incrementUpdates();
-    saveTripSession();
-    applyTierUI();
 
     // Auto-finalize and show info modal when all revisions are used up
     var revisionsLeft = getTierLimits().maxUpdatesPerItinerary - getUpdatesThisItinerary();
@@ -6815,6 +6834,9 @@ VISIT TIME CHECK — When scheduling each place, ensure the recommended arrival 
       document.getElementById('finalize-modal-message').innerHTML = doneMsg;
       document.getElementById('finalize-modal').querySelector('.modal-actions').innerHTML = '<button class="modal-btn-primary" onclick="document.getElementById(\'finalize-modal\').classList.remove(\'active\')">Close</button>';
       document.getElementById('finalize-modal').classList.add('active');
+    } else {
+      saveTripSession();
+      applyTierUI();
     }
   }
 });
