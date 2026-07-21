@@ -5041,9 +5041,12 @@ function processDailyRoutes(markdown) {
     // within a single city where walking best represents actual distances.
     // Only override to driving when user explicitly selected Car (Local).
     var travelmode = 'walking';
+    var countrySuffix = '';
     if (typeof tripData !== 'undefined' && tripData) {
       var lt = tripData.localTransport || [];
       if (lt.includes('Car (Local)')) travelmode = 'driving';
+      var currToCountry = { 'CAD': 'Canada', 'USD': 'United States', 'GBP': 'United Kingdom', 'JPY': 'Japan', 'CNY': 'China' };
+      if (tripData.currency && currToCountry[tripData.currency]) countrySuffix = ', ' + currToCountry[tripData.currency];
     }
 
     // For multi-city trips: detect day's city from heading, clean stops with multiple city names
@@ -5142,10 +5145,11 @@ function processDailyRoutes(markdown) {
         if (cityIdx > 0 && cityIdx + normCity.length >= normStop.length) {
           s = s.substring(0, cityIdx).replace(/[,\s]+$/, '').trim();
         }
-        // Use "Place, City" comma format — Google Maps resolves this far more
-        // reliably than "Place City" (space-only). The comma tells Google Maps
-        // that the city name is a location qualifier, not part of the place name.
-        return s + ', ' + linkCity;
+        // Use "Place, City, Country" comma format — Google Maps resolves this far
+        // more reliably than "Place City" (space-only). The comma tells Google Maps
+        // that the city/country names are location qualifiers. The country suffix
+        // prevents confusion (e.g. Prince Edward Island vs Prince Edward County, ON).
+        return s + ', ' + linkCity + countrySuffix;
       });
       if (stops.length === 0) return '';
       var url;
@@ -5683,11 +5687,24 @@ function restructureItinerary() {
     if (stop.mapUrl || stop.address) {
       const mapBtn = document.createElement('a');
       mapBtn.className = 'stop-map-btn';
-      // Use "Name, Address" so Google Maps can disambiguate places that
-      // share an address (e.g. Mercado de Triana vs the adjacent bridge)
-      mapBtn.href = stop.address
-        ? 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(stop.name + ', ' + stop.address).replace(/%20/g, '+')
-        : stop.mapUrl;
+      // Use "Name, Address, Destination, Country" so Google Maps can
+      // disambiguate places — especially in regions like PEI that share
+      // names with other locations (Prince Edward County, ON).
+      if (stop.address) {
+        var mapQuery = stop.name + ', ' + stop.address;
+        var destFirst = (typeof tripData !== 'undefined' && tripData && tripData.destination) ? tripData.destination.split(/[,;\u3001]/)[0].trim() : '';
+        if (destFirst && !stop.address.toLowerCase().includes(destFirst.toLowerCase())) {
+          mapQuery += ', ' + destFirst;
+        }
+        var _cc = { 'CAD': 'Canada', 'USD': 'United States', 'GBP': 'United Kingdom', 'JPY': 'Japan', 'CNY': 'China' };
+        var _country = (typeof tripData !== 'undefined' && tripData && tripData.currency) ? _cc[tripData.currency] || '' : '';
+        if (_country && !mapQuery.toLowerCase().includes(_country.toLowerCase())) {
+          mapQuery += ', ' + _country;
+        }
+        mapBtn.href = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(mapQuery).replace(/%20/g, '+');
+      } else {
+        mapBtn.href = stop.mapUrl;
+      }
       mapBtn.target = '_blank';
       mapBtn.rel = 'noopener noreferrer';
       mapBtn.textContent = stop._transitDest
