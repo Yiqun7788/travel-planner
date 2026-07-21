@@ -2462,7 +2462,7 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
       <button id="fun-fact-btn" class="tool-btn tool-btn-locked" style="background: linear-gradient(135deg, #a855f7, #7c3aed);">&#128274; Fun Fact <span class="tier-badge">&#128275; Trip Pack</span></button>
     </div>
     <p id="revisions-remaining" class="hidden" style="margin-top:8px; font-size:0.82rem; color:#64748b; text-align:center;"></p>
-    <p id="extras-hint" class="hidden" style="margin-top:6px; font-size:0.82rem; color:#0ea5e9; text-align:center;">Packing List and Fun Fact will be available after you finalize your trip.</p>
+    <p id="extras-hint" class="hidden" style="margin-top:6px; font-size:0.82rem; color:#0ea5e9; text-align:center;">Packing List and Fun Fact will be available after you click the Download button.</p>
     <button id="finalize-trip-btn" class="hidden tool-btn" style="margin-top:12px; width:100%; background:linear-gradient(135deg,#22c55e,#16a34a); font-size:1rem;" onclick="finalizeTripExtras()">&#9989; Finalize Trip &amp; Unlock Extras</button>
     <button id="start-new-trip-btn" class="hidden tool-btn" style="margin-top:12px; width:100%; background:linear-gradient(135deg,#0ea5e9,#0284c7); font-size:1rem;" onclick="document.getElementById('start-new-trip-modal').classList.add('active')">&#10024; Start New Trip</button>
   </div>
@@ -3332,7 +3332,7 @@ function applyTierUI() {
   if (extrasHint) {
     if ((limits.packingList || limits.funFacts) && tripData.itinerary && !tripData.tripFinalized) {
       extrasHint.classList.remove('hidden');
-      extrasHint.textContent = 'Packing List and Fun Fact will be available after you finalize your trip.';
+      extrasHint.textContent = 'Packing List and Fun Fact will be available after you click the Download button.';
     } else {
       extrasHint.classList.add('hidden');
     }
