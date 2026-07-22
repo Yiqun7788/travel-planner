@@ -5715,15 +5715,14 @@ function restructureItinerary() {
     if (stop.mapUrl || stop.address) {
       const mapBtn = document.createElement('a');
       mapBtn.className = 'stop-map-btn';
-      // Use "Name, Address" for the Google Maps query. The address from the
-      // AI already contains city, province/state, postal code, and country,
-      // which is enough context for disambiguation. Appending extra destination
-      // or country text makes the query too long and causes "Partial match" results.
-      if (stop.address) {
+      // Prefer the AI-generated map URL (simple "Place+Name+City" format that
+      // Google Maps handles well). Building from Name+Address produces overly
+      // verbose queries that cause "Partial match" results.
+      if (stop.mapUrl) {
+        mapBtn.href = stop.mapUrl;
+      } else if (stop.address) {
         var mapQuery = stop.name + ', ' + stop.address;
         mapBtn.href = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(mapQuery).replace(/%20/g, '+');
-      } else {
-        mapBtn.href = stop.mapUrl;
       }
       mapBtn.target = '_blank';
       mapBtn.rel = 'noopener noreferrer';
