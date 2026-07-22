@@ -6077,12 +6077,14 @@ function restructureItinerary() {
     cheapH3.replaceWith(promoted);
   }
 
-  // Make budget summary section(s) collapsible (green theme)
+  // Make budget summary section collapsible (green theme)
   // MUST run before cheap tickets so the promoted cheap H2 acts as a boundary
-  // Process ALL matching h2s — AI sometimes generates duplicate Budget Summary sections
-  Array.from(container.querySelectorAll('h2')).filter(h2 =>
+  // Wrap the first match; remove any duplicates the AI generated
+  var budgetH2s = Array.from(container.querySelectorAll('h2')).filter(h2 =>
     !h2.closest('.day-content') && budgetPattern.test(h2.textContent)
-  ).forEach(function(budgetH2) {
+  );
+  if (budgetH2s.length > 0) {
+    const budgetH2 = budgetH2s[0];
     const bSiblings = [];
     let bNext = budgetH2.nextSibling;
     while (bNext) {
@@ -6101,13 +6103,26 @@ function restructureItinerary() {
     bDetails.appendChild(bSummary);
     bDetails.appendChild(bContent);
     budgetH2.replaceWith(bDetails);
-  });
+    // Remove duplicate Budget Summary sections
+    for (var bi = 1; bi < budgetH2s.length; bi++) {
+      var dupNext = budgetH2s[bi].nextSibling;
+      while (dupNext) {
+        if (dupNext.nodeType === 1 && (dupNext.tagName === 'H2' || (dupNext.classList && dupNext.classList.contains('day-section')))) break;
+        var dupRemove = dupNext;
+        dupNext = dupNext.nextSibling;
+        dupRemove.parentNode.removeChild(dupRemove);
+      }
+      budgetH2s[bi].parentNode.removeChild(budgetH2s[bi]);
+    }
+  }
 
-  // Make cheap tickets section(s) collapsible (amber theme)
-  // Process ALL matching h2s — AI sometimes generates duplicates
-  Array.from(container.querySelectorAll('h2')).filter(h2 =>
+  // Make cheap tickets section collapsible (amber theme)
+  // Wrap the first match; remove any duplicates the AI generated
+  var cheapH2s = Array.from(container.querySelectorAll('h2')).filter(h2 =>
     !h2.closest('.day-content') && cheapPattern.test(h2.textContent)
-  ).forEach(function(cheapH2) {
+  );
+  if (cheapH2s.length > 0) {
+    const cheapH2 = cheapH2s[0];
     const siblings = [];
     let next = cheapH2.nextSibling;
     while (next) {
@@ -6126,7 +6141,18 @@ function restructureItinerary() {
     details.appendChild(summary);
     details.appendChild(content);
     cheapH2.replaceWith(details);
-  });
+    // Remove duplicate Cheap Tickets sections
+    for (var ci = 1; ci < cheapH2s.length; ci++) {
+      var cDupNext = cheapH2s[ci].nextSibling;
+      while (cDupNext) {
+        if (cDupNext.nodeType === 1 && cDupNext.tagName === 'H2') break;
+        var cDupRemove = cDupNext;
+        cDupNext = cDupNext.nextSibling;
+        cDupRemove.parentNode.removeChild(cDupRemove);
+      }
+      cheapH2s[ci].parentNode.removeChild(cheapH2s[ci]);
+    }
+  }
 
   // --- Ultimate fallback: no day headings found at all ---
   // If restructuring produced no day-section cards, parse the entire container for stops
