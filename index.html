@@ -5006,6 +5006,9 @@ function processDailyRoutes(markdown) {
   lines = lines.filter(function(_, idx) { return !linesToRemove.has(idx); });
   markdown = lines.join('\n');
 
+  // Strip AI metadata that sometimes leaks into the output
+  markdown = markdown.replace(/^CorrectDestinations:.*$/gim, '');
+
   return markdown.replace(/^[>\s*`]*\*{0,2}DailyRoute:?\*{0,2}\s*(.+)$/gim, (match, stopsStr, offset, fullString) => {
     // Strip trailing backticks/bold markers
     stopsStr = stopsStr.replace(/[`*]+$/g, '').trim();
@@ -5130,7 +5133,7 @@ function processDailyRoutes(markdown) {
 
     var groupKeys = Object.keys(cityGroups);
 
-    const mapsEncode = s => encodeURIComponent(s).replace(/%20/g, '+');
+    const mapsEncode = s => encodeURIComponent(s).replace(/%20/g, '+').replace(/%2C/g, ',');
     var modeIcon = travelmode === 'walking' ? '&#128694;' : travelmode === 'bicycling' ? '&#128690;' : '&#128663;';
 
     // Helper: build a single route link for a set of stops in a given city
@@ -6077,7 +6080,11 @@ function restructureItinerary() {
     const bSiblings = [];
     let bNext = budgetH2.nextSibling;
     while (bNext) {
-      if (bNext.nodeType === 1 && bNext.tagName === 'H2') break;
+      // Stop at H2 headings and also at day-section <details> elements —
+      // the AI sometimes generates ## Day headings inside the Budget Summary
+      // for per-day cost breakdowns; those get processed into day-section
+      // cards first, and we must not absorb them into the Budget wrapper.
+      if (bNext.nodeType === 1 && (bNext.tagName === 'H2' || (bNext.classList && bNext.classList.contains('day-section')))) break;
       bSiblings.push(bNext);
       bNext = bNext.nextSibling;
     }
