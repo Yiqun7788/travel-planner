@@ -6868,7 +6868,6 @@ VISIT TIME CHECK — When scheduling each place, ensure the recommended arrival 
 
   if (result) {
     tripData.itinerary = result;
-    saveTripSession();
 
     const routeMapHtml = buildLongDistanceRouteMap(tripData.destination, tripData.longDistance || [], tripData.origin, tripData.roundTrip);
     document.getElementById('content-display').innerHTML = routeMapHtml + linkifyUrls(marked.parse(processDailyRoutes(result)));
