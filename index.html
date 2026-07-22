@@ -358,6 +358,17 @@ body { font-family: 'Inter', system-ui, sans-serif; background: #f1f5f9; }
   line-height: 1.4;
 }
 
+/* Itinerary disclaimer */
+.itinerary-disclaimer {
+  font-size: 0.82rem;
+  color: #64748b;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 8px 14px;
+  margin-bottom: 10px;
+}
+
 /* Collapsible day sections */
 details.day-section {
   border: 1.5px solid #e2e8f0;
@@ -4705,6 +4716,15 @@ If a place is closed on ALL days of the trip, mention it as a note but do not in
 
 VISIT TIME CHECK — When scheduling each place, ensure the recommended arrival time leaves enough time for a meaningful visit before the place closes. For example, do not schedule a museum visit at 3:00 PM if it closes at 3:30 PM. Consider typical visit durations (e.g., major museums need 2-3 hours, cathedrals and churches need 1-1.5 hours, parks and markets need 1-2 hours, quick stops like viewpoints need 15-30 minutes). Schedule each place so the traveler arrives with enough time to enjoy it fully before closing. If a place closes too early for the planned time slot, move it to an earlier slot in the day or to a different day.
 
+RESTAURANT & DINING ACCURACY (CRITICAL — DO NOT SKIP):
+- Only recommend restaurants, cafés, bars, and dining venues that you can verify actually exist. Use your search tools to confirm each restaurant is real. NEVER invent or fabricate restaurant names, addresses, hours, or prices.
+- If you cannot verify a specific restaurant in a small town or rural area, provide a general dining suggestion instead. Use this format:
+  **Local Seafood Dining** — Try fresh seafood restaurants along the waterfront
+  - Address: North Rustico waterfront area, PE, Canada
+  - Hours: Varies by restaurant
+  - Fee: $$ (estimated $30-$60 for two)
+- A general, honest dining suggestion is ALWAYS better than a fabricated restaurant name. Travelers rely on these recommendations — fake restaurants waste their time and damage trust.
+
 Format each place like this:
 **Place Name** — Brief description (5-10 words about what makes this place notable)
 - Map: https://www.google.com/maps/search/?api=1&query=Place+Name+City
@@ -6158,6 +6178,14 @@ function restructureItinerary() {
     }
   }
 
+  // Add disclaimer about AI-generated details (avoid duplicates on re-render)
+  if (!container.querySelector('.itinerary-disclaimer')) {
+    var disclaimer = document.createElement('div');
+    disclaimer.className = 'itinerary-disclaimer';
+    disclaimer.innerHTML = '<strong>Tip:</strong> Restaurant names, hours, and prices are AI-generated suggestions. Please verify details on Google Maps before visiting.';
+    container.insertBefore(disclaimer, container.firstChild);
+  }
+
 }
 
 // Delegated handler for "Read more" toggles (fallback for inline handlers)
@@ -6323,6 +6351,7 @@ details.cheap-tickets-section>summary{list-style:none;cursor:pointer;display:fle
 details.cheap-tickets-section>summary:hover{background:linear-gradient(135deg,#fef3c7,#fde68a);}
 details.cheap-tickets-section[open]>summary{background:linear-gradient(135deg,#fef3c7,#fde68a);border-bottom:2px solid #f59e0b;}
 details.cheap-tickets-section>summary::-webkit-details-marker{display:none;}
+.itinerary-disclaimer{font-size:0.82rem;color:#64748b;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:8px 14px;margin-bottom:10px;}
 .stop-card{border:1px solid #e2e8f0;border-radius:10px;margin:6px 0;overflow:hidden;background:#fff;}
 .stop-card.open{box-shadow:0 1px 8px rgba(0,0,0,0.07);}
 .stop-card .stop-header{display:flex;align-items:flex-start;gap:10px;padding:10px 14px;background:#fff;}
