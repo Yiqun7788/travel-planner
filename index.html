@@ -6087,19 +6087,15 @@ function restructureItinerary() {
     cheapH3.replaceWith(promoted);
   }
 
-  // Make budget summary section collapsible (green theme)
+  // Make budget summary section(s) collapsible (green theme)
   // MUST run before cheap tickets so the promoted cheap H2 acts as a boundary
-  const budgetH2 = Array.from(container.querySelectorAll('h2')).find(h2 =>
+  // Process ALL matching h2s — AI sometimes generates duplicate Budget Summary sections
+  Array.from(container.querySelectorAll('h2')).filter(h2 =>
     !h2.closest('.day-content') && budgetPattern.test(h2.textContent)
-  );
-  if (budgetH2) {
+  ).forEach(function(budgetH2) {
     const bSiblings = [];
     let bNext = budgetH2.nextSibling;
     while (bNext) {
-      // Stop at H2 headings and also at day-section <details> elements —
-      // the AI sometimes generates ## Day headings inside the Budget Summary
-      // for per-day cost breakdowns; those get processed into day-section
-      // cards first, and we must not absorb them into the Budget wrapper.
       if (bNext.nodeType === 1 && (bNext.tagName === 'H2' || (bNext.classList && bNext.classList.contains('day-section')))) break;
       bSiblings.push(bNext);
       bNext = bNext.nextSibling;
@@ -6115,7 +6111,7 @@ function restructureItinerary() {
     bDetails.appendChild(bSummary);
     bDetails.appendChild(bContent);
     budgetH2.replaceWith(bDetails);
-  }
+  });
 
   // Make cheap tickets section collapsible (amber theme)
   const cheapH2 = Array.from(container.querySelectorAll('h2')).find(h2 =>
