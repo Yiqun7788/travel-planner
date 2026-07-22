@@ -5715,20 +5715,12 @@ function restructureItinerary() {
     if (stop.mapUrl || stop.address) {
       const mapBtn = document.createElement('a');
       mapBtn.className = 'stop-map-btn';
-      // Use "Name, Address, Destination, Country" so Google Maps can
-      // disambiguate places — especially in regions like PEI that share
-      // names with other locations (Prince Edward County, ON).
+      // Use "Name, Address" for the Google Maps query. The address from the
+      // AI already contains city, province/state, postal code, and country,
+      // which is enough context for disambiguation. Appending extra destination
+      // or country text makes the query too long and causes "Partial match" results.
       if (stop.address) {
         var mapQuery = stop.name + ', ' + stop.address;
-        var destFirst = (typeof tripData !== 'undefined' && tripData && tripData.destination) ? tripData.destination.split(/[,;\u3001]/)[0].trim() : '';
-        if (destFirst && !stop.address.toLowerCase().includes(destFirst.toLowerCase())) {
-          mapQuery += ', ' + destFirst;
-        }
-        var _cc = { 'CAD': 'Canada', 'USD': 'United States', 'GBP': 'United Kingdom', 'JPY': 'Japan', 'CNY': 'China' };
-        var _country = (typeof tripData !== 'undefined' && tripData && tripData.currency) ? _cc[tripData.currency] || '' : '';
-        if (_country && !mapQuery.toLowerCase().includes(_country.toLowerCase())) {
-          mapQuery += ', ' + _country;
-        }
         mapBtn.href = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(mapQuery).replace(/%20/g, '+');
       } else {
         mapBtn.href = stop.mapUrl;
