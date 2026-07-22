@@ -6103,11 +6103,11 @@ function restructureItinerary() {
     budgetH2.replaceWith(bDetails);
   });
 
-  // Make cheap tickets section collapsible (amber theme)
-  const cheapH2 = Array.from(container.querySelectorAll('h2')).find(h2 =>
+  // Make cheap tickets section(s) collapsible (amber theme)
+  // Process ALL matching h2s — AI sometimes generates duplicates
+  Array.from(container.querySelectorAll('h2')).filter(h2 =>
     !h2.closest('.day-content') && cheapPattern.test(h2.textContent)
-  );
-  if (cheapH2) {
+  ).forEach(function(cheapH2) {
     const siblings = [];
     let next = cheapH2.nextSibling;
     while (next) {
@@ -6126,7 +6126,7 @@ function restructureItinerary() {
     details.appendChild(summary);
     details.appendChild(content);
     cheapH2.replaceWith(details);
-  }
+  });
 
   // --- Ultimate fallback: no day headings found at all ---
   // If restructuring produced no day-section cards, parse the entire container for stops
