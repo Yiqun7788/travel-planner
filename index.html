@@ -4692,7 +4692,7 @@ TRAVEL DAY DETAILS: On days when the traveler moves between cities, you MUST inc
 - Tolls: [toll details or "No tolls on this route"] (if driving by car)
 Do NOT leave "Long-distance Transportation" as an empty heading. ALWAYS include ALL bullet points listed above — never omit distance, travel time, or driving costs.` : ''}
 ${localTransport.length > 0 ? `Local transportation (within cities): ${localTransport.join(", ")}.` : ''}
-${additionalInstructions ? `TRAVELER'S SPECIAL REQUESTS (MANDATORY — you MUST incorporate these into the itinerary, do not skip or debate them): ${additionalInstructions}` : ''}
+${additionalInstructions ? `Traveler preferences (apply silently — do NOT discuss, analyze, or explain these, just incorporate them into the itinerary): ${additionalInstructions}` : ''}
 
 OUTPUT RULES (CRITICAL):
 - Output ONLY the final itinerary. NEVER include analysis, reasoning, research notes, decision-making, comparisons, or planning text in your response.
@@ -4780,14 +4780,17 @@ ROUND TRIP: The traveler is making a round trip${longDistance.length === 1 ? ' b
       dest = correctedMatch[1].trim();
       finalResult = finalResult.replace(/^CorrectedDestinations:\s*.+\n*/m, '');
     }
-    // Strip any AI reasoning/analysis text that appears before the first ## Day heading.
-    // Gemini sometimes outputs planning notes, decision-making, or research before the itinerary.
-    const firstDayMatch = finalResult.match(/^##\s+Day\s/m);
-    if (firstDayMatch) {
-      const firstDayIdx = finalResult.indexOf(firstDayMatch[0]);
-      if (firstDayIdx > 0) {
-        finalResult = finalResult.substring(firstDayIdx);
-      }
+    // Strip any AI reasoning/analysis text that appears before the actual itinerary.
+    // Find the LAST "## Day 1" heading — the real itinerary always starts with Day 1
+    // and appears after any reasoning text (which may contain its own ## Day headings).
+    const dayOnePattern = /^##\s+Day\s+1[\s:]/gm;
+    let lastDay1Idx = -1;
+    let d1m;
+    while ((d1m = dayOnePattern.exec(finalResult)) !== null) {
+      lastDay1Idx = d1m.index;
+    }
+    if (lastDay1Idx > 0) {
+      finalResult = finalResult.substring(lastDay1Idx);
     }
   }
 
@@ -6884,13 +6887,16 @@ VISIT TIME CHECK — When scheduling each place, ensure the recommended arrival 
   }
 
   if (result) {
-    // Strip any AI reasoning/analysis text before the first ## Day heading
+    // Strip any AI reasoning/analysis text before the actual itinerary.
+    // Find the LAST "## Day 1" heading — the real itinerary always starts with Day 1.
     var cleanedResult = result;
-    var firstDayM = cleanedResult.match(/^##\s+Day\s/m);
-    if (firstDayM) {
-      var firstDayI = cleanedResult.indexOf(firstDayM[0]);
-      if (firstDayI > 0) cleanedResult = cleanedResult.substring(firstDayI);
+    var dayOneRe = /^##\s+Day\s+1[\s:]/gm;
+    var lastD1Idx = -1;
+    var d1Match;
+    while ((d1Match = dayOneRe.exec(cleanedResult)) !== null) {
+      lastD1Idx = d1Match.index;
     }
+    if (lastD1Idx > 0) cleanedResult = cleanedResult.substring(lastD1Idx);
     tripData.itinerary = cleanedResult;
 
     const routeMapHtml = buildLongDistanceRouteMap(tripData.destination, tripData.longDistance || [], tripData.origin, tripData.roundTrip);
