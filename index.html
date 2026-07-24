@@ -4692,7 +4692,12 @@ TRAVEL DAY DETAILS: On days when the traveler moves between cities, you MUST inc
 - Tolls: [toll details or "No tolls on this route"] (if driving by car)
 Do NOT leave "Long-distance Transportation" as an empty heading. ALWAYS include ALL bullet points listed above — never omit distance, travel time, or driving costs.` : ''}
 ${localTransport.length > 0 ? `Local transportation (within cities): ${localTransport.join(", ")}.` : ''}
-${additionalInstructions ? `Additional instructions: ${additionalInstructions}` : ''}
+${additionalInstructions ? `TRAVELER'S SPECIAL REQUESTS (MANDATORY — you MUST incorporate these into the itinerary, do not skip or debate them): ${additionalInstructions}` : ''}
+
+OUTPUT RULES (CRITICAL):
+- Output ONLY the final itinerary. NEVER include analysis, reasoning, research notes, decision-making, comparisons, or planning text in your response.
+- Do NOT explain which restaurants you kept or changed, or why you chose certain places. Just output the itinerary.
+- Start your response with the CorrectedDestinations line, then go directly into ## Day 1.
 
 STRUCTURE - You MUST use this exact markdown heading structure:
 - Use ## for each day heading (e.g., "## Day 1: Historical London"). Include the city name in the day heading when visiting multiple destinations.
@@ -4774,6 +4779,15 @@ ROUND TRIP: The traveler is making a round trip${longDistance.length === 1 ? ' b
     if (correctedMatch) {
       dest = correctedMatch[1].trim();
       finalResult = finalResult.replace(/^CorrectedDestinations:\s*.+\n*/m, '');
+    }
+    // Strip any AI reasoning/analysis text that appears before the first ## Day heading.
+    // Gemini sometimes outputs planning notes, decision-making, or research before the itinerary.
+    const firstDayMatch = finalResult.match(/^##\s+Day\s/m);
+    if (firstDayMatch) {
+      const firstDayIdx = finalResult.indexOf(firstDayMatch[0]);
+      if (firstDayIdx > 0) {
+        finalResult = finalResult.substring(firstDayIdx);
+      }
     }
   }
 
@@ -6870,10 +6884,17 @@ VISIT TIME CHECK — When scheduling each place, ensure the recommended arrival 
   }
 
   if (result) {
-    tripData.itinerary = result;
+    // Strip any AI reasoning/analysis text before the first ## Day heading
+    var cleanedResult = result;
+    var firstDayM = cleanedResult.match(/^##\s+Day\s/m);
+    if (firstDayM) {
+      var firstDayI = cleanedResult.indexOf(firstDayM[0]);
+      if (firstDayI > 0) cleanedResult = cleanedResult.substring(firstDayI);
+    }
+    tripData.itinerary = cleanedResult;
 
     const routeMapHtml = buildLongDistanceRouteMap(tripData.destination, tripData.longDistance || [], tripData.origin, tripData.roundTrip);
-    document.getElementById('content-display').innerHTML = routeMapHtml + linkifyUrls(marked.parse(processDailyRoutes(result)));
+    document.getElementById('content-display').innerHTML = routeMapHtml + linkifyUrls(marked.parse(processDailyRoutes(cleanedResult)));
     restructureItinerary();
     renderTripOverview();
     renderActiveInstructionsLabel();
