@@ -5594,52 +5594,54 @@ function restructureItinerary() {
   };
 
   function buildStopCard(stop) {
-    // For long-distance transport stops, generate a driving directions link.
+    // For long-distance transport stops using Car, generate a driving directions link.
     // Handles both "Long-distance Transportation" (route in description) and
     // "Travel/Drive CityA → CityB" (route in name) patterns.
+    // Only shows map route for Car — other modes (Train, Bus, Air, Bike) are skipped
+    // because Google Maps cannot reliably show intercity transit/cycling routes.
     if (!stop.mapUrl && !stop.address) {
-      var rOrigin, rDest, rTravelmode;
+      var rOrigin, rDest;
       if (/^Long-distance Transportation/i.test(stop.name)) {
         // Parse "CityA → CityB (Mode)" from description
         var routeMatch = (stop.description || '').match(/^(.+?)\s*→\s*(.+?)\s*\((\w+)\)/);
         if (routeMatch) {
-          rOrigin = routeMatch[1].trim();
-          rDest = routeMatch[2].trim();
           var rMode = routeMatch[3].toLowerCase();
-          rTravelmode = rMode === 'car' ? 'driving' : rMode === 'bike' ? 'bicycling' : (rMode === 'train' || rMode === 'bus') ? 'transit' : 'driving';
+          if (rMode === 'car') {
+            rOrigin = routeMatch[1].trim();
+            rDest = routeMatch[2].trim();
+          }
         }
       } else {
         // Parse "Travel/Drive/Scenic Drive CityA → CityB via ..." from name
-        var travelMatch = stop.name.match(/^(?:Travel|Drive|Scenic Drive):?\s+(?:from\s+)?(.+?)\s*(?:→|–|—|to)\s+(.+?)(?:\s+(?:via|by|on)\s+.*)?$/i);
-        if (!travelMatch) {
-          // Fallback: bare "CityA → CityB" or "CityA – CityB" without prefix,
-          // but only when both sides match known destination cities
-          var bareMatch = stop.name.match(/^(.+?)\s*(?:→|–|—)\s+(.+?)(?:\s+(?:via|by|on)\s+.*)?$/i);
-          if (bareMatch) {
-            var _allCities = (typeof tripData !== 'undefined' && tripData && tripData.destination)
-              ? tripData.destination.split(/[,;\u3001]/).map(function(s) { return s.trim().replace(/^(?:and|&)\s+/i, ''); }).filter(function(s) { return s.length > 0; }) : [];
-            var _norm = function(s) { return s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase(); };
-            var _a = bareMatch[1].trim(), _b = bareMatch[2].trim();
-            var _matchA = _allCities.some(function(c) { return _norm(_a).includes(_norm(c)) || _norm(c).includes(_norm(_a)); });
-            var _matchB = _allCities.some(function(c) { return _norm(_b).includes(_norm(c)) || _norm(c).includes(_norm(_b)); });
-            if (_matchA && _matchB) travelMatch = bareMatch;
+        var ld = (typeof tripData !== 'undefined' && tripData && tripData.longDistance) || [];
+        if (ld.includes('Car')) {
+          var travelMatch = stop.name.match(/^(?:Travel|Drive|Scenic Drive):?\s+(?:from\s+)?(.+?)\s*(?:→|–|—|to)\s+(.+?)(?:\s+(?:via|by|on)\s+.*)?$/i);
+          if (!travelMatch) {
+            // Fallback: bare "CityA → CityB" or "CityA – CityB" without prefix,
+            // but only when both sides match known destination cities
+            var bareMatch = stop.name.match(/^(.+?)\s*(?:→|–|—)\s+(.+?)(?:\s+(?:via|by|on)\s+.*)?$/i);
+            if (bareMatch) {
+              var _allCities = (typeof tripData !== 'undefined' && tripData && tripData.destination)
+                ? tripData.destination.split(/[,;\u3001]/).map(function(s) { return s.trim().replace(/^(?:and|&)\s+/i, ''); }).filter(function(s) { return s.length > 0; }) : [];
+              var _norm = function(s) { return s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase(); };
+              var _a = bareMatch[1].trim(), _b = bareMatch[2].trim();
+              var _matchA = _allCities.some(function(c) { return _norm(_a).includes(_norm(c)) || _norm(c).includes(_norm(_a)); });
+              var _matchB = _allCities.some(function(c) { return _norm(_b).includes(_norm(c)) || _norm(c).includes(_norm(_b)); });
+              if (_matchA && _matchB) travelMatch = bareMatch;
+            }
           }
-        }
-        if (travelMatch) {
-          rOrigin = travelMatch[1].trim();
-          rDest = travelMatch[2].trim();
-          var ld = (typeof tripData !== 'undefined' && tripData && tripData.longDistance) || [];
-          var hasTransit = ld.includes('Train') || ld.includes('Bus') || ld.includes('Long-Distance Bus');
-          rTravelmode = ld.includes('Bike') && !ld.includes('Car') ? 'bicycling' : hasTransit && !ld.includes('Car') ? 'transit' : 'driving';
+          if (travelMatch) {
+            rOrigin = travelMatch[1].trim();
+            rDest = travelMatch[2].trim();
+          }
         }
       }
       if (rOrigin && rDest) {
         stop.mapUrl = 'https://www.google.com/maps/dir/?api=1'
           + '&origin=' + encodeURIComponent(rOrigin)
           + '&destination=' + encodeURIComponent(rDest)
-          + '&travelmode=' + rTravelmode;
+          + '&travelmode=driving';
         stop._transitDest = rDest;
-        stop._travelmode = rTravelmode;
       }
     }
 
@@ -5761,12 +5763,8 @@ function restructureItinerary() {
       }
       mapBtn.target = '_blank';
       mapBtn.rel = 'noopener noreferrer';
-      var _routeLabel = 'Route';
-      if (stop._travelmode === 'transit') _routeLabel = 'Transit Route';
-      else if (stop._travelmode === 'bicycling') _routeLabel = 'Cycling Route';
-      else if (stop._travelmode === 'driving') _routeLabel = 'Driving Route';
       mapBtn.textContent = stop._transitDest
-        ? '\uD83D\uDDFA\uFE0F View ' + _routeLabel + ' to ' + stop._transitDest + ' on Google Maps'
+        ? '\uD83D\uDDFA\uFE0F View Driving Route to ' + stop._transitDest + ' on Google Maps'
         : '\uD83D\uDDFA\uFE0F View on Google Maps';
       mapBtn.addEventListener('click', function(e) { e.stopPropagation(); });
       actions.appendChild(mapBtn);
