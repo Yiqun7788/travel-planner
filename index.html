@@ -3490,11 +3490,16 @@ function applyTierUI() {
     genHint.classList.add('hidden');
   }
 
-  // ─── Show/hide Finalize Trip buttons (free tier only) ───
+  // ─── Show/hide Finalize Trip buttons ───
   const finalizeBtn = document.getElementById('finalize-trip-btn');
   const finalizeBtnMobile = document.getElementById('finalize-trip-btn-mobile');
-  finalizeBtn.classList.add('hidden');
-  if (finalizeBtnMobile) finalizeBtnMobile.classList.add('hidden');
+  if (!tripData.tripFinalized && tripData.itinerary) {
+    finalizeBtn.classList.remove('hidden');
+    if (finalizeBtnMobile) finalizeBtnMobile.classList.remove('hidden');
+  } else {
+    finalizeBtn.classList.add('hidden');
+    if (finalizeBtnMobile) finalizeBtnMobile.classList.add('hidden');
+  }
 
   // ─── Show "Start New Trip" button after finalization ───
   const startNewTripBtn = document.getElementById('start-new-trip-btn');
