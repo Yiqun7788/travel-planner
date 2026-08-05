@@ -2480,7 +2480,7 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
       <button id="packing-list-btn" class="tool-btn tool-btn-locked" style="background: linear-gradient(135deg, #22c55e, #16a34a);">&#128274; Packing List <span class="tier-badge">&#128275; Trip Pack</span></button>
       <button id="fun-fact-btn" class="tool-btn tool-btn-locked" style="background: linear-gradient(135deg, #a855f7, #7c3aed);">&#128274; Fun Fact <span class="tier-badge">&#128275; Trip Pack</span></button>
     </div>
-    <p id="extras-hint" class="hidden" style="margin-top:6px; font-size:0.82rem; color:#0ea5e9; text-align:center;">Packing List and Fun Fact will be available after you click the Download button.</p>
+    <p id="extras-hint" class="hidden" style="margin-top:6px; font-size:0.82rem; color:#0ea5e9; text-align:center;">Packing List and Fun Fact will be available after you finalize your trip.</p>
     <button id="finalize-trip-btn" class="hidden tool-btn" style="margin-top:12px; width:100%; background:linear-gradient(135deg,#22c55e,#16a34a); font-size:1rem;" onclick="finalizeTripExtras()">&#9989; Finalize Trip &amp; Unlock Extras</button>
     <button id="start-new-trip-btn" class="hidden tool-btn" style="margin-top:12px; width:100%; background:linear-gradient(135deg,#0ea5e9,#0284c7); font-size:1rem;" onclick="document.getElementById('start-new-trip-modal').classList.add('active')">&#10024; Start New Trip</button>
   </div>
@@ -3350,7 +3350,7 @@ function applyTierUI() {
   if (extrasHint) {
     if ((limits.packingList || limits.funFacts) && tripData.itinerary && !tripData.tripFinalized) {
       extrasHint.classList.remove('hidden');
-      extrasHint.textContent = 'Packing List and Fun Fact will be available after you click the Download button.';
+      extrasHint.textContent = 'Packing List and Fun Fact will be available after you finalize your trip.';
     } else {
       extrasHint.classList.add('hidden');
     }
@@ -3404,6 +3404,20 @@ function applyTierUI() {
     } else {
       pdfBtn.classList.remove('download-menu-item-locked');
       pdfBtn.innerHTML = '&#128462; Download as PDF';
+    }
+  }
+
+  // ─── Download button (disabled until finalized) ───
+  const dlBtn = document.getElementById('download-button');
+  if (dlBtn) {
+    if (tripData.tripFinalized && tripData.itinerary) {
+      dlBtn.disabled = false;
+      dlBtn.style.opacity = '';
+      dlBtn.style.cursor = '';
+    } else if (tripData.itinerary) {
+      dlBtn.disabled = true;
+      dlBtn.style.opacity = '0.45';
+      dlBtn.style.cursor = 'not-allowed';
     }
   }
 
@@ -6274,10 +6288,7 @@ document.getElementById('edit-trip-settings-link').addEventListener('click', (e)
 // Download menu toggle
 document.getElementById('download-button').addEventListener('click', (e) => {
   e.stopPropagation();
-  if (!tripData.tripFinalized) {
-    showDownloadGateModal();
-    return;
-  }
+  if (!tripData.tripFinalized) return;
   const menu = document.getElementById('download-menu');
   menu.classList.toggle('hidden');
 });
@@ -6623,6 +6634,12 @@ function finalizeTripExtras() {
   tripData.tripFinalized = true;
   saveTripSession();
   document.getElementById('finalize-modal').classList.remove('active');
+  // Confirmation message
+  if (tripData.isPaidTrip) {
+    alert('Trip finalized! Downloads, Packing List, and Fun Fact are now available.');
+  } else {
+    alert('Trip finalized! You can now download your itinerary.');
+  }
   // Reset planning page so next Generate starts fresh
   document.getElementById('origin').value = '';
   document.getElementById('destination').value = '';
