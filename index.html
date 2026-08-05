@@ -5606,7 +5606,7 @@ function restructureItinerary() {
           rOrigin = routeMatch[1].trim();
           rDest = routeMatch[2].trim();
           var rMode = routeMatch[3].toLowerCase();
-          rTravelmode = rMode === 'car' ? 'driving' : rMode === 'bike' ? 'bicycling' : 'driving';
+          rTravelmode = rMode === 'car' ? 'driving' : rMode === 'bike' ? 'bicycling' : (rMode === 'train' || rMode === 'bus') ? 'transit' : 'driving';
         }
       } else {
         // Parse "Travel/Drive/Scenic Drive CityA → CityB via ..." from name
@@ -5629,7 +5629,8 @@ function restructureItinerary() {
           rOrigin = travelMatch[1].trim();
           rDest = travelMatch[2].trim();
           var ld = (typeof tripData !== 'undefined' && tripData && tripData.longDistance) || [];
-          rTravelmode = ld.includes('Bike') && !ld.includes('Car') ? 'bicycling' : 'driving';
+          var hasTransit = ld.includes('Train') || ld.includes('Bus') || ld.includes('Long-Distance Bus');
+          rTravelmode = ld.includes('Bike') && !ld.includes('Car') ? 'bicycling' : hasTransit && !ld.includes('Car') ? 'transit' : 'driving';
         }
       }
       if (rOrigin && rDest) {
@@ -5638,6 +5639,7 @@ function restructureItinerary() {
           + '&destination=' + encodeURIComponent(rDest)
           + '&travelmode=' + rTravelmode;
         stop._transitDest = rDest;
+        stop._travelmode = rTravelmode;
       }
     }
 
@@ -5759,8 +5761,12 @@ function restructureItinerary() {
       }
       mapBtn.target = '_blank';
       mapBtn.rel = 'noopener noreferrer';
+      var _routeLabel = 'Route';
+      if (stop._travelmode === 'transit') _routeLabel = 'Transit Route';
+      else if (stop._travelmode === 'bicycling') _routeLabel = 'Cycling Route';
+      else if (stop._travelmode === 'driving') _routeLabel = 'Driving Route';
       mapBtn.textContent = stop._transitDest
-        ? '\uD83D\uDDFA\uFE0F View Driving Route to ' + stop._transitDest + ' on Google Maps'
+        ? '\uD83D\uDDFA\uFE0F View ' + _routeLabel + ' to ' + stop._transitDest + ' on Google Maps'
         : '\uD83D\uDDFA\uFE0F View on Google Maps';
       mapBtn.addEventListener('click', function(e) { e.stopPropagation(); });
       actions.appendChild(mapBtn);
