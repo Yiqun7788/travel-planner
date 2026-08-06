@@ -4757,6 +4757,10 @@ RESTAURANT & DINING ACCURACY (IMPORTANT):
 - Use your search tools to verify that each restaurant you recommend actually exists. Include specific restaurant names, addresses, hours, and prices when you can confirm them.
 - If you cannot verify a specific restaurant in a small town or rural area, provide a general dining suggestion instead (e.g., "**Local Seafood Dining** — Try fresh seafood restaurants along the waterfront"). A general suggestion is better than a fabricated restaurant name.
 
+ACCOMMODATION ACCURACY (IMPORTANT):
+- Use your search tools to verify that each hotel, hostel, or accommodation you recommend actually exists. Include the correct full street address (e.g., "Via Guicciardini 8, Florence"), not a landmark or neighborhood name.
+- Do NOT use a nearby landmark as the address (e.g., do NOT use "Ponte Vecchio" as the address for a hotel near Ponte Vecchio).
+
 Format each place like this:
 **Place Name** — Brief description (5-10 words about what makes this place notable)
 - Map: https://www.google.com/maps/search/?api=1&query=Place+Name+City
@@ -5762,7 +5766,23 @@ function restructureItinerary() {
       // Prefer the AI-generated map URL (simple "Place+Name+City" format that
       // Google Maps handles well). Building from Name+Address produces overly
       // verbose queries that cause "Partial match" results.
-      if (stop.mapUrl) {
+      // For accommodation stops, always use hotel name + city to avoid landmark
+      // addresses (e.g., "Ponte Vecchio") overriding the hotel name in search.
+      if (isAccommodation) {
+        var _accomCities = (typeof tripData !== 'undefined' && tripData && tripData.destination)
+          ? tripData.destination.split(/[,;\u3001]/).map(function(s) { return s.trim().replace(/^(?:and|&)\s+/i, ''); }).filter(function(s) { return s.length > 0; }) : [];
+        var _accomNorm = function(s) { return s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase(); };
+        var accomCity = _accomCities[0] || '';
+        var _accomAddr = _accomNorm(stop.address || '');
+        var _accomName = _accomNorm(stop.name || '');
+        for (var _ci = 0; _ci < _accomCities.length; _ci++) {
+          if (_accomAddr.includes(_accomNorm(_accomCities[_ci])) || _accomName.includes(_accomNorm(_accomCities[_ci]))) {
+            accomCity = _accomCities[_ci]; break;
+          }
+        }
+        var accomQuery = stop.name + (accomCity ? ', ' + accomCity : '');
+        mapBtn.href = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(accomQuery).replace(/%20/g, '+');
+      } else if (stop.mapUrl) {
         mapBtn.href = stop.mapUrl;
       } else if (stop.address) {
         var mapQuery = stop.name + ', ' + stop.address;
@@ -6838,6 +6858,10 @@ IMPORTANT: For EVERY place, attraction, restaurant, and activity in the updated 
 3. Opening hours
 4. Entry fees or price range
 IMPORTANT: Do NOT include a Fee or Admission line for hotels, hostels, or any accommodation — hotel nightly rates are covered in the Budget Summary, not as entry fees. Only include Fee/Admission for attractions, museums, activities, and similar places.
+
+ACCOMMODATION ACCURACY (IMPORTANT):
+- Use your search tools to verify that each hotel, hostel, or accommodation you recommend actually exists. Include the correct full street address (e.g., "Via Guicciardini 8, Florence"), not a landmark or neighborhood name.
+- Do NOT use a nearby landmark as the address (e.g., do NOT use "Ponte Vecchio" as the address for a hotel near Ponte Vecchio).
 
 Format each place as: **Place Name** — Brief description (5-10 words)
 followed by the detail bullet points. Every place MUST have a short description after the name.
