@@ -6665,12 +6665,6 @@ function finalizeTripExtras() {
   tripData.tripFinalized = true;
   saveTripSession();
   document.getElementById('finalize-modal').classList.remove('active');
-  // Confirmation message
-  if (tripData.isPaidTrip) {
-    alert('Trip finalized! Downloads, Packing List, and Fun Fact are now available.');
-  } else {
-    alert('Trip finalized! You can now download your itinerary.');
-  }
   // Reset planning page so next Generate starts fresh
   document.getElementById('origin').value = '';
   document.getElementById('destination').value = '';
