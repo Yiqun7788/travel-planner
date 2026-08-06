@@ -5737,7 +5737,8 @@ function restructureItinerary() {
     // Chips
     const chips = document.createElement('div');
     chips.className = 'stop-chips';
-    if (stop.fee) {
+    const isAccommodation = /\b(hotel|hostel|motel|inn|airbnb|b&b|bed\s*&?\s*breakfast|guesthouse|guest\s*house|lodge|resort|apartment|villa|ryokan|pension|posada|pousada|albergue)\b/i.test(stop.name);
+    if (stop.fee && !isAccommodation) {
       const isFree = /^free\b|^gratuit\b|^gratis\b|^kostenlos\b|^無料|^免费/i.test(stop.fee.trim());
       const chip = document.createElement('span');
       chip.className = 'stop-chip ' + (isFree ? 'free' : 'paid');
@@ -5817,7 +5818,7 @@ function restructureItinerary() {
 
     if (stop.address) panel.innerHTML += '<div class="stop-detail-row"><span class="stop-detail-label">Address</span><span class="stop-detail-value">' + stop.address + '</span></div>';
     if (stop.hours) panel.innerHTML += '<div class="stop-detail-row"><span class="stop-detail-label">Hours</span><span class="stop-detail-value">' + stop.hours + '</span></div>';
-    if (stop.fee) panel.innerHTML += '<div class="stop-detail-row"><span class="stop-detail-label">Fee</span><span class="stop-detail-value">' + stop.fee + '</span></div>';
+    if (stop.fee && !isAccommodation) panel.innerHTML += '<div class="stop-detail-row"><span class="stop-detail-label">Fee</span><span class="stop-detail-value">' + stop.fee + '</span></div>';
     if (panelNotes.length > 0) panel.innerHTML += '<div class="stop-extra-notes">' + panelNotes.join(' ') + '</div>';
 
     card.appendChild(header);
