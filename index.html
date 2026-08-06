@@ -4716,7 +4716,12 @@ TRAVEL DAY DETAILS: On days when the traveler moves between cities, you MUST inc
 - Estimated travel time: ~Xh Ymin
 - Estimated fuel cost: ~€X (approx. $Y) (if driving by car)
 - Tolls: [toll details or "No tolls on this route"] (if driving by car)
-Do NOT leave "Long-distance Transportation" as an empty heading. ALWAYS include ALL bullet points listed above — never omit distance, travel time, or driving costs.` : ''}
+Do NOT leave "Long-distance Transportation" as an empty heading. ALWAYS include ALL bullet points listed above — never omit distance, travel time, or driving costs.${longDistance.length > 1 ? `
+MULTIPLE TRANSPORT OPTIONS: The traveler selected ${longDistance.length} long-distance modes (${longDistance.join(', ')}). In the travel entry for each intercity route, you MUST list ALL selected modes with estimated cost and travel time so the traveler can compare options. Use this format:
+- CityA → CityB (${longDistance[0]}): ~cost, ~Xh Ymin
+- CityA → CityB (${longDistance.length > 1 ? longDistance[1] : 'Mode2'}): ~cost, ~Xh Ymin${longDistance.length > 2 ? `
+- CityA → CityB (${longDistance[2]}): ~cost, ~Xh Ymin` : ''}
+Do NOT pick just one mode — always present ALL selected options so the traveler can decide.` : ''}` : ''}
 ${localTransport.length > 0 ? `Local transportation (within cities): ${localTransport.join(", ")}.` : ''}
 ${additionalInstructions ? `Traveler requirements (you MUST incorporate these into the itinerary — just include them directly, do NOT write any analysis or discussion about them): ${additionalInstructions}` : ''}
 
@@ -4739,6 +4744,7 @@ IMPORTANT - For EVERY place, attraction, restaurant, and activity mentioned in t
 2. Address (full street address)
 3. Opening hours (e.g., "Open: 9:00 AM - 5:00 PM, Closed Mondays")
 4. Entry fees or price range (e.g., "Fee: $15 adults, $10 children" or "Free admission" or "$$$ - expensive")
+IMPORTANT: Do NOT include a Fee or Admission line for hotels, hostels, or any accommodation — hotel nightly rates are covered in the Budget Summary, not as entry fees. Only include Fee/Admission for attractions, museums, activities, and similar places.
 
 AVAILABILITY CHECK — The calendar days for this trip are: ${dayOfWeekMap}.
 For each place you recommend, consider whether it is typically closed or restricted on that day of the week (e.g., many museums close on Mondays, some churches and cathedrals restrict tourist visits on Sundays, certain restaurants close mid-week, etc.).
@@ -6830,6 +6836,7 @@ IMPORTANT: For EVERY place, attraction, restaurant, and activity in the updated 
 2. Address (full street address)
 3. Opening hours
 4. Entry fees or price range
+IMPORTANT: Do NOT include a Fee or Admission line for hotels, hostels, or any accommodation — hotel nightly rates are covered in the Budget Summary, not as entry fees. Only include Fee/Admission for attractions, museums, activities, and similar places.
 
 Format each place as: **Place Name** — Brief description (5-10 words)
 followed by the detail bullet points. Every place MUST have a short description after the name.
@@ -6849,7 +6856,8 @@ TRAVEL DAY DETAILS: On days when the traveler moves between cities, you MUST inc
 - Estimated travel time: ~Xh Ymin
 - Estimated fuel cost: ~€X (approx. $Y) (if driving by car)
 - Tolls: [toll details or "No tolls on this route"] (if driving by car)
-Do NOT leave "Long-distance Transportation" as an empty heading. ALWAYS include ALL bullet points listed above — never omit distance, travel time, or driving costs.` : ''}${tripData.roundTrip && !tripData.origin && getDestinationCount(tripData.destination) > 1 ? `
+Do NOT leave "Long-distance Transportation" as an empty heading. ALWAYS include ALL bullet points listed above — never omit distance, travel time, or driving costs.${(tripData.longDistance || []).length > 1 ? `
+MULTIPLE TRANSPORT OPTIONS: The traveler selected ${tripData.longDistance.length} long-distance modes (${tripData.longDistance.join(', ')}). In the travel entry for each intercity route, you MUST list ALL selected modes with estimated cost and travel time so the traveler can compare options. Do NOT pick just one mode — always present ALL selected options.` : ''}` : ''}${tripData.roundTrip && !tripData.origin && getDestinationCount(tripData.destination) > 1 ? `
 ROUND TRIP: The traveler is making a round trip${(tripData.longDistance || []).length === 1 ? ' by ' + tripData.longDistance[0].toLowerCase() : ''}. The last day MUST end with the return journey back to ${tripData.destination.split(/[,;\u3001]/)[0].trim()} to complete the loop. Include estimated travel time and distance for the return leg.` : ''}`;
 
   const originNote = tripData.origin ? `\nThe traveler starts from ${tripData.origin} (not from an airport or station). Day 1 begins with the journey from ${tripData.origin}. The last day ends with the return to ${tripData.origin}.` : '';
