@@ -4779,6 +4779,7 @@ At the VERY BEGINNING of each day (right after the day heading like "## Day 1"),
   DailyRoute: Place+A+${dest.split(/[,;\u3001]/)[0].trim().replace(/\s+/g, '+')}|Place+B+${dest.split(/[,;\u3001]/)[0].trim().replace(/\s+/g, '+')}|Place+C+${dest.split(/[,;\u3001]/)[0].trim().replace(/\s+/g, '+')}
 - Replace spaces with + in each place name. After each place, include ONLY the specific city where that place is located (NOT the full destination list). Separate stops with | character.
 - Include ONLY major attractions, landmarks, museums, parks, historic districts, neighborhoods, and well-known sightseeing spots. Do NOT include restaurants, cafés, bars, dining venues, airports, train stations, transit hubs, city names by themselves, or "Travel/Drive from X to Y" entries in DailyRoute. Restaurants have their own individual map links and do not geocode reliably in route URLs.
+- CONSISTENCY RULE: Every place in the DailyRoute MUST also appear as a named stop in the day's schedule. Do NOT include places in DailyRoute that are not listed as separate stops under the ### time sections. If an attraction is worth including in DailyRoute, it must also be a scheduled stop with its own bold heading, map link, address, and hours.
 - CRITICAL: Each DailyRoute line must contain places from ONLY ONE city. NEVER mix places from different cities in the same DailyRoute. If a day involves sightseeing in TWO different cities (e.g., a travel day with stops in both the departure and destination city), output a SEPARATE DailyRoute line for each city. Example for a day visiting Córdoba then Granada: output one DailyRoute for Córdoba places, then one DailyRoute for Granada places on the next line. Do NOT include "Travel/Drive from X to Y" entries, airports, or the arrival city name by itself.
 - The line MUST start with "DailyRoute: " exactly.
 - Example for a day in Paris with 3 stops:
@@ -5116,8 +5117,6 @@ function processDailyRoutes(markdown) {
     if (typeof tripData !== 'undefined' && tripData) {
       var lt = tripData.localTransport || [];
       if (lt.includes('Car (Local)')) travelmode = 'driving';
-      var currToCountry = { 'CAD': 'Canada', 'USD': 'United States', 'GBP': 'United Kingdom', 'JPY': 'Japan', 'CNY': 'China' };
-      if (tripData.currency && currToCountry[tripData.currency]) countrySuffix = ', ' + currToCountry[tripData.currency];
     }
 
     // Detect day's city from heading (handles both multi-city trips and
@@ -5219,6 +5218,19 @@ function processDailyRoutes(markdown) {
     });
 
     var groupKeys = Object.keys(cityGroups);
+
+    // Use the destination as geographic context for geocoding instead of currency
+    // (currency tells us where the user is from, not where they're going).
+    // For single-destination entries (e.g., "Spain"), use the full destination so
+    // stops resolve to the right country. For multi-city entries, the linkCity
+    // already provides sufficient context, so only add the destination if it
+    // differs from the dayCity (to avoid redundant "Place, Madrid, Madrid").
+    if (typeof tripData !== 'undefined' && tripData && tripData.destination) {
+      var _destFirst = tripData.destination.split(/[,;\u3001]/)[0].trim();
+      if (norm(_destFirst) !== norm(dayCity)) {
+        countrySuffix = ', ' + _destFirst;
+      }
+    }
 
     const mapsEncode = s => encodeURIComponent(s).replace(/%20/g, '+').replace(/%2C/g, ',');
     var modeIcon = travelmode === 'walking' ? '&#128694;' : travelmode === 'bicycling' ? '&#128690;' : '&#128663;';
@@ -6883,6 +6895,7 @@ Also at the VERY BEGINNING of each day (right after the day heading), include a 
 DailyRoute: Place+A+${tripData.destination.split(/[,;\u3001]/)[0].trim().replace(/\s+/g, '+')}|Place+B+${tripData.destination.split(/[,;\u3001]/)[0].trim().replace(/\s+/g, '+')}|Place+C+${tripData.destination.split(/[,;\u3001]/)[0].trim().replace(/\s+/g, '+')}
 Replace spaces with + in each place name. After each place, include ONLY the specific city where that place is located (NOT the full destination list). Separate stops with | character. Arrange in optimal time-saving order.
 Include ONLY major attractions, landmarks, museums, parks, historic districts, neighborhoods, and well-known sightseeing spots in DailyRoute. Do NOT include restaurants, cafés, bars, or dining venues — they have individual map links and do not geocode reliably in route URLs.
+CONSISTENCY RULE: Every place in the DailyRoute MUST also appear as a named stop in the day's schedule. Do NOT include places in DailyRoute that are not listed as separate stops under the ### time sections.
 CRITICAL: Each DailyRoute line must contain places from ONLY ONE city. NEVER mix places from different cities in the same DailyRoute. If a day involves sightseeing in TWO different cities (e.g., a travel day with stops in both the departure and destination city), output a SEPARATE DailyRoute line for each city. Example for a day visiting Córdoba then Granada: output one DailyRoute for Córdoba places, then one DailyRoute for Granada places on the next line. Do NOT include "Travel/Drive from X to Y" entries, airports, or the arrival city name by itself.${(tripData.longDistance || []).includes('Car') ? `
 
 PARKING & DRIVING TIPS: The traveler is driving by car. For EVERY stop/attraction, include a practical parking tip right after the fee line. Use this format:
