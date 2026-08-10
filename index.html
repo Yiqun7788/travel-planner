@@ -5253,11 +5253,11 @@ function processDailyRoutes(markdown) {
         // prevents confusion (e.g. Prince Edward Island vs Prince Edward County, ON).
         return s + ', ' + linkCity + countrySuffix;
       });
-      if (stops.length === 0) return '';
+      // A "route" needs at least 2 stops — with only 1 stop, users can use
+      // the individual "View on Google Maps" button on the stop card instead
+      if (stops.length < 2) return '';
       var url;
-      if (stops.length === 1) {
-        url = 'https://www.google.com/maps/search/?api=1&query=' + mapsEncode(stops[0]);
-      } else {
+      {
         var o = mapsEncode(stops[0]);
         var d = mapsEncode(stops[stops.length - 1]);
         var w = stops.length > 2 ? '&waypoints=' + stops.slice(1, -1).map(function(s) { return mapsEncode(s); }).join('%7C') : '';
