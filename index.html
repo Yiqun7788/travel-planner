@@ -4772,6 +4772,8 @@ Every place MUST have a brief description after the name. Examples:
 **Cutty Sark** — Last surviving tea clipper ship, now a maritime museum
 **Greenwich Park** — Royal park with panoramic views of the London skyline
 
+FORMAT CONSISTENCY (CRITICAL): You MUST use the EXACT SAME structured format above for EVERY day of the itinerary, including travel days, arrival days, and departure days. On travel days (moving between cities), each stop — hotels, restaurants, attractions visited before/after travel — MUST still be formatted as **Place Name** — description, with Map, Address, Hours, and Fee bullet points. NEVER switch to a narrative or paragraph style. NEVER write inline text mixing multiple places together. Every single day must have ## day heading, ### time sections, and individually formatted stops. No exceptions.
+
 DAILY ROUTE MAP - VERY IMPORTANT:
 At the VERY BEGINNING of each day (right after the day heading like "## Day 1"), you MUST include a daily route line.
 - Arrange all places for that day in the most time-efficient route order to minimize travel time.
@@ -6890,6 +6892,8 @@ ACCOMMODATION ACCURACY (IMPORTANT):
 
 Format each place as: **Place Name** — Brief description (5-10 words)
 followed by the detail bullet points. Every place MUST have a short description after the name.
+
+FORMAT CONSISTENCY (CRITICAL): You MUST use the EXACT SAME structured format for EVERY day, including travel days, arrival days, and departure days. Each stop MUST be formatted as **Place Name** — description with Map, Address, Hours, and Fee bullet points. NEVER switch to a narrative or paragraph style. NEVER write inline text mixing multiple places together. Every day must have ## day heading, ### time sections, and individually formatted stops. No exceptions.
 
 Also at the VERY BEGINNING of each day (right after the day heading), include a daily route line in this EXACT format on a single line:
 DailyRoute: Place+A+${tripData.destination.split(/[,;\u3001]/)[0].trim().replace(/\s+/g, '+')}|Place+B+${tripData.destination.split(/[,;\u3001]/)[0].trim().replace(/\s+/g, '+')}|Place+C+${tripData.destination.split(/[,;\u3001]/)[0].trim().replace(/\s+/g, '+')}
