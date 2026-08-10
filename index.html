@@ -6003,18 +6003,51 @@ function restructureItinerary() {
         return;
       }
 
-      // True fallback: no stops parseable, render raw content
+      // True fallback: no stops parseable from HTML elements.
+      // Collect raw text, re-parse as markdown, then try extracting stops again.
+      var rawText = '';
+      siblings.forEach(function(s) { rawText += (s.textContent || s.outerHTML || '') + '\n'; });
+      // Clean up: ensure **Place** patterns and ### headings are on separate lines
+      rawText = rawText.replace(/\*\*\s*\*\*/g, '').replace(/(\*\*[^*]+\*\*)/g, '\n$1').replace(/(###?\s+)/g, '\n$1');
+      rawText = rawText.replace(/- (Map|Address|Hours?|Fee|Parking|Open|Price|Cost|Admission|Entry):/gi, '\n- $1:');
+      var reParsedHtml = marked.parse(rawText);
+      var tempDiv = document.createElement('div');
+      tempDiv.innerHTML = reParsedHtml;
+      var reParsedEls = Array.from(tempDiv.childNodes).filter(function(n) { return n.nodeType === 1; });
+      var reParsedStops = parseStopsFromElements(reParsedEls);
+
       const details = document.createElement('details');
       details.className = 'day-section';
       if (idx === 0) details.setAttribute('open', '');
       const summary = document.createElement('summary');
+
+      if (reParsedStops.length > 0) {
+        // Re-parse succeeded: render as stop cards
+        var reNames = reParsedStops.slice(0, 3).map(function(s) { return s.name; }).join(', ');
+        var reSHtml = '<span class="day-chevron">\u25B6</span> <span class="day-heading-text">' + stripDateFromHeading(h2.textContent) + getDayDateLabel(idx) + '</span>';
+        if (reNames) reSHtml += '<ul class="day-highlights"><li>' + reNames + '</li></ul>';
+        summary.innerHTML = reSHtml;
+        const content = document.createElement('div');
+        content.className = 'day-content';
+        content.appendChild(h2.cloneNode(true));
+        routeMapEls.forEach(function(el) { content.appendChild(el.cloneNode(true)); });
+        reParsedStops.forEach(function(stop) { content.appendChild(buildStopCard(stop)); });
+        details.appendChild(summary);
+        details.appendChild(content);
+        siblings.forEach(function(s) { if (s.parentNode) s.parentNode.removeChild(s); });
+        h2.replaceWith(details);
+        return;
+      }
+
+      // Final fallback: render cleaned HTML content
       summary.innerHTML = '<span class="day-chevron">\u25B6</span> <span class="day-heading-text">' + stripDateFromHeading(h2.textContent) + getDayDateLabel(idx) + '</span>';
       const content = document.createElement('div');
       content.className = 'day-content';
       content.appendChild(h2.cloneNode(true));
-      siblings.forEach(s => content.appendChild(s));
+      content.innerHTML += reParsedHtml;
       details.appendChild(summary);
       details.appendChild(content);
+      siblings.forEach(function(s) { if (s.parentNode) s.parentNode.removeChild(s); });
       h2.replaceWith(details);
       return;
     }
