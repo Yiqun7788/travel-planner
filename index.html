@@ -5124,6 +5124,7 @@ function processDailyRoutes(markdown) {
     // Detect day's city from heading (handles both multi-city trips and
     // single-country entries like "Spain" where the AI picks cities)
     var dayCity = city;
+    var headingCityA = null, headingCityB = null;
     // For single-destination entries, extract city name from day heading
     // Pattern: "## Day N: CityName - Theme" or "## Day N: CityName —"
     if (allCities.length <= 1) {
@@ -5146,13 +5147,20 @@ function processDailyRoutes(markdown) {
             // Remove trailing date/day-of-week info if present (e.g., "(Friday, August 28, 2026)")
             _extracted = _extracted.replace(/\s*\(.*$/, '').trim();
             if (_extracted && norm(_extracted) !== norm(city)) {
-              dayCity = _extracted;
+              // Check for two-city pattern "CityA to CityB" (e.g. "Madrid to Seville")
+              var _twoCityMatch = _extracted.match(/^(.+?)\s+to\s+(.+)$/i);
+              if (_twoCityMatch) {
+                headingCityA = _twoCityMatch[1].trim();
+                headingCityB = _twoCityMatch[2].trim();
+                dayCity = headingCityA;
+              } else {
+                dayCity = _extracted;
+              }
             }
           }
         }
       }
     }
-    var headingCityA = null, headingCityB = null;
     if (allCities.length > 1) {
       // Look at the preceding heading to determine which city this day is in
       var precedingText = fullString.substring(Math.max(0, offset - 500), offset);
@@ -5217,12 +5225,44 @@ function processDailyRoutes(markdown) {
     rawStops = rawStops.filter(function(s) { return s.length > 0; });
     if (rawStops.length === 0) return '';
 
+    // For two-city days (e.g. "Madrid to Seville"), determine which stops
+    // belong to which city by checking their position in the preceding markdown
+    // relative to the Long-distance Transportation card
+    var stopCityMap = {};
+    if (headingCityA && headingCityB) {
+      var _sectionMd = fullString.substring(Math.max(0, offset - 8000), offset);
+      var _transportIdx = _sectionMd.lastIndexOf('Long-distance Transportation');
+
+      rawStops.forEach(function(s) {
+        // First: check if stop name explicitly contains a city name
+        if (norm(s).includes(norm(headingCityB))) {
+          stopCityMap[s] = headingCityB;
+        } else if (norm(s).includes(norm(headingCityA))) {
+          stopCityMap[s] = headingCityA;
+        } else if (_transportIdx >= 0) {
+          // Second: use position relative to Long-distance Transportation in markdown
+          var _pos = _sectionMd.lastIndexOf(s);
+          if (_pos >= 0) {
+            stopCityMap[s] = (_pos < _transportIdx) ? headingCityA : headingCityB;
+          }
+        }
+        // If neither method works, grouping code falls back to dayCity
+      });
+    }
+
     // Group stops by city
     var cityGroups = {};
     rawStops.forEach(function(s) {
       var stopCity = null;
-      for (var ci = 0; ci < allCities.length; ci++) {
-        if (norm(s).includes(norm(allCities[ci]))) { stopCity = allCities[ci]; break; }
+      // Use two-city position mapping if available
+      if (stopCityMap[s]) {
+        stopCity = stopCityMap[s];
+      }
+      // Fall back to allCities name matching
+      if (!stopCity) {
+        for (var ci = 0; ci < allCities.length; ci++) {
+          if (norm(s).includes(norm(allCities[ci]))) { stopCity = allCities[ci]; break; }
+        }
       }
       if (!stopCity) stopCity = dayCity;
       if (!cityGroups[stopCity]) cityGroups[stopCity] = [];
