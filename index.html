@@ -5255,8 +5255,11 @@ function processDailyRoutes(markdown) {
           if (_pos >= 0) {
             stopCityMap[s] = (_pos < _transportIdx) ? headingCityA : headingCityB;
           }
+        } else {
+          // No transport divider found — on a travel day "CityA to CityB",
+          // sightseeing stops are typically in the destination city (CityB)
+          stopCityMap[s] = headingCityB;
         }
-        // If neither method works, grouping code falls back to dayCity
       });
     }
 
