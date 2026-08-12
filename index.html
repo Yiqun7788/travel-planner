@@ -5839,7 +5839,8 @@ function restructureItinerary() {
     chips.className = 'stop-chips';
     const isAccommodation = /\b(hotel|hostel|motel|inn|airbnb|b&b|bed\s*&?\s*breakfast|guesthouse|guest\s*house|lodge|resort|apartment|villa|ryokan|pension|posada|pousada|albergue)\b/i.test(stop.name);
     const isArrivalStop = /^Arrival\s+(at|in)\b/i.test(stop.name);
-    if (stop.fee && !isAccommodation && !isArrivalStop) {
+    const isTransportStop = /^(Long-distance Transportation|Intercity Travel)\b/i.test(stop.name);
+    if (stop.fee && !isAccommodation && !isArrivalStop && !isTransportStop) {
       const isFree = /^free\b|^gratuit\b|^gratis\b|^kostenlos\b|^無料|^免费/i.test(stop.fee.trim());
       const chip = document.createElement('span');
       chip.className = 'stop-chip ' + (isFree ? 'free' : 'paid');
@@ -5857,7 +5858,10 @@ function restructureItinerary() {
     // Action buttons row (Map + Website) — inside left so they wrap on mobile
     const actions = document.createElement('div');
     actions.className = 'stop-actions';
-    if (stop.mapUrl || stop.address) {
+    // Skip map button for non-car transport stops — searching
+    // "Long-distance Transportation: Madrid → Toledo (Train)" on Google Maps isn't useful.
+    // Car transport stops have _transitDest set and get a driving route link instead.
+    if ((stop.mapUrl || stop.address) && !isTransportStop) {
       const mapBtn = document.createElement('a');
       mapBtn.className = 'stop-map-btn';
       // Prefer the AI-generated map URL (simple "Place+Name+City" format that
@@ -5910,7 +5914,7 @@ function restructureItinerary() {
 
     // "Details" toggle button in actions row — only show if there's something to expand
     // Skip for transit stops (Travel/Drive/Long-distance) and accommodation stops
-    const hasDetails = !stop._transitDest && !isAccommodation && !isArrivalStop && (stop.address || stop.hours || stop.fee || panelNotes.length > 0);
+    const hasDetails = !stop._transitDest && !isAccommodation && !isArrivalStop && !isTransportStop && (stop.address || stop.hours || stop.fee || panelNotes.length > 0);
     if (hasDetails) {
       const detailsBtn = document.createElement('button');
       detailsBtn.className = 'stop-details-btn';
