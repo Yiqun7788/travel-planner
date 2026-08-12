@@ -4543,6 +4543,21 @@ function finishProgress() {
   }, 400);
 }
 
+// Look up country from Photon API when destChips doesn't have it
+// (e.g. trips saved before country tracking, or typed without autocomplete)
+async function lookupCountryIfMissing(destination) {
+  if (tripData.country) return;
+  var first = (destination || '').split(/[,;\u3001]/)[0].trim();
+  if (!first) return;
+  try {
+    var resp = await fetch('https://photon.komoot.io/api/?q=' + encodeURIComponent(first) + '&limit=1&lang=en');
+    var data = await resp.json();
+    if (data.features && data.features[0] && data.features[0].properties) {
+      tripData.country = data.features[0].properties.country || '';
+    }
+  } catch(e) {}
+}
+
 document.getElementById('generate-button').addEventListener('click', async () => {
   let dest = document.getElementById('destination').value.trim();
   const origin = document.getElementById('origin').value.trim();
@@ -4925,6 +4940,7 @@ ROUND TRIP: The traveler is making a round trip${longDistance.length === 1 ? ' b
   tripData.origin = origin;
   tripData.destination = dest;
   tripData.country = destChips.getCountry() || '';
+  await lookupCountryIfMissing(dest);
   tripData.days = days;
   tripData.itinerary = finalResult;
   tripData.startDate = start;
@@ -6753,7 +6769,8 @@ function readPlanningInputs() {
   const roundTrip = document.getElementById('round-trip-checkbox').checked;
   const alreadyBooked = [];
   if (document.getElementById('already-booked-accommodation').checked) alreadyBooked.push('accommodation');
-  return { origin, destination: dest, days, startDate: start, endDate: end, interests, longDistance, localTransport, transportation, travelers, budget, currency, pace, additionalInstructions, wantsCheapTickets, roundTrip, alreadyBooked };
+  var country = (typeof destChips !== 'undefined' && destChips.getCountry) ? destChips.getCountry() : '';
+  return { origin, destination: dest, country, days, startDate: start, endDate: end, interests, longDistance, localTransport, transportation, travelers, budget, currency, pace, additionalInstructions, wantsCheapTickets, roundTrip, alreadyBooked };
 }
 
 function detectPlanningChanges(newInputs) {
@@ -6944,14 +6961,21 @@ document.getElementById('update-itinerary-btn').addEventListener('click', async 
     return;
   }
 
+  // Ensure country is populated from destChips even for older trips without it
+  if (!tripData.country && typeof destChips !== 'undefined' && destChips.getCountry) {
+    tripData.country = destChips.getCountry() || '';
+  }
+  await lookupCountryIfMissing(tripData.destination);
+
   // Apply planning page changes to tripData (save old values to restore on failure)
   var savedTripFields = null;
-  var tripFieldKeys = ['origin','destination','days','startDate','endDate','interests','longDistance','localTransport','transportation','travelers','budget','currency','pace','wantsCheapTickets','roundTrip','alreadyBooked','additionalInstructions'];
+  var tripFieldKeys = ['origin','destination','country','days','startDate','endDate','interests','longDistance','localTransport','transportation','travelers','budget','currency','pace','wantsCheapTickets','roundTrip','alreadyBooked','additionalInstructions'];
   if (planningChanges.length > 0) {
     savedTripFields = {};
     tripFieldKeys.forEach(function(k) { savedTripFields[k] = tripData[k]; });
     tripData.origin = newInputs.origin;
     tripData.destination = newInputs.destination;
+    tripData.country = newInputs.country;
     tripData.days = newInputs.days;
     tripData.startDate = newInputs.startDate;
     tripData.endDate = newInputs.endDate;
