@@ -5102,7 +5102,7 @@ function processDailyRoutes(markdown) {
     rawStops = rawStops.filter(function(s) {
       return !/^(Travel|Drive|Train|Bus|Fly|Flight|Car)\s+.+\s+(to|from)\s+/i.test(s)
           && !/^(Travel|Drive|Train|Bus|Fly|Flight|Car)\s+(to|from)\s+/i.test(s)
-          && !/^(Long-distance Transportation|Intercity Travel|Arrival in)\b/i.test(s);
+          && !/^(Long-distance Transportation|Intercity Travel|Arrival (in|at))\b/i.test(s);
     });
 
     // Also filter out stops that are just a bare city name (no attraction)
@@ -5136,7 +5136,7 @@ function processDailyRoutes(markdown) {
     // For single-destination entries, extract city name from day heading
     // Pattern: "## Day N: CityName - Theme" or "## Day N: CityName —"
     if (allCities.length <= 1) {
-      var _precedingText = fullString.substring(Math.max(0, offset - 500), offset);
+      var _precedingText = fullString.substring(Math.max(0, offset - 5000), offset);
       var _headings = _precedingText.match(/^#{1,3}\s+.+$/gm);
       if (_headings) {
         var _lastHeading = _headings[_headings.length - 1];
@@ -5838,7 +5838,8 @@ function restructureItinerary() {
     const chips = document.createElement('div');
     chips.className = 'stop-chips';
     const isAccommodation = /\b(hotel|hostel|motel|inn|airbnb|b&b|bed\s*&?\s*breakfast|guesthouse|guest\s*house|lodge|resort|apartment|villa|ryokan|pension|posada|pousada|albergue)\b/i.test(stop.name);
-    if (stop.fee && !isAccommodation) {
+    const isArrivalStop = /^Arrival\s+(at|in)\b/i.test(stop.name);
+    if (stop.fee && !isAccommodation && !isArrivalStop) {
       const isFree = /^free\b|^gratuit\b|^gratis\b|^kostenlos\b|^無料|^免费/i.test(stop.fee.trim());
       const chip = document.createElement('span');
       chip.className = 'stop-chip ' + (isFree ? 'free' : 'paid');
@@ -5909,7 +5910,7 @@ function restructureItinerary() {
 
     // "Details" toggle button in actions row — only show if there's something to expand
     // Skip for transit stops (Travel/Drive/Long-distance) and accommodation stops
-    const hasDetails = !stop._transitDest && !isAccommodation && (stop.address || stop.hours || stop.fee || panelNotes.length > 0);
+    const hasDetails = !stop._transitDest && !isAccommodation && !isArrivalStop && (stop.address || stop.hours || stop.fee || panelNotes.length > 0);
     if (hasDetails) {
       const detailsBtn = document.createElement('button');
       detailsBtn.className = 'stop-details-btn';
