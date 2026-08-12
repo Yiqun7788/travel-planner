@@ -5356,7 +5356,9 @@ function processDailyRoutes(markdown) {
 
     // Single city: generate one link
     var singleCity = groupKeys.length === 1 ? groupKeys[0] : dayCity;
-    return buildRouteLink(rawStops, singleCity, "View Sightseeing Route in " + singleCity + " on Google Maps") + transitNote;
+    var singleLink = buildRouteLink(rawStops, singleCity, "View Sightseeing Route in " + singleCity + " on Google Maps");
+    if (!singleLink) return '';
+    return singleLink + transitNote;
   });
 }
 
