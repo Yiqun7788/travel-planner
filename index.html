@@ -4823,7 +4823,12 @@ ROUND TRIP: The traveler is making a round trip${longDistance.length === 1 ? ' b
   if (finalResult) {
     const correctedMatch = finalResult.match(/^CorrectedDestinations:\s*(.+)$/m);
     if (correctedMatch) {
-      dest = correctedMatch[1].trim();
+      const correctedDest = correctedMatch[1].trim();
+      // Only accept spelling corrections — don't let the AI expand a country
+      // into multiple cities (e.g., "Spain" → "Madrid, Seville, Granada")
+      if (getDestinationCount(correctedDest) === getDestinationCount(dest)) {
+        dest = correctedDest;
+      }
       finalResult = finalResult.replace(/^CorrectedDestinations:\s*.+\n*/m, '');
     }
     // Strip any AI reasoning/analysis text that appears before the actual itinerary.
@@ -5840,7 +5845,7 @@ function restructureItinerary() {
     const isAccommodation = /\b(hotel|hostel|motel|inn|airbnb|b&b|bed\s*&?\s*breakfast|guesthouse|guest\s*house|lodge|resort|apartment|villa|ryokan|pension|posada|pousada|albergue)\b/i.test(stop.name);
     const isArrivalStop = /^Arrival\s+(at|in)\b/i.test(stop.name);
     const isTransportStop = /^(Long-distance Transportation|Intercity Travel)\b/i.test(stop.name);
-    if (stop.fee && !isAccommodation && !isArrivalStop && !isTransportStop) {
+    if (stop.fee && !isAccommodation && !isArrivalStop) {
       const isFree = /^free\b|^gratuit\b|^gratis\b|^kostenlos\b|^無料|^免费/i.test(stop.fee.trim());
       const chip = document.createElement('span');
       chip.className = 'stop-chip ' + (isFree ? 'free' : 'paid');
