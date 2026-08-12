@@ -2670,7 +2670,7 @@ try {
       localStorage.removeItem('savedTrip');
       if (typeof _sessionRestored !== 'undefined') _sessionRestored = false;
       // Reset in-memory trip state so stale data isn't restored by a racing SIGNED_IN event
-      Object.assign(tripData, { origin:'', destination:'', days:0, itinerary:'', startDate:'', endDate:'', transportation:[], travelers:1, interests:[], pace:'Medium', additionalInstructions:'', wantsCheapTickets:false, roundTrip:false, alreadyBooked:[], tripFinalized:false, packingListUsed:false, funFactUsed:false, isPaidTrip:false, updatesUsed:0, longDistance:[], localTransport:[], budget:0, currency:'USD' });
+      Object.assign(tripData, { origin:'', destination:'', country:'', days:0, itinerary:'', startDate:'', endDate:'', transportation:[], travelers:1, interests:[], pace:'Medium', additionalInstructions:'', wantsCheapTickets:false, roundTrip:false, alreadyBooked:[], tripFinalized:false, packingListUsed:false, funFactUsed:false, isPaidTrip:false, updatesUsed:0, longDistance:[], localTransport:[], budget:0, currency:'USD' });
       updateAuthUI();
     }
   });
@@ -2907,7 +2907,7 @@ async function signOut() {
   localStorage.removeItem('savedTrip');
   try { sessionStorage.removeItem('tripSession'); } catch {}
   // Reset in-memory trip state and return to home
-  Object.assign(tripData, { origin:'', destination:'', days:0, itinerary:'', startDate:'', endDate:'', transportation:[], travelers:1, interests:[], pace:'Medium', additionalInstructions:'', wantsCheapTickets:false, roundTrip:false, alreadyBooked:[], tripFinalized:false, packingListUsed:false, funFactUsed:false, isPaidTrip:false, updatesUsed:0, longDistance:[], localTransport:[], budget:0, currency:'USD' });
+  Object.assign(tripData, { origin:'', destination:'', country:'', days:0, itinerary:'', startDate:'', endDate:'', transportation:[], travelers:1, interests:[], pace:'Medium', additionalInstructions:'', wantsCheapTickets:false, roundTrip:false, alreadyBooked:[], tripFinalized:false, packingListUsed:false, funFactUsed:false, isPaidTrip:false, updatesUsed:0, longDistance:[], localTransport:[], budget:0, currency:'USD' });
   _sessionRestored = false;
   // Reset planning form fields
   document.getElementById('origin').value = '';
@@ -3053,6 +3053,7 @@ async function migrateLocalDataToProfile() {
 var tripData = {
   origin: '',
   destination: '',
+  country: '',
   days: 0,
   itinerary: '',
   startDate: '',
@@ -3749,6 +3750,7 @@ document.getElementById('start-new-trip-confirm').addEventListener('click', func
   // Clear trip data
   tripData.itinerary = '';
   tripData.destination = '';
+  tripData.country = '';
   tripData.origin = '';
   tripData.days = 0;
   tripData.startDate = '';
@@ -3970,6 +3972,7 @@ document.getElementById('start-date').addEventListener('change', function() {
 // ─── Destination Chip Manager ───
 var destChips = (function() {
   var _chips = [];
+  var _countries = [];
   var container = document.getElementById('dest-chip-container');
   var chipInput = document.getElementById('dest-chip-input');
   var hidden = document.getElementById('destination');
@@ -4011,7 +4014,7 @@ var destChips = (function() {
     }
   }
 
-  function add(name) {
+  function add(name, country) {
     name = (name || '').trim();
     if (!name) return;
     var limits = (typeof getTierLimits === 'function') ? getTierLimits() : { maxDestinations: 1 };
@@ -4030,12 +4033,14 @@ var destChips = (function() {
       if (_chips[i].toLowerCase() === lower) return;
     }
     _chips.push(name);
+    _countries.push((country || '').trim());
     _render();
   }
 
   function removeAt(idx) {
     if (idx >= 0 && idx < _chips.length) {
       _chips.splice(idx, 1);
+      _countries.splice(idx, 1);
       _render();
       chipInput.focus();
     }
@@ -4044,21 +4049,27 @@ var destChips = (function() {
   function removeLast() {
     if (_chips.length > 0) {
       _chips.pop();
+      _countries.pop();
       _render();
     }
   }
 
   function clear() {
     _chips = [];
+    _countries = [];
     _render();
   }
 
-  function setFromString(str) {
+  function setFromString(str, country) {
     _chips = (str || '').split(/[,;\u3001]/).map(function(s) { return s.trim(); }).filter(Boolean);
+    var c = (country || '').trim();
+    _countries = _chips.map(function() { return c; });
     _render();
   }
 
   function getChips() { return _chips.slice(); }
+
+  function getCountry() { return _countries.length > 0 ? _countries[0] : ''; }
 
   // Clicking the container focuses the input
   container.addEventListener('click', function() { chipInput.focus(); });
@@ -4070,6 +4081,7 @@ var destChips = (function() {
     clear: clear,
     setFromString: setFromString,
     getChips: getChips,
+    getCountry: getCountry,
     _updateInputState: _updateInputState,
     _render: _render
   };
@@ -4133,7 +4145,7 @@ document.getElementById('budget-input').addEventListener('input', function() {
 function prefillPlanningForm(data) {
   document.getElementById('origin').value = data.origin || '';
   document.getElementById('destination').value = data.destination || '';
-  if (data.destination) destChips.setFromString(data.destination);
+  if (data.destination) destChips.setFromString(data.destination, data.country);
   document.getElementById('start-date').value = data.startDate || '';
   document.getElementById('end-date').value = data.endDate || '';
   if (data.pace) {
@@ -4191,6 +4203,7 @@ function postPaymentReset(creditCount, savedTrip) {
   try { localStorage.removeItem('savedTrip'); } catch {}
   // Reset in-memory tripData
   tripData.destination = '';
+  tripData.country = '';
   tripData.days = 0;
   tripData.itinerary = '';
   tripData.startDate = '';
@@ -4380,7 +4393,7 @@ function initPhotonAutocomplete(inputId, listId, multiSegment, onSelect) {
     var p = f.properties || {};
     var name = p.name || p.city || '';
     if (onSelect) {
-      onSelect(name);
+      onSelect(name, p.country || '');
       input.value = '';
       hideSuggestions();
       return;
@@ -4441,8 +4454,8 @@ function initPhotonAutocomplete(inputId, listId, multiSegment, onSelect) {
   });
 }
 initPhotonAutocomplete('origin', 'origin-suggestions', false);
-initPhotonAutocomplete('dest-chip-input', 'dest-suggestions', false, function(name) {
-  destChips.add(name);
+initPhotonAutocomplete('dest-chip-input', 'dest-suggestions', false, function(name, country) {
+  destChips.add(name, country);
 });
 
 // ─── Chip input keyboard & paste handlers ───
@@ -4911,6 +4924,7 @@ ROUND TRIP: The traveler is making a round trip${longDistance.length === 1 ? ' b
   // Store trip data for Extra Tools
   tripData.origin = origin;
   tripData.destination = dest;
+  tripData.country = destChips.getCountry() || '';
   tripData.days = days;
   tripData.itinerary = finalResult;
   tripData.startDate = start;
@@ -5289,16 +5303,17 @@ function processDailyRoutes(markdown) {
 
     var groupKeys = Object.keys(cityGroups);
 
-    // Use the destination as geographic context for geocoding instead of currency
-    // (currency tells us where the user is from, not where they're going).
-    // For single-destination entries (e.g., "Spain"), use the full destination so
-    // stops resolve to the right country. For multi-city entries, the linkCity
-    // already provides sufficient context, so only add the destination if it
-    // differs from the dayCity (to avoid redundant "Place, Madrid, Madrid").
-    if (typeof tripData !== 'undefined' && tripData && tripData.destination) {
-      var _destFirst = tripData.destination.split(/[,;\u3001]/)[0].trim();
-      if (norm(_destFirst) !== norm(dayCity)) {
-        countrySuffix = ', ' + _destFirst;
+    // Use the country from Photon autocomplete for reliable geocoding.
+    // This prevents city names like "Granada" from resolving to wrong countries.
+    // Falls back to the first destination token when country is unavailable.
+    if (typeof tripData !== 'undefined' && tripData) {
+      if (tripData.country) {
+        countrySuffix = ', ' + tripData.country;
+      } else if (tripData.destination) {
+        var _destFirst = tripData.destination.split(/[,;\u3001]/)[0].trim();
+        if (norm(_destFirst) !== norm(dayCity)) {
+          countrySuffix = ', ' + _destFirst;
+        }
       }
     }
 
@@ -7375,7 +7390,7 @@ function restoreSession() {
     // Restore planning page fields so Back button shows correct values
     document.getElementById('origin').value = tripData.origin || '';
     document.getElementById('destination').value = tripData.destination;
-    destChips.setFromString(tripData.destination);
+    destChips.setFromString(tripData.destination, tripData.country);
     document.getElementById('start-date').value = tripData.startDate || '';
     document.getElementById('end-date').value = tripData.endDate || '';
     if (tripData.pace) {
