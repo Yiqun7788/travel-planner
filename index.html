@@ -6961,12 +6961,6 @@ document.getElementById('update-itinerary-btn').addEventListener('click', async 
     return;
   }
 
-  // Ensure country is populated from destChips even for older trips without it
-  if (!tripData.country && typeof destChips !== 'undefined' && destChips.getCountry) {
-    tripData.country = destChips.getCountry() || '';
-  }
-  await lookupCountryIfMissing(tripData.destination);
-
   // Apply planning page changes to tripData (save old values to restore on failure)
   var savedTripFields = null;
   var tripFieldKeys = ['origin','destination','country','days','startDate','endDate','interests','longDistance','localTransport','transportation','travelers','budget','currency','pace','wantsCheapTickets','roundTrip','alreadyBooked','additionalInstructions'];
@@ -6994,6 +6988,13 @@ document.getElementById('update-itinerary-btn').addEventListener('click', async 
     // Update header to reflect new destination/days
     document.getElementById('results-title').textContent = `Your Trip: ${tripData.destination} (${tripData.days} days)`;
   }
+
+  // Ensure country is populated for geocoding — try destChips first, then Photon API.
+  // Must run AFTER planning changes are applied (so newInputs.country doesn't overwrite).
+  if (!tripData.country && typeof destChips !== 'undefined' && destChips.getCountry) {
+    tripData.country = destChips.getCountry() || '';
+  }
+  await lookupCountryIfMissing(tripData.destination);
 
   startProgress('Updating your itinerary...');
 
@@ -7403,6 +7404,18 @@ function restoreSession() {
     renderTripOverview();
     renderActiveInstructionsLabel();
     renderBookingSection();
+    // For trips saved before country tracking, look up country from Photon
+    // and re-render route links so geocoding resolves to the right country
+    if (!tripData.country && tripData.destination) {
+      lookupCountryIfMissing(tripData.destination).then(function() {
+        if (tripData.country) {
+          var _rmHtml = buildLongDistanceRouteMap(tripData.destination, tripData.longDistance || [], tripData.origin, tripData.roundTrip);
+          document.getElementById('content-display').innerHTML = _rmHtml + linkifyUrls(marked.parse(processDailyRoutes(stripEmoji(tripData.itinerary))));
+          restructureItinerary();
+          saveTripSession();
+        }
+      });
+    }
     document.getElementById('home-page-wrapper').style.display='none';
     document.getElementById('planning-view').classList.add('hidden');
     document.getElementById('results-view').classList.remove('hidden');
