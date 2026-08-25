@@ -3577,6 +3577,8 @@ function renderTripOverview() {
   const box = document.getElementById('trip-overview');
   const chips = [];
   const _t = translations[currentLang] || translations.en;
+  var paceKeyMap = { 'Slow': 'slow', 'Medium': 'medium', 'Fast': 'fast' };
+  function translateValue(val, keyMap, t) { var k = keyMap[val]; return (k && t[k]) ? t[k] : val; }
   if (tripData.origin) {
     chips.push('&#128205; ' + _t.fromOrigin.replace('{origin}', tripData.origin));
   }
@@ -3591,12 +3593,29 @@ function renderTripOverview() {
     chips.push('&#128176; ' + tripData.budget.toLocaleString() + ' ' + (tripData.currency || ''));
   }
   if (tripData.pace) {
-    chips.push('&#127939; ' + _t.paceLabel.replace('{pace}', tripData.pace));
+    chips.push('&#127939; ' + _t.paceLabel.replace('{pace}', translateValue(tripData.pace, paceKeyMap, _t)));
   }
+  // Map checkbox values to translation keys for display
+  const interestKeyMap = {
+    'History': 'history', 'Culture & Museums': 'culture', 'Major Landmarks': 'landmarks',
+    'UNESCO Sites': 'unesco', 'Architecture': 'architecture', 'Foodie / Gourmet': 'foodie',
+    'Hidden Gems': 'hiddenGems', 'Adventure / Outdoors': 'adventure', 'Nature & Scenic': 'nature',
+    'Relaxation / Beaches': 'relaxation', 'Shows & Entertainment': 'shows', 'Festivals': 'festivals',
+    'Nightlife': 'nightlife', 'Shopping': 'shopping', 'Wellness & Spa': 'wellness',
+    'Family-Friendly': 'familyFriendly', 'Romantic': 'romantic'
+  };
+  const transportKeyMap = {
+    'Air': 'air', 'Train': 'train', 'Car': 'car', 'Bike': 'bike',
+    'Long-Distance Bus': 'longDistanceBus', 'Boat': 'boat',
+    'Bus': 'bus', 'Subway/Metro': 'subwayMetro', 'Tram': 'tram',
+    'Ferry': 'ferry', 'Bike (Local)': 'bikeLocal', 'Walking': 'walking',
+    'Car (Local)': 'carLocal'
+  };
   if (tripData.interests && tripData.interests.length > 0) {
-    const shown = tripData.interests.slice(0, 4).join(', ');
+    const translatedInterests = tripData.interests.map(function(v) { return translateValue(v, interestKeyMap, _t); });
+    const shown = translatedInterests.slice(0, 4).join(', ');
     if (tripData.interests.length > 4) {
-      const all = tripData.interests.join(', ');
+      const all = translatedInterests.join(', ');
       const extraCount = tripData.interests.length - 4;
       chips.push('&#127919; <span class="interests-text" data-short="' + shown + '" data-full="' + all + '">' + shown + '</span> <a href="#" class="interests-toggle" style="color:#6366f1;font-weight:500;cursor:pointer;text-decoration:none" data-expanded="false">' + _t.moreInterests.replace('{n}', extraCount) + '</a>');
     } else {
@@ -3605,7 +3624,7 @@ function renderTripOverview() {
   }
   const transport = (tripData.localTransport || []).concat(tripData.longDistance || []);
   if (transport.length > 0) {
-    chips.push('&#128651; ' + transport.join(', '));
+    chips.push('&#128651; ' + transport.map(function(v) { return translateValue(v, transportKeyMap, _t); }).join(', '));
   }
   if (chips.length > 0) {
     box.innerHTML = chips.map(c => '<span>' + c + '</span>').join('');
