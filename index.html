@@ -2571,6 +2571,7 @@ async function submitContactForm(e) {
 }
 
 let currentLang = (function() { try { return localStorage.getItem('selectedLang') || 'en'; } catch { return 'en'; } })();
+var _userChangedLang = false;
 if (currentLang !== 'en') { updateLanguage(currentLang); document.getElementById('language-select').value = currentLang; document.getElementById('banner-language-select').value = currentLang; document.getElementById('ph-language-select').value = currentLang; if (typeof applyTierUI === 'function') applyTierUI(); }
 
 // Configure marked to open all links in new tabs
@@ -4524,6 +4525,7 @@ initPhotonAutocomplete('dest-chip-input', 'dest-suggestions', false, function(na
 
 document.getElementById('language-select').addEventListener('change', (e) => {
   currentLang = e.target.value;
+  _userChangedLang = true;
   updateLanguage(currentLang);
   if (typeof applyTierUI === 'function') applyTierUI();
   // Sync all language dropdowns
@@ -7406,8 +7408,8 @@ function restoreSession() {
     if (!data.destination) return;
     if (!data.itinerary) {
       // Trip has form data but no generated itinerary — pre-fill planning form
-      // Restore saved language
-      if (data.lang && translations[data.lang]) {
+      // Restore saved language (skip if user already changed language this session)
+      if (!_userChangedLang && data.lang && translations[data.lang]) {
         currentLang = data.lang;
         try { localStorage.setItem('selectedLang', currentLang); } catch {}
         document.getElementById('language-select').value = currentLang;
@@ -7423,8 +7425,8 @@ function restoreSession() {
     }
     _sessionRestored = true;
     Object.assign(tripData, data);
-    // Restore saved language
-    if (data.lang && translations[data.lang]) {
+    // Restore saved language (skip if user already changed language this session)
+    if (!_userChangedLang && data.lang && translations[data.lang]) {
       currentLang = data.lang;
       try { localStorage.setItem('selectedLang', currentLang); } catch {}
       document.getElementById('language-select').value = currentLang;
