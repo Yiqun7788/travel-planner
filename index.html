@@ -2570,7 +2570,8 @@ async function submitContactForm(e) {
   }
 }
 
-let currentLang = 'en';
+let currentLang = (function() { try { return localStorage.getItem('selectedLang') || 'en'; } catch { return 'en'; } })();
+if (currentLang !== 'en') { updateLanguage(currentLang); document.getElementById('language-select').value = currentLang; document.getElementById('banner-language-select').value = currentLang; document.getElementById('ph-language-select').value = currentLang; if (typeof applyTierUI === 'function') applyTierUI(); }
 
 // Configure marked to open all links in new tabs
 marked.use({
@@ -3076,6 +3077,7 @@ var tripData = {
 var selectedTravelMode = 'driving';
 
 function saveTripSession() {
+  tripData.lang = currentLang;
   try { sessionStorage.setItem('tripSession', JSON.stringify(tripData)); } catch {}
   try { localStorage.setItem('savedTrip', JSON.stringify(tripData)); } catch {}
   if (currentUser && supabaseClient) {
@@ -4527,6 +4529,9 @@ document.getElementById('language-select').addEventListener('change', (e) => {
   // Sync all language dropdowns
   document.getElementById('banner-language-select').value = currentLang;
   document.getElementById('ph-language-select').value = currentLang;
+  // Persist language choice
+  try { localStorage.setItem('selectedLang', currentLang); } catch {}
+  if (tripData.destination) { tripData.lang = currentLang; saveTripSession(); }
 });
 
 // --- Progress bar helper ---
@@ -4976,6 +4981,7 @@ ROUND TRIP: The traveler is making a round trip${longDistance.length === 1 ? ' b
   tripData.budget = budget;
   tripData.currency = currency;
   tripData.pace = pace;
+  tripData.lang = currentLang;
   tripData.additionalInstructions = document.getElementById('additional-instructions').value.trim();
   tripData.wantsCheapTickets = wantsCheapTickets;
   tripData.roundTrip = roundTrip;
@@ -7402,6 +7408,16 @@ function restoreSession() {
     if (!data.destination) return;
     if (!data.itinerary) {
       // Trip has form data but no generated itinerary — pre-fill planning form
+      // Restore saved language
+      if (data.lang && translations[data.lang]) {
+        currentLang = data.lang;
+        try { localStorage.setItem('selectedLang', currentLang); } catch {}
+        document.getElementById('language-select').value = currentLang;
+        document.getElementById('banner-language-select').value = currentLang;
+        document.getElementById('ph-language-select').value = currentLang;
+        updateLanguage(currentLang);
+        if (typeof applyTierUI === 'function') applyTierUI();
+      }
       prefillPlanningForm(data);
       Object.assign(tripData, data);
       _sessionRestored = true;
@@ -7409,6 +7425,16 @@ function restoreSession() {
     }
     _sessionRestored = true;
     Object.assign(tripData, data);
+    // Restore saved language
+    if (data.lang && translations[data.lang]) {
+      currentLang = data.lang;
+      try { localStorage.setItem('selectedLang', currentLang); } catch {}
+      document.getElementById('language-select').value = currentLang;
+      document.getElementById('banner-language-select').value = currentLang;
+      document.getElementById('ph-language-select').value = currentLang;
+      updateLanguage(currentLang);
+      if (typeof applyTierUI === 'function') applyTierUI();
+    }
     // Infer isPaidTrip for old saved data missing the flag
     if (!tripData.isPaidTrip && tripData.itinerary) {
       var destCount = getDestinationCount(tripData.destination || '');
