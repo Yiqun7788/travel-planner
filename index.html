@@ -2390,7 +2390,7 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
     <!-- Generate Button -->
     <button type="button" id="generate-button" class="btn-primary" data-i18n="generate">Generate Itinerary</button>
     <p id="generate-button-hint" class="hidden" style="margin-top:8px; padding:10px 14px; background:linear-gradient(135deg,#fef3c7,#fde68a); border:1px solid #f59e0b; border-radius:10px; font-size:0.85rem; color:#92400e; line-height:1.5; text-align:center;"></p>
-    <button type="button" id="return-to-itinerary-btn" class="btn-primary hidden" style="margin-top: 10px; background: linear-gradient(135deg, #64748b, #475569);" onclick="document.getElementById('home-page-wrapper').style.display='none'; document.getElementById('planning-view').classList.add('hidden'); document.getElementById('results-view').classList.remove('hidden'); document.getElementById('app-header').style.display=''; document.getElementById('app-footer').style.display=''; document.getElementById('planning-header').style.display='none'; document.getElementById('language-select').parentElement.style.display='none'; if(window.innerWidth<=768) document.querySelector('.mobile-action-bar').classList.remove('hidden'); showPlanningChangesSummary(); applyTierUI();" data-i18n="returnToItinerary">&#8592; Return to Itinerary</button>
+    <button type="button" id="return-to-itinerary-btn" class="btn-primary hidden" style="margin-top: 10px; background: linear-gradient(135deg, #64748b, #475569);" onclick="document.getElementById('home-page-wrapper').style.display='none'; document.getElementById('planning-view').classList.add('hidden'); document.getElementById('results-view').classList.remove('hidden'); document.getElementById('app-header').style.display=''; document.getElementById('app-footer').style.display=''; document.getElementById('planning-header').style.display='none'; if(window.innerWidth<=768) document.querySelector('.mobile-action-bar').classList.remove('hidden'); showPlanningChangesSummary(); applyTierUI();" data-i18n="returnToItinerary">&#8592; Return to Itinerary</button>
 
   </form>
   <div style="text-align:center; padding:16px 0 8px; display:flex; justify-content:center; gap:16px;">
@@ -2643,8 +2643,9 @@ try {
           return migrateLocalDataToProfile();
         }).then(function() {
           updateAuthUI();
-          // If server has a saved trip, clear guest session data so restoreSession picks up the server trip
-          if (userProfile && userProfile.current_trip && userProfile.current_trip.destination) {
+          // If server has a saved trip and session hasn't been restored yet,
+          // clear guest session data so restoreSession picks up the server trip
+          if (!_sessionRestored && userProfile && userProfile.current_trip && userProfile.current_trip.destination) {
             try { sessionStorage.removeItem('tripSession'); } catch {}
             try { localStorage.removeItem('savedTrip'); } catch {}
           }
@@ -3756,7 +3757,6 @@ document.getElementById('confirm-new-trip-revision').addEventListener('click', f
   document.getElementById('app-header').style.display = '';
   document.getElementById('app-footer').style.display = '';
   document.getElementById('planning-header').style.display = 'none';
-  document.getElementById('language-select').parentElement.style.display = 'none';
   if (window.innerWidth <= 768) document.querySelector('.mobile-action-bar').classList.remove('hidden');
 });
 document.getElementById('confirm-new-trip-generate').addEventListener('click', function() {
@@ -5026,7 +5026,6 @@ ROUND TRIP: The traveler is making a round trip${longDistance.length === 1 ? ' b
   document.getElementById('app-header').style.display = '';
   document.getElementById('app-footer').style.display = '';
   document.getElementById('planning-header').style.display = 'none';
-  document.getElementById('language-select').parentElement.style.display = 'none';
   if (window.innerWidth <= 768) document.querySelector('.mobile-action-bar').classList.remove('hidden');
 
 });
@@ -7298,7 +7297,6 @@ function showView(viewName) {
     header.style.display = '';
     footer.style.display = '';
     planningHeader.style.display = 'none';
-    document.getElementById('language-select').parentElement.style.display = 'none';
     if (mobileBar && window.innerWidth <= 768) mobileBar.classList.remove('hidden');
   }
 }
@@ -7472,7 +7470,6 @@ function restoreSession() {
     document.getElementById('app-header').style.display = '';
     document.getElementById('app-footer').style.display = '';
     document.getElementById('planning-header').style.display = 'none';
-    document.getElementById('language-select').parentElement.style.display = 'none';
     if (window.innerWidth <= 768) document.querySelector('.mobile-action-bar').classList.remove('hidden');
     // Restore planning page fields so Back button shows correct values
     document.getElementById('origin').value = tripData.origin || '';
