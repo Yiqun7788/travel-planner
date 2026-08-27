@@ -4357,7 +4357,7 @@ function initPhotonAutocomplete(inputId, listId, multiSegment, onSelect) {
   let _acSuppress = false;
   let _acIdx = -1;
   let _acItems = [];
-  let _composing = false;
+
 
   function getActiveSegment() {
     if (!multiSegment) return { text: input.value.trim(), start: 0, end: input.value.length, idx: 0 };
@@ -4448,21 +4448,8 @@ function initPhotonAutocomplete(inputId, listId, multiSegment, onSelect) {
     return fetchSuggestions(seg.text).then(renderSuggestions);
   }
 
-  input.addEventListener('compositionstart', function() { _composing = true; });
-  input.addEventListener('compositionend', function() {
-    _composing = false;
-    // Trigger fetch after IME composition finishes
-    clearTimeout(_acTimer);
-    _acTimer = setTimeout(function() {
-      var seg = getActiveSegment();
-      if (seg.text.length < 2) { hideSuggestions(); return; }
-      fetchSuggestions(seg.text).then(renderSuggestions);
-    }, 100);
-  });
-
   input.addEventListener('input', function() {
     if (_acSuppress) { _acSuppress = false; return; }
-    if (_composing) return; // Skip during IME composition; compositionend will handle it
     clearTimeout(_acTimer);
     _acTimer = setTimeout(function() {
       var seg = getActiveSegment();
