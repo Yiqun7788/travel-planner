@@ -4351,13 +4351,11 @@ window.addEventListener('pageshow', function(e) { if (e.persisted) applyTierUI()
 function initPhotonAutocomplete(inputId, listId, multiSegment, onSelect) {
   const input = document.getElementById(inputId);
   const list  = document.getElementById(listId);
-  if (!input || !list) return {};
   const SEP   = /[,;\u3001]/;
   let _acTimer = null;
   let _acSuppress = false;
   let _acIdx = -1;
   let _acItems = [];
-
 
   function getActiveSegment() {
     if (!multiSegment) return { text: input.value.trim(), start: 0, end: input.value.length, idx: 0 };
@@ -4382,8 +4380,7 @@ function initPhotonAutocomplete(inputId, listId, multiSegment, onSelect) {
   }
 
   function fetchSuggestions(query) {
-    var langParam = (typeof currentLang !== 'undefined' && ['en','de','fr','it'].indexOf(currentLang) >= 0) ? '&lang=' + currentLang : '&lang=en';
-    return fetch('https://photon.komoot.io/api/?q=' + encodeURIComponent(query) + '&limit=5' + langParam)
+    return fetch('https://photon.komoot.io/api/?q=' + encodeURIComponent(query) + '&limit=5&lang=en')
       .then(function(r) { return r.json(); })
       .then(function(data) {
         var feats = data.features || [];
@@ -4441,13 +4438,6 @@ function initPhotonAutocomplete(inputId, listId, multiSegment, onSelect) {
     input.focus();
   }
 
-  function triggerFetch() {
-    clearTimeout(_acTimer);
-    var seg = getActiveSegment();
-    if (seg.text.length < 2) return Promise.resolve();
-    return fetchSuggestions(seg.text).then(renderSuggestions);
-  }
-
   input.addEventListener('input', function() {
     if (_acSuppress) { _acSuppress = false; return; }
     clearTimeout(_acTimer);
@@ -4455,7 +4445,7 @@ function initPhotonAutocomplete(inputId, listId, multiSegment, onSelect) {
       var seg = getActiveSegment();
       if (seg.text.length < 2) { hideSuggestions(); return; }
       fetchSuggestions(seg.text).then(renderSuggestions);
-    }, 200);
+    }, 300);
   });
 
   input.addEventListener('keydown', function(e) {
@@ -4487,11 +4477,9 @@ function initPhotonAutocomplete(inputId, listId, multiSegment, onSelect) {
   input.addEventListener('blur', function() {
     setTimeout(hideSuggestions, 150);
   });
-
-  return { triggerFetch: triggerFetch, isVisible: function() { return list.classList.contains('visible'); } };
 }
 initPhotonAutocomplete('origin', 'origin-suggestions', false);
-var _destAutocomplete = initPhotonAutocomplete('dest-chip-input', 'dest-suggestions', false, function(name, country) {
+initPhotonAutocomplete('dest-chip-input', 'dest-suggestions', false, function(name, country) {
   destChips.add(name, country);
 });
 
@@ -4511,22 +4499,10 @@ var _destAutocomplete = initPhotonAutocomplete('dest-chip-input', 'dest-suggesti
     if (e.key === 'Backspace' && chipInput.value === '') {
       destChips.removeLast();
     } else if (e.key === 'Enter') {
-      e.preventDefault();
+      // Only commit typed text if no autocomplete item is highlighted
       var list = document.getElementById('dest-suggestions');
-      if (list.classList.contains('visible') && list.querySelector('li.active')) {
-        // Autocomplete handles this via its own keydown handler
-        return;
-      }
-      if (list.classList.contains('visible') && list.querySelector('li')) {
-        // Suggestions visible but none highlighted — select the first one
-        var firstItem = list.querySelector('li');
-        if (firstItem) { firstItem.dispatchEvent(new MouseEvent('mousedown', { bubbles: true })); return; }
-      }
-      // If autocomplete not visible, trigger an immediate fetch instead of committing raw text
-      var text = chipInput.value.trim();
-      if (text.length >= 2 && _destAutocomplete && _destAutocomplete.triggerFetch) {
-        _destAutocomplete.triggerFetch();
-      } else if (text) {
+      if (!list.classList.contains('visible') || !list.querySelector('li.active')) {
+        e.preventDefault();
         commitTypedText();
       }
     } else if (e.key === ',' || e.key === ';') {
