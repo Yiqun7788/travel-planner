@@ -1956,7 +1956,7 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
         <button class="user-menu-item danger" onclick="signOut()">Sign Out</button>
       </div>
     </div>
-    <select id="banner-language-select" class="home-nav-lang" onchange="document.getElementById('language-select').value=this.value; document.getElementById('language-select').dispatchEvent(new Event('change'));">
+    <select id="banner-language-select" class="home-nav-lang" onchange="if(typeof changeLanguage==='function') changeLanguage(this.value);">
       <option value="en">English</option>
       <option value="zh">简体中文</option>
       <option value="ja">日本語</option>
@@ -2193,7 +2193,7 @@ details.schedule-section > .schedule-content { padding: 8px 14px 14px; }
           <button class="user-menu-item danger" onclick="signOut()">Sign Out</button>
         </div>
       </div>
-      <select id="ph-language-select" class="planning-header-lang" onchange="document.getElementById('language-select').value=this.value; document.getElementById('language-select').dispatchEvent(new Event('change'));">
+      <select id="ph-language-select" class="planning-header-lang" onchange="if(typeof changeLanguage==='function') changeLanguage(this.value);">
         <option value="en">English</option>
         <option value="zh">简体中文</option>
         <option value="ja">日本語</option>
@@ -4523,17 +4523,21 @@ initPhotonAutocomplete('dest-chip-input', 'dest-suggestions', false, function(na
   });
 })();
 
-document.getElementById('language-select').addEventListener('change', (e) => {
-  currentLang = e.target.value;
+function changeLanguage(lang) {
+  currentLang = lang;
   _userChangedLang = true;
   updateLanguage(currentLang);
   if (typeof applyTierUI === 'function') applyTierUI();
   // Sync all language dropdowns
+  document.getElementById('language-select').value = currentLang;
   document.getElementById('banner-language-select').value = currentLang;
   document.getElementById('ph-language-select').value = currentLang;
   // Persist language choice
   try { localStorage.setItem('selectedLang', currentLang); } catch {}
   if (tripData.destination) { tripData.lang = currentLang; saveTripSession(); }
+}
+document.getElementById('language-select').addEventListener('change', (e) => {
+  changeLanguage(e.target.value);
 });
 
 // --- Progress bar helper ---
