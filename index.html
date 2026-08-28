@@ -2570,6 +2570,12 @@ async function submitContactForm(e) {
   }
 }
 
+// ─── Tier limits (declared early so applyTierUI can be called during language init) ───
+const TIER_LIMITS = {
+  free: { maxDays:3, maxDestinations:1, maxGenerations:1, maxUpdatesPerItinerary:1, offlineHtml:true, packingList:false, cheapTickets:false, funFacts:false },
+  paid: { maxDays:16, maxDestinations:5, maxGenerations:1, maxUpdatesPerItinerary:3, offlineHtml:true, packingList:true, cheapTickets:true, funFacts:true },
+};
+
 let currentLang = (function() { try { return localStorage.getItem('selectedLang') || 'en'; } catch { return 'en'; } })();
 var _userChangedLang = false;
 if (currentLang !== 'en') { updateLanguage(currentLang); document.getElementById('language-select').value = currentLang; document.getElementById('banner-language-select').value = currentLang; document.getElementById('ph-language-select').value = currentLang; if (typeof applyTierUI === 'function') applyTierUI(); }
@@ -3092,10 +3098,6 @@ function saveTripSession() {
 }
 
 // ─── Tier System ───
-const TIER_LIMITS = {
-  free: { maxDays:3, maxDestinations:1, maxGenerations:1, maxUpdatesPerItinerary:1, offlineHtml:true, packingList:false, cheapTickets:false, funFacts:false },
-  paid: { maxDays:16, maxDestinations:5, maxGenerations:1, maxUpdatesPerItinerary:3, offlineHtml:true, packingList:true, cheapTickets:true, funFacts:true },
-};
 function getTripCredits() {
   if (currentUser && userProfile) return userProfile.credits || 0;
   return parseInt(localStorage.getItem('tripCredits') || '0', 10);
