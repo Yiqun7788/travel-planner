@@ -4347,10 +4347,65 @@ applyTierUI();
 // Reset button states when restored from bfcache (e.g. browser Back from Stripe)
 window.addEventListener('pageshow', function(e) { if (e.persisted) applyTierUI(); });
 
+// ─── Fallback city list (used when Photon API is unreachable, e.g. file:// origin) ───
+var _fallbackCities = [
+  {name:"Tokyo",state:"Tokyo",country:"Japan"},{name:"Paris",state:"Île-de-France",country:"France"},
+  {name:"London",state:"England",country:"United Kingdom"},{name:"New York",state:"New York",country:"United States"},
+  {name:"Rome",state:"Lazio",country:"Italy"},{name:"Barcelona",state:"Catalonia",country:"Spain"},
+  {name:"Bangkok",state:"",country:"Thailand"},{name:"Dubai",state:"",country:"United Arab Emirates"},
+  {name:"Istanbul",state:"",country:"Turkey"},{name:"Singapore",state:"",country:"Singapore"},
+  {name:"Amsterdam",state:"North Holland",country:"Netherlands"},{name:"Berlin",state:"",country:"Germany"},
+  {name:"Prague",state:"",country:"Czech Republic"},{name:"Sydney",state:"New South Wales",country:"Australia"},
+  {name:"Seoul",state:"",country:"South Korea"},{name:"Vienna",state:"",country:"Austria"},
+  {name:"Lisbon",state:"",country:"Portugal"},{name:"Athens",state:"Attica",country:"Greece"},
+  {name:"Madrid",state:"Community of Madrid",country:"Spain"},{name:"Bali",state:"",country:"Indonesia"},
+  {name:"Kyoto",state:"Kyoto",country:"Japan"},{name:"Florence",state:"Tuscany",country:"Italy"},
+  {name:"Dublin",state:"Leinster",country:"Ireland"},{name:"Munich",state:"Bavaria",country:"Germany"},
+  {name:"Osaka",state:"Osaka",country:"Japan"},{name:"Venice",state:"Veneto",country:"Italy"},
+  {name:"Budapest",state:"",country:"Hungary"},{name:"Copenhagen",state:"",country:"Denmark"},
+  {name:"Zurich",state:"",country:"Switzerland"},{name:"Edinburgh",state:"Scotland",country:"United Kingdom"},
+  {name:"Marrakech",state:"",country:"Morocco"},{name:"Reykjavik",state:"",country:"Iceland"},
+  {name:"Toronto",state:"Ontario",country:"Canada"},{name:"San Francisco",state:"California",country:"United States"},
+  {name:"Los Angeles",state:"California",country:"United States"},{name:"Chicago",state:"Illinois",country:"United States"},
+  {name:"Miami",state:"Florida",country:"United States"},{name:"Havana",state:"",country:"Cuba"},
+  {name:"Mexico City",state:"",country:"Mexico"},{name:"Buenos Aires",state:"",country:"Argentina"},
+  {name:"Rio de Janeiro",state:"",country:"Brazil"},{name:"Lima",state:"",country:"Peru"},
+  {name:"Cairo",state:"",country:"Egypt"},{name:"Cape Town",state:"Western Cape",country:"South Africa"},
+  {name:"Nairobi",state:"",country:"Kenya"},{name:"Mumbai",state:"Maharashtra",country:"India"},
+  {name:"Delhi",state:"",country:"India"},{name:"Shanghai",state:"",country:"China"},
+  {name:"Beijing",state:"",country:"China"},{name:"Hong Kong",state:"",country:"China"},
+  {name:"Taipei",state:"",country:"Taiwan"},{name:"Hanoi",state:"",country:"Vietnam"},
+  {name:"Ho Chi Minh City",state:"",country:"Vietnam"},{name:"Kuala Lumpur",state:"",country:"Malaysia"},
+  {name:"Stockholm",state:"",country:"Sweden"},{name:"Oslo",state:"",country:"Norway"},
+  {name:"Helsinki",state:"",country:"Finland"},{name:"Warsaw",state:"",country:"Poland"},
+  {name:"Krakow",state:"Lesser Poland",country:"Poland"},{name:"Brussels",state:"",country:"Belgium"},
+  {name:"Milan",state:"Lombardy",country:"Italy"},{name:"Nice",state:"Provence-Alpes-Côte d'Azur",country:"France"},
+  {name:"Lyon",state:"Auvergne-Rhône-Alpes",country:"France"},{name:"Marseille",state:"Provence-Alpes-Côte d'Azur",country:"France"},
+  {name:"Seville",state:"Andalusia",country:"Spain"},{name:"Porto",state:"",country:"Portugal"},
+  {name:"Santorini",state:"South Aegean",country:"Greece"},{name:"Dubrovnik",state:"",country:"Croatia"},
+  {name:"Petra",state:"",country:"Jordan"},{name:"Jerusalem",state:"",country:"Israel"},
+  {name:"Cusco",state:"",country:"Peru"},{name:"Cancun",state:"Quintana Roo",country:"Mexico"},
+  {name:"Phuket",state:"",country:"Thailand"},{name:"Chiang Mai",state:"",country:"Thailand"},
+  {name:"Auckland",state:"",country:"New Zealand"},{name:"Queenstown",state:"Otago",country:"New Zealand"},
+  {name:"Vancouver",state:"British Columbia",country:"Canada"},{name:"Montreal",state:"Quebec",country:"Canada"},
+  {name:"Bruges",state:"",country:"Belgium"},{name:"Split",state:"",country:"Croatia"},
+  {name:"Amalfi",state:"Campania",country:"Italy"},{name:"Cinque Terre",state:"Liguria",country:"Italy"},
+  {name:"Salzburg",state:"",country:"Austria"},{name:"Interlaken",state:"Bern",country:"Switzerland"}
+];
+function _fallbackSearch(query) {
+  var q = query.toLowerCase();
+  return _fallbackCities.filter(function(c) {
+    return c.name.toLowerCase().indexOf(q) >= 0;
+  }).slice(0, 5).map(function(c) {
+    return { properties: { name: c.name, state: c.state, country: c.country, osm_key: 'place' }, type: 'Feature' };
+  });
+}
+
 // ─── Photon autocomplete (reusable for origin + destination) ───
 function initPhotonAutocomplete(inputId, listId, multiSegment, onSelect) {
   const input = document.getElementById(inputId);
   const list  = document.getElementById(listId);
+  if (!input || !list) return;
   const SEP   = /[,;\u3001]/;
   let _acTimer = null;
   let _acSuppress = false;
@@ -4387,7 +4442,7 @@ function initPhotonAutocomplete(inputId, listId, multiSegment, onSelect) {
         var places = feats.filter(function(f) { return f.properties && f.properties.osm_key === 'place'; });
         return places.length ? places : feats;
       })
-      .catch(function() { return []; });
+      .catch(function() { return _fallbackSearch(query); });
   }
 
   function renderSuggestions(features) {
