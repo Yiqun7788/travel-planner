@@ -3207,6 +3207,7 @@ function resetUpdatesForNewItinerary() {
 }
 
 function applyTierUI() {
+  if (typeof tripData === 'undefined' || !tripData) return;
   const tier = getUserTier();
   const limits = getTierLimits();
   const credits = getTripCredits();
