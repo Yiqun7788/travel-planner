@@ -6591,9 +6591,14 @@ document.getElementById('back-button').addEventListener('click', () => {
 });
 
 // "Edit your trip settings" link in Extra Tools → triggers Back button
-document.getElementById('edit-trip-settings-link').addEventListener('click', (e) => {
-  e.preventDefault();
-  document.getElementById('back-button').click();
+// Use event delegation because updateLanguage() replaces the innerHTML of
+// the data-i18n-html parent, destroying the original <a> and its listener.
+document.addEventListener('click', (e) => {
+  var link = e.target.closest('#edit-trip-settings-link');
+  if (link) {
+    e.preventDefault();
+    document.getElementById('back-button').click();
+  }
 });
 
 // Download menu toggle
