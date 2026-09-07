@@ -133,6 +133,7 @@ module.exports = async function handler(req, res) {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             contents: [{ parts: [{ text: prompt }] }],
+            generationConfig: { maxOutputTokens: 65536 },
             tools: [{ google_search: {} }]
           })
         }
