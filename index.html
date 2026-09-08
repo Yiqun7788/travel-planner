@@ -5166,10 +5166,13 @@ function buildLongDistanceRouteMap(dest, longDistance, originCity, roundTrip) {
   const hasTrain = longDistance.includes('Train');
   const hasBus = longDistance.includes('Long-Distance Bus');
   if (places.length < 2 || hasTrain || hasBus || (!hasCar && !hasBike)) return '';
+  // Append country to each place for Google Maps disambiguation (e.g. "Steyr" → "Steyr, Austria")
+  const country = (typeof tripData !== 'undefined' && tripData && tripData.country) ? tripData.country : '';
   const mapsEncode = s => encodeURIComponent(s).replace(/%20/g, '+');
-  const origin = mapsEncode(places[0]);
-  const destination = mapsEncode(places[places.length - 1]);
-  const waypoints = places.length > 2 ? '&waypoints=' + places.slice(1, -1).map(p => mapsEncode(p)).join('%7C') : '';
+  const qualify = s => country && !s.toLowerCase().includes(country.toLowerCase()) ? s + ', ' + country : s;
+  const origin = mapsEncode(qualify(places[0]));
+  const destination = mapsEncode(qualify(places[places.length - 1]));
+  const waypoints = places.length > 2 ? '&waypoints=' + places.slice(1, -1).map(p => mapsEncode(qualify(p))).join('%7C') : '';
   let modeLabel, modeIcon, travelmode;
   if (hasCar) { modeLabel = 'Driving'; modeIcon = '&#128663;'; travelmode = 'driving'; }
   else if (hasBike) { modeLabel = 'Biking'; modeIcon = '&#128690;'; travelmode = 'bicycling'; }
