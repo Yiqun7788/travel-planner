@@ -2666,7 +2666,15 @@ try {
           if (typeof pendingPurchasePriceType !== 'undefined' && pendingPurchasePriceType) {
             var pt = pendingPurchasePriceType;
             pendingPurchasePriceType = null;
-            purchaseCredits(pt);
+            if (getTripCredits() > 0) {
+              // User already has credits — skip checkout
+              if (!tripData.itinerary) {
+                showPlanningView();
+              }
+              // If tripData.itinerary exists, restoreSession() above already showed the itinerary
+            } else {
+              purchaseCredits(pt);
+            }
           }
         }).catch(function(e) {
           console.warn('Sign-in chain error:', e);
