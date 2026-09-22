@@ -2804,7 +2804,7 @@ async function handleEmailAuth() {
 
     if (authMode === 'signup' && result.data.user && !result.data.session) {
       errorEl.style.color = '#16a34a';
-      errorEl.textContent = 'Check your email for a confirmation link!';
+      errorEl.innerHTML = 'If this email is new, you\u2019ll receive a confirmation link. Already have an account? <a href="#" onclick="event.preventDefault();authMode=\'signin\';renderAuthModalState();this.parentElement.textContent=\'\';" style="color:#2563eb;text-decoration:underline;">Sign In</a>';
       btn.disabled = false;
       renderAuthModalState();
       return;
